@@ -50,7 +50,7 @@ const CreateEmployeePage: React.FC = () => {
         return null;
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target as HTMLInputElement;
         const fieldValue = type === 'checkbox' ? checked : value;
 
@@ -64,7 +64,7 @@ const CreateEmployeePage: React.FC = () => {
         }
     };
 
-    const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         const error = validateField(name, value);
         setFormErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
@@ -98,7 +98,7 @@ const CreateEmployeePage: React.FC = () => {
             {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
             <form onSubmit={handleSubmit}>
                 <div className="bg-white shadow overflow-hidden sm:rounded-lg p-4">
-                    <div className="px-4 py-10 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                         <label htmlFor="name" className="text-md font-medium">Name</label>
                         <div className="col-span-2">
                             <input
@@ -214,7 +214,8 @@ const CreateEmployeePage: React.FC = () => {
                     <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                         <label htmlFor="gender" className="text-md font-medium">Gender</label>
                         <div className="col-span-2">
-                            <select
+                            <input
+                                type="text"
                                 id="gender"
                                 name="gender"
                                 value={createEmployeeData.find(item => item.field === 'gender')?.value || ''}
@@ -222,12 +223,7 @@ const CreateEmployeePage: React.FC = () => {
                                 onBlur={handleBlur}
                                 className="border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                                 required
-                            >
-                                <option value="" disabled>Select Gender</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="other">Other</option>
-                            </select>
+                            />
                             {formErrors.gender && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.gender}</p>}
                         </div>
                     </div>
