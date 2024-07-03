@@ -36,6 +36,9 @@ const CreateEmployeePage: React.FC = () => {
                 break;
             case 'dateOfBirth':
                 if (!value) return 'Date of birth is required';
+                const dob = new Date(value);
+                const age = new Date().getFullYear() - dob.getFullYear();
+                if(age <18 || age >80) return 'Age must be between 18 and 80';
                 break;
             case 'avatar':
                 if (!value) return 'Avatar URL is required';
@@ -58,10 +61,6 @@ const CreateEmployeePage: React.FC = () => {
 
         const error = validateField(name, value);
         setFormErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
-
-        if (name === 'avatar' && /^https?:\/\/.+/.test(value)) {
-            setAvatarPreview(value);
-        }
     };
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
