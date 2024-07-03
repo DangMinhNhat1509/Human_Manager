@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { PacmanLoader } from 'react-spinners';
 import { RootState, AppDispatch } from '../../store/store';
@@ -9,6 +9,7 @@ import EmployeeUpdateModal from './EmployeeUpdateModal';
 const EmployeeDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const dispatch: AppDispatch = useDispatch();
+    const navigate = useNavigate();
     const employeeDetail = useSelector((state: RootState) => state.employees.employeeDetail);
     const loading: boolean = useSelector((state: RootState) => state.employees.loading);
     const error: string | null = useSelector((state: RootState) => state.employees.error);
@@ -46,6 +47,7 @@ const EmployeeDetailPage: React.FC = () => {
     const handleDeleteClick = () => {
         if (id && window.confirm('Are you sure you want to delete this employee?')) {
             dispatch(deleteEmployee(Number(id)));
+            navigate('/employees');
         }
     };
     return (
