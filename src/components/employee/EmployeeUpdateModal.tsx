@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { updateEmployee } from '../../store/slices/employeeSlice';
+import { validateField } from '../../utils/validation';
+import { EmployeeDetail } from '../../types/EmployeeDetail';
 
 interface EmployeeUpdateModalProps {
     show: boolean;
@@ -15,13 +17,14 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
         name: employeeDetail.name,
         gender: employeeDetail.gender,
         email: employeeDetail.email,
-        dateOfBirth: employeeDetail.dateOfBirth,
+        dateOfBirth: employeeDetail.dateOfBirth.split('T')[0],
         phone: employeeDetail.phone,
         address: employeeDetail.address,
         status: employeeDetail.status,
         avatar: employeeDetail.avatar
     });
-
+    const [formErrors, setFormErrors] = useState<{ [key in keyof EmployeeDetail]?: string }>({});
+    const [avatarPreview, setAvatarPreview] = useState<string>('');
     const handleClose = () => {
         onHide();
     };
@@ -32,23 +35,46 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
             ...prevFormData,
             [name]: type === 'checkbox' ? checked : value,
         }));
+
+        if (name === 'avatar') {
+            setAvatarPreview(value);
+        }
+
+        const error = validateField(name, value);
+        setFormErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
     };
 
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        const error = validateField(name, value);
+        setFormErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
+
+        if (name === 'avatar') {
+            setAvatarPreview('');
+        }
+    };
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        const hasErrors = Object.values(formErrors).some((error) => error !== null);
+        if (hasErrors) {
+            alert('Please fix the errors before submitting');
+            return;
+        };
+
         try {
             await dispatch(updateEmployee({ id: employeeDetail.id, data: formData }));
             handleClose();
         } catch (error) {
             console.error('Error updating employee:', error);
-        }
+        };
     };
 
     if (!show) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-            <div className="bg-white p-6 rounded-lg w-96">
+        <div className="fixed  inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+            <div className="bg-white p-6 rounded-lg w-[500px]">
                 <h2 className="text-lg font-semibold mb-4">Update Employee Information</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
@@ -59,9 +85,11 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             className="mt-1 p-2 w-full border-gray-300 rounded-md"
                             required
                         />
+                        {formErrors.name && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.name}</p>}
                     </div>
 
                     <div className="mb-4">
@@ -71,9 +99,11 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
                             name="gender"
                             value={formData.gender}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             className="mt-1 p-2 w-full border-gray-300 rounded-md"
                             required
-                            />
+                        />
+                        {formErrors.gender && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.gender}</p>}
                     </div>
 
                     <div className="mb-4">
@@ -84,9 +114,11 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             className="mt-1 p-2 w-full border-gray-300 rounded-md"
                             required
                         />
+                        {formErrors.email && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.address}</p>}
                     </div>
 
                     <div className="mb-4">
@@ -97,9 +129,11 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
                             name="dateOfBirth"
                             value={formData.dateOfBirth}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             className="mt-1 p-2 w-full border-gray-300 rounded-md"
                             required
                         />
+                        {formErrors.dateOfBirth && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.dateOfBirth}</p>}
                     </div>
 
                     <div className="mb-4">
@@ -110,10 +144,12 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
                             name="phone"
                             value={formData.phone}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             className="mt-1 p-2 w-full border-gray-300 rounded-md"
                             placeholder="Enter phone number"
                             required
                         />
+                        {formErrors.phone && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.phone}</p>}
                     </div>
 
                     <div className="mb-4">
@@ -123,11 +159,14 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
                             name="address"
                             value={formData.address}
                             onChange={handleChange}
+                            onBlur={handleBlur}
+
                             className="mt-1 p-2 w-full border-gray-300 rounded-md resize-none"
                             rows={3}
                             placeholder="Enter address"
                             required
                         />
+                        {formErrors.address && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.address}</p>}
                     </div>
 
                     <div className="mb-4">
@@ -137,11 +176,22 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
                             name="avatar"
                             value={formData.avatar}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             className="mt-1 p-2 w-full border-gray-300 rounded-md resize-none"
                             rows={3}
                             placeholder="Enter avatar"
                             required
                         />
+                        {formErrors.avatar && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.avatar}</p>}
+                        {avatarPreview && (
+                            <div className="mt-2">
+                                <img
+                                    src={avatarPreview}
+                                    alt="Avatar Preview"
+                                    className={`block mx-auto ${avatarPreview ? 'h-70' : 'h-0'}`}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <div className="mb-4">
@@ -151,8 +201,10 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
                             name="status"
                             checked={formData.status}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             className="rounded text-blue-500"
                         />
+                        {formErrors.name && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.status}</p>}
                         <label htmlFor="status" className="ml-2 text-sm text-gray-700">Active</label>
                     </div>
 

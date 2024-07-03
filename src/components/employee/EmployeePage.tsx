@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { PacmanLoader } from 'react-spinners';
 import { fetchEmployees, setPage } from '../../store/slices/employeeSlice';
-import PaginationNav from './PaginationNav';
+import PaginationNav from '../../utils/PaginationNav';
 import { RootState, AppDispatch } from '../../store/store';
 
 const EmployeePage: React.FC = () => {

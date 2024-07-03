@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { createEmployee, setCreateEmployeeField, resetCreateEmployeeForm } from '../../store/slices/employeeSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import { CreateEmployee } from '../../types/CreateEmployee';
+import { validateField } from '../../utils/validation';
+
 
 const CreateEmployeePage: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -18,53 +20,27 @@ const CreateEmployeePage: React.FC = () => {
         };
     }, [dispatch]);
 
-    const validateField = (name: string, value: string): string | null => {
-        switch (name) {
-            case 'name':
-                if (!value) return 'Name is required';
-                break;
-            case 'email':
-                if (!value) return 'Email is required';
-                if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value)) return 'Invalid email address';
-                break;
-            case 'phone':
-                if (!value) return 'Phone is required';
-                if (!/^[\d()\s\-]+(x\d+)?$/.test(value)) return 'Invalid phone number';
-                break;
-            case 'address':
-                if (!value) return 'Address is required';
-                break;
-            case 'dateOfBirth':
-                if (!value) return 'Date of birth is required';
-                const dob = new Date(value);
-                const age = new Date().getFullYear() - dob.getFullYear();
-                if(age <18 || age >80) return 'Age must be between 18 and 80';
-                break;
-            case 'avatar':
-                if (!value) return 'Avatar URL is required';
-                if (!/^https?:\/\/.+/.test(value)) return 'Invalid URL';
-                break;
-            case 'gender':
-                if (!value) return 'Gender is required';
-                break;
-            default:
-                break;
-        }
-        return null;
-    };
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type, checked } = e.target as HTMLInputElement;
         const fieldValue = type === 'checkbox' ? checked : value;
 
         dispatch(setCreateEmployeeField({ field: name as keyof CreateEmployee, value: fieldValue }));
 
+        if (name === 'avatar') {
+            setAvatarPreview(value);
+        };
+
         const error = validateField(name, value);
         setFormErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
     };
 
-    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
+        
+        if (name === 'avatar') {
+            setAvatarPreview('');
+        }
+
         const error = validateField(name, value);
         setFormErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
     };
@@ -98,7 +74,7 @@ const CreateEmployeePage: React.FC = () => {
             <form onSubmit={handleSubmit}>
                 <div className="bg-white shadow overflow-hidden sm:rounded-lg p-4">
                     <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <label htmlFor="name" className="text-md font-medium">Name</label>
+                        <label htmlFor="name" className="text-md font-medium pt-4">Name</label>
                         <div className="col-span-2">
                             <input
                                 type="text"
@@ -111,6 +87,24 @@ const CreateEmployeePage: React.FC = () => {
                                 required
                             />
                             {formErrors.name && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.name}</p>}
+                        </div>
+                    </div>
+
+                    {/* Gender */}
+                    <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <label htmlFor="gender" className="text-md font-medium pt-4">Gender</label>
+                        <div className="col-span-2">
+                            <input
+                                type="text"
+                                id="gender"
+                                name="gender"
+                                value={createEmployeeData.find(item => item.field === 'gender')?.value || ''}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                className="border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                required
+                            />
+                            {formErrors.gender && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.gender}</p>}
                         </div>
                     </div>
 
@@ -134,7 +128,7 @@ const CreateEmployeePage: React.FC = () => {
 
                     {/* Phone */}
                     <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <label htmlFor="phone" className="text-md font-medium">Phone</label>
+                        <label htmlFor="phone" className="text-md font-medium pt-4">Phone</label>
                         <div className="col-span-2">
                             <input
                                 type="text"
@@ -150,27 +144,9 @@ const CreateEmployeePage: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Address */}
-                    <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <label htmlFor="address" className="text-md font-medium">Address</label>
-                        <div className="col-span-2">
-                            <input
-                                type="text"
-                                id="address"
-                                name="address"
-                                value={createEmployeeData.find(item => item.field === 'address')?.value || ''}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                className="border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                                required
-                            />
-                            {formErrors.address && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.address}</p>}
-                        </div>
-                    </div>
-
                     {/* Date of Birth */}
                     <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <label htmlFor="dateOfBirth" className="text-md font-medium">Date of Birth</label>
+                        <label htmlFor="dateOfBirth" className="text-md font-medium pt-4">Date of Birth</label>
                         <div className="col-span-2">
                             <input
                                 type="date"
@@ -186,12 +162,30 @@ const CreateEmployeePage: React.FC = () => {
                         </div>
                     </div>
 
+                    {/* Address */}
+                    <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <label htmlFor="address" className="text-md font-medium pt-4">Address</label>
+                        <div className="col-span-2">
+                            <textarea
+                                rows={3}
+                                id="address"
+                                name="address"
+                                value={createEmployeeData.find(item => item.field === 'address')?.value || ''}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                className="border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                required
+                            />
+                            {formErrors.address && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.address}</p>}
+                        </div>
+                    </div>
+
                     {/* Avatar */}
                     <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <label htmlFor="avatar" className="text-md font-medium">Avatar URL</label>
+                        <label htmlFor="avatar" className="text-md font-medium pt-4">Avatar URL</label>
                         <div className="col-span-2">
-                            <input
-                                type="url"
+                            <textarea
+                                rows={3}
                                 id="avatar"
                                 name="avatar"
                                 value={createEmployeeData.find(item => item.field === 'avatar')?.value || ''}
@@ -203,39 +197,26 @@ const CreateEmployeePage: React.FC = () => {
                             {formErrors.avatar && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.avatar}</p>}
                             {avatarPreview && (
                                 <div className="mt-2">
-                                    <img src={avatarPreview} alt="Avatar Preview" className="w-40 h-40" />
+                                    <img
+                                        src={avatarPreview}
+                                        alt="Avatar Preview"
+                                        className={`block mx-auto ${avatarPreview ? 'h-70' : 'h-0'}`}
+                                    />
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    {/* Gender */}
-                    <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <label htmlFor="gender" className="text-md font-medium">Gender</label>
-                        <div className="col-span-2">
-                            <input
-                                type="text"
-                                id="gender"
-                                name="gender"
-                                value={createEmployeeData.find(item => item.field === 'gender')?.value || ''}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                className="border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                                required
-                            />
-                            {formErrors.gender && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.gender}</p>}
-                        </div>
-                    </div>
-
-                    <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <div className="sm:text-right mx-6 my-2">
                         <button
                             type="submit"
-                            className="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-2.5 text-center"
+                            className="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-2.5 text-center"
                             disabled={loading}
                         >
                             {loading ? 'Creating...' : 'Create Employee'}
                         </button>
                     </div>
+
                 </div>
             </form>
         </div>
