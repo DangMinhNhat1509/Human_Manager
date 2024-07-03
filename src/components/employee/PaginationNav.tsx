@@ -1,8 +1,22 @@
-import React from 'react';
+import React from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
+type Button2Props = {
+    content: React.ReactNode;
+    onClick: () => void;
+    active?: boolean;
+    disabled?: boolean;
+}
 
-const Button2 = ({ content, onClick, active, disabled }) => (
+type PaginationNavProps = {
+    gotoPage: (index: number) => void;
+    canPreviousPage: boolean;
+    canNextPage: boolean;
+    pageCount: number;
+    pageIndex: number;
+}
+
+const Button2: React.FC<Button2Props> = ({ content, onClick, active, disabled }) => (
     <button
         className={`flex flex-col cursor-pointer items-center justify-center w-9 h-9 shadow-[0_4px_10px_rgba(20,5,0,0.03)] text-sm font-normal transition-colors rounded-lg
         ${active ? "bg-red-500 text-blue-700 text-lg" : "text-red-500"}
@@ -13,7 +27,7 @@ const Button2 = ({ content, onClick, active, disabled }) => (
         {content}
     </button>
 );
-const PaginationNav = ({ gotoPage, canPreviousPage, canNextPage, pageCount, pageIndex }) => {
+const PaginationNav: React.FC<PaginationNavProps> = ({ gotoPage, canPreviousPage, canNextPage, pageCount, pageIndex }) => {
     const renderPageLinks = () => {
         const pageIndices = [];
         const maxPagesToShow = 6;
@@ -37,6 +51,7 @@ const PaginationNav = ({ gotoPage, canPreviousPage, canNextPage, pageCount, page
                         content={i + 1}
                         onClick={() => gotoPage(i)}
                         active={pageIndex === i}
+                        disabled= {false}
                     />
                 </li>
             );

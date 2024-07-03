@@ -19,6 +19,7 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
         phone: employeeDetail.phone,
         address: employeeDetail.address,
         status: employeeDetail.status,
+        avatar: employeeDetail.avatar
     });
 
     const handleClose = () => {
@@ -65,17 +66,14 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
 
                     <div className="mb-4">
                         <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
-                        <select
+                        <input
                             id="gender"
                             name="gender"
                             value={formData.gender}
                             onChange={handleChange}
                             className="mt-1 p-2 w-full border-gray-300 rounded-md"
                             required
-                        >
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                        </select>
+                            />
                     </div>
 
                     <div className="mb-4">
@@ -128,6 +126,20 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
                             className="mt-1 p-2 w-full border-gray-300 rounded-md resize-none"
                             rows={3}
                             placeholder="Enter address"
+                            required
+                        />
+                    </div>
+
+                    <div className="mb-4">
+                        <label htmlFor="avatar" className="block text-sm font-medium text-gray-700">Avatar</label>
+                        <textarea
+                            id="avatar"
+                            name="avatar"
+                            value={formData.avatar}
+                            onChange={handleChange}
+                            className="mt-1 p-2 w-full border-gray-300 rounded-md resize-none"
+                            rows={3}
+                            placeholder="Enter avatar"
                             required
                         />
                     </div>
