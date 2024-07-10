@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../../store/store';
+import React, { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../../store/store';
 import { updateEmployee } from '../../store/slices/employeeSlice';
 import { validateField } from '../../utils/validation';
 import { EmployeeDetail } from '../../types/EmployeeDetail';
@@ -8,11 +8,12 @@ import { EmployeeDetail } from '../../types/EmployeeDetail';
 interface EmployeeUpdateModalProps {
     show: boolean;
     onHide: () => void;
+    employeeDetail: EmployeeDetail;
+    onUpdateSuccess: () => void;
 }
 
-const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide }) => {
+const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide, employeeDetail, onUpdateSuccess }) => {
     const dispatch: AppDispatch = useDispatch();
-    const { employeeDetail } = useSelector((state: RootState) => state.employees);
     const [formData, setFormData] = useState({
         name: employeeDetail.name,
         gender: employeeDetail.gender,
@@ -23,8 +24,23 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
         status: employeeDetail.status,
         avatar: employeeDetail.avatar
     });
+
+    useEffect(() => {
+        setFormData({
+            name: employeeDetail.name,
+            gender: employeeDetail.gender,
+            email: employeeDetail.email,
+            dateOfBirth: employeeDetail.dateOfBirth.split('T')[0],
+            phone: employeeDetail.phone,
+            address: employeeDetail.address,
+            status: employeeDetail.status,
+            avatar: employeeDetail.avatar
+        });
+    }, [employeeDetail]);
+
     const [formErrors, setFormErrors] = useState<{ [key in keyof EmployeeDetail]?: string }>({});
     const [avatarPreview, setAvatarPreview] = useState<string>('');
+
     const handleClose = () => {
         onHide();
     };
@@ -53,27 +69,37 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
             setAvatarPreview('');
         }
     };
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
         const hasErrors = Object.values(formErrors).some((error) => error !== null);
+
         if (hasErrors) {
             alert('Please fix the errors before submitting');
             return;
-        };
+        }
 
         try {
-            await dispatch(updateEmployee({ id: employeeDetail.id, data: formData }));
+            const updatedEmployee = {
+                id: employeeDetail.id,
+                data: {
+                    ...formData
+                }
+            };
+
+            await dispatch(updateEmployee(updatedEmployee));
+            alert('Employee updated successfully!');
+            onUpdateSuccess();
             handleClose();
         } catch (error) {
             console.error('Error updating employee:', error);
-        };
+        }
     };
 
     if (!show) return null;
 
     return (
-        <div className="fixed  inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
             <div className="bg-white p-6 rounded-lg w-[500px]">
                 <h2 className="text-lg font-semibold mb-4">Update Employee Information</h2>
                 <form onSubmit={handleSubmit}>
@@ -118,7 +144,7 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
                             className="mt-1 p-2 w-full border-gray-300 rounded-md"
                             required
                         />
-                        {formErrors.email && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.address}</p>}
+                        {formErrors.email && <p className="text-red-500 text-sm mt-1" style={{ minHeight: '1rem' }}>{formErrors.email}</p>}
                     </div>
 
                     <div className="mb-4">
@@ -160,7 +186,6 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide 
                             value={formData.address}
                             onChange={handleChange}
                             onBlur={handleBlur}
-
                             className="mt-1 p-2 w-full border-gray-300 rounded-md resize-none"
                             rows={3}
                             placeholder="Enter address"

@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
     // Thêm các cấu hình cơ bản cho Webpack ở đây nếu cần
-    entry: './src/index.js', // Điểm bắt đầu của ứng dụng
+    entry: './src/index.tsx', // Điểm bắt đầu của ứng dụng
     output: {
         path: path.resolve(__dirname, 'dist'), // Thư mục xuất file đóng gói
         filename: 'bundle.js' // Tên file đầu ra

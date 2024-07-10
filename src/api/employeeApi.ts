@@ -5,19 +5,19 @@ const employeeApi = {
         const url = "/users";
         return axiosClient.get(url);
     },
-    getEmployeeById(id){
+    getEmployeeById(id: number) {
         const url = `/users/${id}`;
         return axiosClient.get(url);
     },
-    createEmployee(data){
+    createEmployee(data: any) {
         const url = "/users";
         return axiosClient.post(url, data);
     },
-    updateEmployee(id, data){
+    updateEmployee(id: number, data: any) {
         const url = `/users/${id}`;
         return axiosClient.put(url, data);
     },
-    deleteEmployee(id){
+    deleteEmployee(id: number) {
         const url = `/users/${id}`;
         return axiosClient.delete(url);
     }

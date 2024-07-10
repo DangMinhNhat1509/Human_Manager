@@ -25,6 +25,21 @@ const EmployeeDetailPage: React.FC = () => {
         setShowUpdateModal(true);
     };
 
+    const handleUpdateSuccess = () => {
+        if (id) {
+            dispatch(fetchEmployeeDetail(Number(id)));
+        }
+        setShowUpdateModal(false);
+    };
+
+    const handleDeleteClick = () => {
+        if (id && window.confirm('Are you sure you want to delete this employee?')) {
+            dispatch(deleteEmployee(Number(id)));
+            alert(`${employeeDetail.name} has been deleted`);
+            navigate('/employees');
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex justify-center mt-40">
@@ -44,12 +59,7 @@ const EmployeeDetailPage: React.FC = () => {
             </div>
         );
     }
-    const handleDeleteClick = () => {
-        if (id && window.confirm('Are you sure you want to delete this employee?')) {
-            dispatch(deleteEmployee(Number(id)));
-            navigate('/employees');
-        }
-    };
+
     return (
         <div className="max-w-4xl mx-auto p-5">
             <h1 className="text-3xl font-bold text-center mb-10">Employee Details</h1>
@@ -121,10 +131,11 @@ const EmployeeDetailPage: React.FC = () => {
             <EmployeeUpdateModal
                 show={showUpdateModal}
                 onHide={() => setShowUpdateModal(false)}
+                employeeDetail={employeeDetail}
+                onUpdateSuccess={handleUpdateSuccess}
             />
         </div>
     );
 };
 
 export default EmployeeDetailPage;
-

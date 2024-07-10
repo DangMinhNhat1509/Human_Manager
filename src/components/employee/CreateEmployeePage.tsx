@@ -36,7 +36,7 @@ const CreateEmployeePage: React.FC = () => {
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        
+
         if (name === 'avatar') {
             setAvatarPreview('');
         }
@@ -206,6 +206,23 @@ const CreateEmployeePage: React.FC = () => {
                             )}
                         </div>
                     </div>
+
+                    {/* Status */}
+                    <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <label htmlFor="status" className="text-md font-medium pt-4">Status</label>
+                        <div className="col-span-2 flex items-center rounded-lg">
+                            <input
+                                type="checkbox"
+                                id="status"
+                                name="status"
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                className="h-8 w-8 text-blue-600 border-gray-300 rounded-lg"
+                            />
+                            {formErrors.status && <p className="text-red-500 text-sm ml-2">{formErrors.status}</p>}
+                        </div>
+                    </div>
+
 
                     <div className="sm:text-right mx-6 my-2">
                         <button
