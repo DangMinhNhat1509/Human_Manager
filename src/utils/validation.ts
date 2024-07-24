@@ -1,4 +1,4 @@
-export const validateField = (name: string, value: string): string | null => {
+const validateField = (name: string, value: string): string | null => {
     switch (name) {
         case 'name':
             if (!value) return 'Name is required';
@@ -9,7 +9,7 @@ export const validateField = (name: string, value: string): string | null => {
             break;
         case 'phone':
             if (!value) return 'Phone is required';
-            if (!/^[\d()\s\-]+(x\d+)?$/.test(value)) return 'Invalid phone number';
+            if (!/^[\d()\s-]+(x\d+)?$/.test(value)) return 'Invalid phone number';
             break;
         case 'address':
             if (!value) return 'Address is required';
@@ -32,3 +32,5 @@ export const validateField = (name: string, value: string): string | null => {
     }
     return null;
 };
+
+export default validateField;

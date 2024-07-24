@@ -1,0 +1,9 @@
+# Bỏ qua thư mục dist chứa các tệp biên dịch
+dist/
+
+# Bỏ qua các tệp JavaScript và TypeScript đã biên dịch
+*.js
+*.d.ts
+
+# Bỏ qua thư mục node_modules
+node_modules/

@@ -1,3 +1,4 @@
+// src/store/slices/employeeSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import employeeApi from '../../api/employeeApi';
 import { Employee } from '../../types/Employee';
@@ -9,7 +10,7 @@ interface CreateEmployeeData {
     value: any;
 }
 
-interface EmployeeState {
+export interface EmployeeState {
     employees: Employee[];
     employeeDetail: EmployeeDetail | null;
     createEmployeeData: CreateEmployeeData[];

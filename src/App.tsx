@@ -22,7 +22,11 @@ const App = () => {
         />
         <Route
           path="/employees/:id/update"
-          element={<EmployeeUpdateModal show={true} onHide={() => { }} employeeDetail={employeeDetail} onUpdateSuccess={() => { }} />}
+          element={employeeDetail ? (
+            <EmployeeUpdateModal show={true} onHide={() => { }}
+              employeeDetail={employeeDetail} onUpdateSuccess={() => { }} />
+          ) : (<Navigate to="/employees" />)
+          }
         />
       </Routes>
     </BrowserRouter>

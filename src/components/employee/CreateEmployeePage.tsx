@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { createEmployee, setCreateEmployeeField, resetCreateEmployeeForm } from '../../store/slices/employeeSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import { CreateEmployee } from '../../types/CreateEmployee';
-import { validateField } from '../../utils/validation';
+import validateField from '../../utils/validation';
 
 
 const CreateEmployeePage: React.FC = () => {

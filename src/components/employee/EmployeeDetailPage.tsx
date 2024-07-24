@@ -35,7 +35,7 @@ const EmployeeDetailPage: React.FC = () => {
     const handleDeleteClick = () => {
         if (id && window.confirm('Are you sure you want to delete this employee?')) {
             dispatch(deleteEmployee(Number(id)));
-            alert(`${employeeDetail.name} has been deleted`);
+            alert(`${employeeDetail?.name} has been deleted`);
             navigate('/employees');
         }
     };
@@ -128,12 +128,14 @@ const EmployeeDetailPage: React.FC = () => {
                 </Link>
             </div>
 
-            <EmployeeUpdateModal
-                show={showUpdateModal}
-                onHide={() => setShowUpdateModal(false)}
-                employeeDetail={employeeDetail}
-                onUpdateSuccess={handleUpdateSuccess}
-            />
+            {employeeDetail && (
+                <EmployeeUpdateModal
+                    show={showUpdateModal}
+                    onHide={() => setShowUpdateModal(false)}
+                    employeeDetail={employeeDetail}
+                    onUpdateSuccess={handleUpdateSuccess}
+                />
+            )}
         </div>
     );
 };

@@ -1,27 +1,36 @@
-const path = require('path');
+import path from 'path';
+import type { Configuration } from 'webpack';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
 
-module.exports = {
-    // Thêm các cấu hình cơ bản cho Webpack ở đây nếu cần
-    entry: './src/index.tsx', // Điểm bắt đầu của ứng dụng
+const config: Configuration = {
+    mode: 'development',
+    entry: './src/index.tsx',   
     output: {
-        path: path.resolve(__dirname, 'dist'), // Thư mục xuất file đóng gói
-        filename: 'bundle.js' // Tên file đầu ra
+        path: path.resolve(__dirname, 'dist'),
+        filename: 'bundle.js',
     },
     module: {
         rules: [
             {
                 test: /\.(js|jsx|ts|tsx)$/,
                 exclude: /node_modules/,
-                use: {
-                    loader: 'babel-loader',
-                    options: {
-                        presets: ['@babel/preset-env', '@babel/preset-react', '@babel/preset-typescript'],
-                    },
-                },
+                use: 'ts-loader',
+            },
+            {
+                test: /\.css$/,
+                use: ['style-loader', 'css-loader', 'postcss-loader'],
             },
         ],
     },
     resolve: {
-        extensions: ['.js', '.jsx', '.ts', '.tsx'], // Giúp Webpack nhận diện các file mở rộng khác nhau
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },
-}
+    plugins: [
+        new HtmlWebpackPlugin({
+            template: './src/index.html',
+        }),
+    ],
+    devtool: 'source-map',
+};
+
+export default config;

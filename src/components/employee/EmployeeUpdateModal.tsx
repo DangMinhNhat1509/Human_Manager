@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../store/store';
 import { updateEmployee } from '../../store/slices/employeeSlice';
-import { validateField } from '../../utils/validation';
+import validateField from '../../utils/validation';
 import { EmployeeDetail } from '../../types/EmployeeDetail';
 
 interface EmployeeUpdateModalProps {
@@ -96,6 +96,10 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
         }
     };
 
+    if (!employeeDetail) {
+        return null; // Or handle the case when employeeDetail is null
+    }
+    
     if (!show) return null;
 
     return (
