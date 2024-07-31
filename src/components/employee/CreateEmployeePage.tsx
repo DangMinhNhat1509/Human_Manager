@@ -1,37 +1,40 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createEmployee, setCreateEmployeeField, resetCreateEmployeeForm } from '../../store/slices/employeeSlice';
-import { RootState, AppDispatch } from '../../store/store';
-import { CreateEmployee } from '../../types/CreateEmployee';
 import validateField from '../../utils/validation';
-
+import { CreateEmployee } from '../../types/CreateEmployee';
+import employeeApi from '../../api/employeeApi';
 
 const CreateEmployeePage: React.FC = () => {
-    const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
-    const { createEmployeeData, loading, error } = useSelector((state: RootState) => state.employees);
+    const [formData, setFormData] = useState<CreateEmployee>({
+        name: '',
+        gender: '',
+        email: '',
+        phone: '',
+        dateOfBirth: '',
+        address: '',
+        avatar: '',
+        status: false
+    });
     const [formErrors, setFormErrors] = useState<{ [key in keyof CreateEmployee]?: string }>({});
     const [avatarPreview, setAvatarPreview] = useState<string>('');
-
-    useEffect(() => {
-        return () => {
-            dispatch(resetCreateEmployeeForm());
-        };
-    }, [dispatch]);
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type, checked } = e.target as HTMLInputElement;
         const fieldValue = type === 'checkbox' ? checked : value;
 
-        dispatch(setCreateEmployeeField({ field: name as keyof CreateEmployee, value: fieldValue }));
+        setFormData((prevData) => ({
+            ...prevData,
+            [name as keyof CreateEmployee]: fieldValue
+        }));
 
         if (name === 'avatar') {
             setAvatarPreview(value);
-        };
+        }
 
         const error = validateField(name, value);
-        setFormErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
+        setFormErrors((prevErrors) => ({ ...prevErrors, [name as keyof CreateEmployee]: error }));
     };
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -42,7 +45,7 @@ const CreateEmployeePage: React.FC = () => {
         }
 
         const error = validateField(name, value);
-        setFormErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
+        setFormErrors((prevErrors) => ({ ...prevErrors, [name as keyof CreateEmployee]: error }));
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -54,25 +57,26 @@ const CreateEmployeePage: React.FC = () => {
             return;
         }
 
-        try {
-            const formattedData = createEmployeeData.reduce((acc, item) => {
-                return { ...acc, [item.field]: item.value };
-            }, {} as CreateEmployee);
+        setLoading(true);
 
-            await dispatch(createEmployee(formattedData)).unwrap();
+        try {
+            const response = await employeeApi.createEmployee(formData); // Gọi API với toàn bộ formData
             alert('Employee created successfully!');
             navigate('/employees');
         } catch (err) {
             console.error('Error creating employee:', err);
+            alert('Failed to create employee. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div className='max-w-4xl mx-auto p-5'>
             <h1 className='text-3xl font-bold text-center mb-10'>Create Employee</h1>
-            {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
             <form onSubmit={handleSubmit}>
                 <div className="bg-white shadow overflow-hidden sm:rounded-lg p-4">
+                    {/* Name */}
                     <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                         <label htmlFor="name" className="text-md font-medium pt-4">Name</label>
                         <div className="col-span-2">
@@ -80,7 +84,7 @@ const CreateEmployeePage: React.FC = () => {
                                 type="text"
                                 id="name"
                                 name="name"
-                                value={createEmployeeData.find(item => item.field === 'name')?.value || ''}
+                                value={formData.name}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
@@ -98,7 +102,7 @@ const CreateEmployeePage: React.FC = () => {
                                 type="text"
                                 id="gender"
                                 name="gender"
-                                value={createEmployeeData.find(item => item.field === 'gender')?.value || ''}
+                                value={formData.gender}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
@@ -116,7 +120,7 @@ const CreateEmployeePage: React.FC = () => {
                                 type="email"
                                 id="email"
                                 name="email"
-                                value={createEmployeeData.find(item => item.field === 'email')?.value || ''}
+                                value={formData.email}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
@@ -134,7 +138,7 @@ const CreateEmployeePage: React.FC = () => {
                                 type="text"
                                 id="phone"
                                 name="phone"
-                                value={createEmployeeData.find(item => item.field === 'phone')?.value || ''}
+                                value={formData.phone}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
@@ -152,7 +156,7 @@ const CreateEmployeePage: React.FC = () => {
                                 type="date"
                                 id="dateOfBirth"
                                 name="dateOfBirth"
-                                value={createEmployeeData.find(item => item.field === 'dateOfBirth')?.value || ''}
+                                value={formData.dateOfBirth}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
@@ -170,7 +174,7 @@ const CreateEmployeePage: React.FC = () => {
                                 rows={3}
                                 id="address"
                                 name="address"
-                                value={createEmployeeData.find(item => item.field === 'address')?.value || ''}
+                                value={formData.address}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
@@ -188,7 +192,7 @@ const CreateEmployeePage: React.FC = () => {
                                 rows={3}
                                 id="avatar"
                                 name="avatar"
-                                value={createEmployeeData.find(item => item.field === 'avatar')?.value || ''}
+                                value={formData.avatar}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
@@ -215,6 +219,7 @@ const CreateEmployeePage: React.FC = () => {
                                 type="checkbox"
                                 id="status"
                                 name="status"
+                                checked={formData.status}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 className="h-8 w-8 text-blue-600 border-gray-300 rounded-lg"
@@ -222,7 +227,6 @@ const CreateEmployeePage: React.FC = () => {
                             {formErrors.status && <p className="text-red-500 text-sm ml-2">{formErrors.status}</p>}
                         </div>
                     </div>
-
 
                     <div className="sm:text-right mx-6 my-2">
                         <button
@@ -233,7 +237,6 @@ const CreateEmployeePage: React.FC = () => {
                             {loading ? 'Creating...' : 'Create Employee'}
                         </button>
                     </div>
-
                 </div>
             </form>
         </div>

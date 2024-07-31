@@ -1,23 +1,41 @@
-import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { PacmanLoader } from 'react-spinners';
-import { fetchEmployees, setPage } from '../../store/slices/employeeSlice';
+import employeeApi from '../../api/employeeApi';
 import PaginationNav from '../../utils/PaginationNav';
-import { RootState, AppDispatch } from '../../store/store';
+import { Employee } from '../../types/Employee';
 
 const EmployeePage: React.FC = () => {
-    const dispatch: AppDispatch = useDispatch();
-    const { employees, loading, error, currentPage, totalPages } = useSelector((state: RootState) => state.employees);
+    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const itemsPerPage = 10;
+    const navigate = useNavigate();
 
     useEffect(() => {
-        dispatch(fetchEmployees());
-    }, [dispatch]);
+        const fetchEmployees = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await employeeApi.getAllEmployee();
+                setEmployees(response.data);
+                setTotalPages(Math.ceil(response.data.length / itemsPerPage));
+            } catch (error: any) {
+                console.error('Error fetching employees:', error);
+                setError(error.response ? error.response.data : 'Network error');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEmployees();
+    }, []);
 
     const handlePageChange = (pageNumber: number) => {
-        dispatch(setPage(pageNumber + 1));
-    }
+        setCurrentPage(pageNumber + 1);
+    };
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -32,8 +50,12 @@ const EmployeePage: React.FC = () => {
     }
 
     if (error) {
-        return <div>Error: {error}</div>
+        return <div>Error: {error}</div>;
     }
+
+    const handleViewDetail = (employee: Employee) => {
+        navigate(`/employees/${employee.id}`, { state: { employee } });
+    };
 
     return (
         <div className='max-w-7xl text-center mx-auto'>
@@ -67,11 +89,11 @@ const EmployeePage: React.FC = () => {
                                     <td className="py-2 px-4 border-b">{employee.gender}</td>
                                     <td className="py-2 px-4 border-b text-center">{employee.status ? 'Active' : 'Inactive'}</td>
                                     <td className="py-2 px-4 border-b text-center">
-                                        <Link to={`/employees/${employee.id}`}>
-                                            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded">
-                                                View
-                                            </button>
-                                        </Link>
+                                        <button 
+                                            onClick={() => handleViewDetail(employee)} 
+                                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded">
+                                            View
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -87,7 +109,7 @@ const EmployeePage: React.FC = () => {
                 pageIndex={currentPage - 1}
             />
         </div>
-    )
-}
+    );
+};
 
 export default EmployeePage;

@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../../store/store';
-import { updateEmployee } from '../../store/slices/employeeSlice';
-import validateField from '../../utils/validation';
 import { EmployeeDetail } from '../../types/EmployeeDetail';
+import validateField from '../../utils/validation';
+import employeeApi from '../../api/employeeApi'; // Đảm bảo rằng bạn đã nhập đúng đường dẫn
 
 interface EmployeeUpdateModalProps {
     show: boolean;
     onHide: () => void;
     employeeDetail: EmployeeDetail;
-    onUpdateSuccess: () => void;
+    onUpdateSuccess: (updatedEmployee: EmployeeDetail) => void;
 }
 
 const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide, employeeDetail, onUpdateSuccess }) => {
-    const dispatch: AppDispatch = useDispatch();
     const [formData, setFormData] = useState({
         name: employeeDetail.name,
         gender: employeeDetail.gender,
@@ -24,6 +21,9 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
         status: employeeDetail.status,
         avatar: employeeDetail.avatar
     });
+
+    const [formErrors, setFormErrors] = useState<{ [key in keyof typeof formData]?: string }>({});
+    const [avatarPreview, setAvatarPreview] = useState<string>('');
 
     useEffect(() => {
         setFormData({
@@ -36,13 +36,22 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
             status: employeeDetail.status,
             avatar: employeeDetail.avatar
         });
+        setAvatarPreview(employeeDetail.avatar);
     }, [employeeDetail]);
-
-    const [formErrors, setFormErrors] = useState<{ [key in keyof EmployeeDetail]?: string }>({});
-    const [avatarPreview, setAvatarPreview] = useState<string>('');
 
     const handleClose = () => {
         onHide();
+        setFormData({
+            name: employeeDetail.name,
+            gender: employeeDetail.gender,
+            email: employeeDetail.email,
+            dateOfBirth: employeeDetail.dateOfBirth.split('T')[0],
+            phone: employeeDetail.phone,
+            address: employeeDetail.address,
+            status: employeeDetail.status,
+            avatar: employeeDetail.avatar
+        });
+        setAvatarPreview(employeeDetail.avatar);
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -80,32 +89,28 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
         }
 
         try {
-            const updatedEmployee = {
-                id: employeeDetail.id,
-                data: {
-                    ...formData
-                }
+            const updatedEmployee: EmployeeDetail = {
+                id: employeeDetail.id, // Đảm bảo ID được bao gồm
+                ...formData
             };
 
-            await dispatch(updateEmployee(updatedEmployee));
+            await employeeApi.updateEmployee(employeeDetail.id, updatedEmployee);
+
             alert('Employee updated successfully!');
-            onUpdateSuccess();
+            onUpdateSuccess(updatedEmployee);
             handleClose();
         } catch (error) {
             console.error('Error updating employee:', error);
+            alert('Error updating employee. Please try again.');
         }
     };
 
-    if (!employeeDetail) {
-        return null; // Or handle the case when employeeDetail is null
-    }
-    
     if (!show) return null;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
             <div className="bg-white p-6 rounded-lg w-[500px]">
-                <h2 className="text-lg font-semibold mb-4">Update Employee Information</h2>
+                <h2 className="text-lg font-semibold mb-4 text-center">Update Employee Information</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
