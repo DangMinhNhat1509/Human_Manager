@@ -4,6 +4,7 @@ import { PacmanLoader } from 'react-spinners';
 import employeeApi from '../../api/employeeApi';
 import PaginationNav from '../../utils/PaginationNav';
 import { Employee } from '../../types/Employee';
+import '../../styles/EmployeePage.css'; // Import file CSS
 
 const EmployeePage: React.FC = () => {
     const [employees, setEmployees] = useState<Employee[]>([]);
@@ -43,7 +44,7 @@ const EmployeePage: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="flex justify-center mt-40">
+            <div className="loader-container">
                 <PacmanLoader color='#728FCE' size={70} />
             </div>
         );
@@ -58,40 +59,40 @@ const EmployeePage: React.FC = () => {
     };
 
     return (
-        <div className='max-w-7xl text-center mx-auto'>
-            <h1 className='text-2xl font-bold text-center mx-auto py-10'>Employee Page</h1>
-            <div className="flex justify-end mb-4">
+        <div className='container'>
+            <h1 className='title'>Employee Page</h1>
+            <div className='create-button'>
                 <Link to="/employees/create">
-                    <button className="bg-green-500 hover:bg-green-700 text-white font-bold px-4 py-2 rounded">
+                    <button className="button-name">
                         Create New Employee
                     </button>
                 </Link>
             </div>
             {employees && Array.isArray(employees) && (
-                <div className="w-full mx-5 mb-10">
-                    <table className="min-w-full bg-neutral-100 border-gray-300">
+                <div className="table-container">
+                    <table className="table">
                         <thead>
-                            <tr className="text-xl border-b">
-                                <th className="py-2 px-4 border-b">Name</th>
-                                <th className="py-2 px-4 border-b">Email</th>
-                                <th className="py-2 px-4 border-b">Phone</th>
-                                <th className="py-2 px-4 border-b">Gender</th>
-                                <th className="py-2 px-4 border-b">Status</th>
-                                <th className="py-2 px-4 border-b">Detail</th>
+                            <tr className="table-header">
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Gender</th>
+                                <th>Status</th>
+                                <th>Detail</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="table-body">
                             {showEmployees.map((employee) => (
-                                <tr key={employee.id} className="bg-white text-left">
-                                    <td className="py-2 px-4 border-b">{employee.name}</td>
-                                    <td className="py-2 px-4 border-b">{employee.email}</td>
-                                    <td className="py-2 px-4 border-b">{employee.phone}</td>
-                                    <td className="py-2 px-4 border-b">{employee.gender}</td>
-                                    <td className="py-2 px-4 border-b text-center">{employee.status ? 'Active' : 'Inactive'}</td>
-                                    <td className="py-2 px-4 border-b text-center">
-                                        <button 
-                                            onClick={() => handleViewDetail(employee)} 
-                                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded">
+                                <tr key={employee.id}>
+                                    <td>{employee.name}</td>
+                                    <td>{employee.email}</td>
+                                    <td>{employee.phone}</td>
+                                    <td>{employee.gender}</td>
+                                    <td className="text-center">{employee.status ? 'Active' : 'Inactive'}</td>
+                                    <td className="text-center">
+                                        <button
+                                            onClick={() => handleViewDetail(employee)}
+                                            className="view-button">
                                             View
                                         </button>
                                     </td>
@@ -101,13 +102,15 @@ const EmployeePage: React.FC = () => {
                     </table>
                 </div>
             )}
-            <PaginationNav
-                gotoPage={handlePageChange}
-                canPreviousPage={currentPage > 1}
-                canNextPage={currentPage < totalPages}
-                pageCount={totalPages}
-                pageIndex={currentPage - 1}
-            />
+            <div className="pagination-container">
+                <PaginationNav
+                    gotoPage={handlePageChange}
+                    canPreviousPage={currentPage > 1}
+                    canNextPage={currentPage < totalPages}
+                    pageCount={totalPages}
+                    pageIndex={currentPage - 1}
+                />
+            </div>
         </div>
     );
 };

@@ -1,5 +1,6 @@
 import React from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import '../styles/PaginationNav.css'; // Import CSS file
 
 type Button2Props = {
     content: React.ReactNode;
@@ -18,15 +19,14 @@ type PaginationNavProps = {
 
 const Button2: React.FC<Button2Props> = ({ content, onClick, active, disabled }) => (
     <button
-        className={`flex flex-col cursor-pointer items-center justify-center w-9 h-9 shadow-[0_4px_10px_rgba(20,5,0,0.03)] text-sm font-normal transition-colors rounded-lg
-        ${active ? "bg-red-500 text-blue-700 text-lg" : "text-red-500"}
-        ${!disabled ? "bg-yellow-50 hover:bg-red-500 hover:text-white" : "text-red-300 bg-white cursor-not-allowed"}`}
+        className={`pagination-btn ${active ? "active" : ""} ${disabled ? "disabled" : ""}`}
         onClick={onClick}
         disabled={disabled}
     >
         {content}
     </button>
 );
+
 const PaginationNav: React.FC<PaginationNavProps> = ({ gotoPage, canPreviousPage, canNextPage, pageCount, pageIndex }) => {
     const renderPageLinks = () => {
         const pageIndices = [];
@@ -51,7 +51,7 @@ const PaginationNav: React.FC<PaginationNavProps> = ({ gotoPage, canPreviousPage
                         content={i + 1}
                         onClick={() => gotoPage(i)}
                         active={pageIndex === i}
-                        disabled= {false}
+                        disabled={false}
                     />
                 </li>
             );
@@ -60,7 +60,7 @@ const PaginationNav: React.FC<PaginationNavProps> = ({ gotoPage, canPreviousPage
     };
 
     return (
-        <ul className="flex gap-6 justify-center mt-4">
+        <ul className="pagination-nav">
             <li>
                 <Button2
                     content={<FaChevronLeft />}

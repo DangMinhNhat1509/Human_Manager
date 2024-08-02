@@ -1,0 +1,30 @@
+.container {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 1.25rem;
+    box-sizing: border-box;
+}
+
+.button-container .btn-create {
+    font-weight: 500;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    padding: 0.625rem 1.25rem;
+    color: white;
+    background-color: #2563eb;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    justify-content: right;
+    margin-left: 85vh;
+}
+
+.button-container .btn-create:hover {
+    background-color: #1d4ed8;
+}
+
+.button-container .btn-create:disabled {
+    background-color: #93c5fd;
+    cursor: not-allowed;
+}
