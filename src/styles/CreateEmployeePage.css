@@ -5,6 +5,11 @@
     box-sizing: border-box;
 }
 
+.button-container {
+    display: flex;
+    justify-content: flex-end; /* Chỉnh nút về phía bên phải */
+}
+
 .button-container .btn-create {
     font-weight: 500;
     border-radius: 0.375rem;
@@ -15,9 +20,6 @@
     border: none;
     cursor: pointer;
     transition: background-color 0.2s ease;
-    display: flex;
-    justify-content: right;
-    margin-left: 85vh;
 }
 
 .button-container .btn-create:hover {

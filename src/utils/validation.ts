@@ -1,4 +1,4 @@
-const validateField = (name: string, value: string): string | null => {
+const ValidateField = (name: string, value: string): string | null => {
     switch (name) {
         case 'name':
             if (!value) return 'Name is required';
@@ -33,4 +33,4 @@ const validateField = (name: string, value: string): string | null => {
     return null;
 };
 
-export default validateField;
+export default ValidateField;

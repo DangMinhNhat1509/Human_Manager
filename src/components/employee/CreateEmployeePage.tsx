@@ -1,21 +1,24 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import validateField from '../../utils/validation';
+import ValidateField from '../../utils/validation';
 import { CreateEmployee } from '../../types/CreateEmployee';
-import employeeApi from '../../api/employeeApi';
-import '../../styles/CreateEmployeePage.css'; // Import file CSS
+import { createEmployee } from '../../data/employeeService'; // Import API đã sửa
+import '../../styles/CreateEmployeePage.css';
+import { Role } from '../../types/Employee';
 
 const CreateEmployeePage: React.FC = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState<CreateEmployee>({
         name: '',
-        gender: '',
         email: '',
-        phone: '',
+        gender: '',
+        phoneNumber: '',
         dateOfBirth: '',
         address: '',
         avatar: '',
-        status: false
+        status: false,
+        departmentId: 0,
+        role: Role.Employee, // Role luôn là "employee"
     });
     const [formErrors, setFormErrors] = useState<{ [key in keyof CreateEmployee]?: string }>({});
     const [avatarPreview, setAvatarPreview] = useState<string>('');
@@ -24,7 +27,7 @@ const CreateEmployeePage: React.FC = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type, checked } = e.target as HTMLInputElement;
-        const fieldValue = type === 'checkbox' ? checked : value;
+        const fieldValue = type === 'checkbox' ? checked : name === 'departmentId' ? parseInt(value) : value;
 
         setFormData((prevData) => ({
             ...prevData,
@@ -35,9 +38,10 @@ const CreateEmployeePage: React.FC = () => {
             setAvatarPreview(value);
         }
 
-        const error = validateField(name, value);
+        const error = ValidateField(name, value);
         setFormErrors((prevErrors) => ({ ...prevErrors, [name as keyof CreateEmployee]: error }));
     };
+
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -46,13 +50,12 @@ const CreateEmployeePage: React.FC = () => {
             setAvatarPreview('');
         }
 
-        const error = validateField(name, value);
+        const error = ValidateField(name, value);
         setFormErrors((prevErrors) => ({ ...prevErrors, [name as keyof CreateEmployee]: error }));
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
         const hasErrors = Object.values(formErrors).some((error) => error !== null);
         if (hasErrors) {
             alert('Please fix the errors before submitting the form.');
@@ -63,14 +66,9 @@ const CreateEmployeePage: React.FC = () => {
         setMessage(null);
 
         try {
-            const response = await employeeApi.createEmployee(formData); // Call API with formData
-
-            if (response.status === 201) { // Assuming success response with status code 201
-                setMessage('Employee has been successfully created!');
-                navigate('/employees');
-            } else {
-                setMessage('Failed to create employee. Please try again later.');
-            }
+            await createEmployee(formData); // Call API with formData
+            setMessage('Employee has been successfully created!');
+            navigate('/employees');
         } catch (err) {
             console.error('Error creating employee:', err);
             setMessage('An error occurred while creating the employee. Please try again later.');
@@ -78,6 +76,7 @@ const CreateEmployeePage: React.FC = () => {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="container">
@@ -141,21 +140,21 @@ const CreateEmployeePage: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Phone */}
+                    {/* Phone Number */}
                     <div className="form-group">
-                        <label htmlFor="phone">Phone</label>
+                        <label htmlFor="phoneNumber">Phone Number</label>
                         <div className="group-member">
                             <div className="input-wrapper">
                                 <input
                                     type="text"
-                                    id="phone"
-                                    name="phone"
-                                    value={formData.phone}
+                                    id="phoneNumber"
+                                    name="phoneNumber"
+                                    value={formData.phoneNumber}
                                     onChange={handleChange}
                                     onBlur={handleBlur}
                                     required
                                 />
-                                {formErrors.phone && <p className="error-message">{formErrors.phone}</p>}
+                                {formErrors.phoneNumber && <p className="error-message">{formErrors.phoneNumber}</p>}
                             </div>
                         </div>
                     </div>
@@ -244,6 +243,25 @@ const CreateEmployeePage: React.FC = () => {
                         </div>
                     </div>
 
+                    {/* Department ID */}
+                    <div className="form-group">
+                        <label htmlFor="departmentId">Department ID</label>
+                        <div className="group-member">
+                            <div className="input-wrapper">
+                                <input
+                                    type="number"
+                                    id="departmentId"
+                                    name="departmentId"
+                                    value={formData.departmentId || ''}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    required
+                                />
+                                {formErrors.departmentId && <p className="error-message">{formErrors.departmentId}</p>}
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="button-container">
                         <div className='button-right'>
                             <button
@@ -255,9 +273,9 @@ const CreateEmployeePage: React.FC = () => {
                             </button>
                         </div>
                     </div>
+                    {message && <p className="success-message">{message}</p>}
                 </div>
             </form>
-            {message && <p className="message">{message}</p>}
         </div>
     );
 };
