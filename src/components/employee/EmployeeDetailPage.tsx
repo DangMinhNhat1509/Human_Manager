@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { PacmanLoader } from 'react-spinners';
 import EmployeeUpdateModal from './EmployeeUpdateModal';
-import { EmployeeDetail } from '../../types/EmployeeDetail';
-import employeeApi from '../../api/employeeApi';
-import '../../styles/EmployeeDetailPage.css'; // Import file CSS
+import { EmployeeDetail } from '../../types/EmployeeDetail'; // Import EmployeeDetail and Role
+import { Role } from '../../types/Employee';
+import { getEmployeeById, deleteEmployee } from '../../data/employeeService';
+import '../../styles/EmployeeDetailPage.css'; // Import CSS file
 
 const EmployeeDetailPage: React.FC = () => {
-    const location = useLocation();
+    const { employeeId } = useParams<{ employeeId: string }>(); 
     const navigate = useNavigate();
     const [employeeDetail, setEmployeeDetail] = useState<EmployeeDetail | null>(null);
     const [updating, setUpdating] = useState(false);
@@ -20,12 +21,11 @@ const EmployeeDetailPage: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
-                const employeeId = location.state?.employee?.id;
                 if (!employeeId) {
                     throw new Error('Employee ID is not found');
                 }
-                const response = await employeeApi.getEmployeeById(employeeId);
-                setEmployeeDetail(response.data);
+                const response = await getEmployeeById(Number(employeeId)); // Convert employeeId to number if needed
+                setEmployeeDetail(response);
             } catch (error: any) {
                 console.error('Error fetching employee detail:', error);
                 setError(error.response ? error.response.data : 'Network error');
@@ -33,8 +33,9 @@ const EmployeeDetailPage: React.FC = () => {
                 setLoading(false);
             }
         };
+
         fetchEmployeeDetail();
-    }, [location.state?.employee?.id]);
+    }, []); 
 
     const handleUpdateClick = () => {
         setShowUpdateModal(true);
@@ -44,8 +45,8 @@ const EmployeeDetailPage: React.FC = () => {
         setShowUpdateModal(false);
         setUpdating(true);
         if (employeeDetail) {
-            employeeApi.getEmployeeById(employeeDetail.id).then((response) => {
-                setEmployeeDetail(response.data);
+            getEmployeeById(employeeDetail.employeeId).then((response) => {
+                setEmployeeDetail(response);
                 setUpdating(false);
             }).catch((error) => {
                 console.error('Error fetching employee detail:', error);
@@ -60,7 +61,7 @@ const EmployeeDetailPage: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
-                await employeeApi.deleteEmployee(employeeDetail.id);
+                await deleteEmployee(employeeDetail.employeeId);
                 alert(`${employeeDetail.name} has been deleted`);
                 navigate('/employees');
             } catch (error: any) {
@@ -96,7 +97,6 @@ const EmployeeDetailPage: React.FC = () => {
         <div className="container">
             <h1 className="title">Employee Details</h1>
             <form className="form-container">
-
                 <div className="form-group">
                     <label htmlFor="avatar">Avatar</label>
                     <div className="group-member">
@@ -137,7 +137,7 @@ const EmployeeDetailPage: React.FC = () => {
                     <label htmlFor="phone">Phone</label>
                     <div className="group-member">
                         <div className="input-wrapper">
-                            <p>{employeeDetail.phone}</p>
+                            <p>{employeeDetail.phoneNumber}</p>
                         </div>
                     </div>
                 </div>
@@ -168,9 +168,25 @@ const EmployeeDetailPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
+
+                <div className="form-group">
+                    <label htmlFor="departmentName">Department</label>
+                    <div className="group-member">
+                        <div className="input-wrapper">
+                            <p>{employeeDetail.departmentName}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="role">Role</label>
+                    <div className="group-member">
+                        <div className="input-wrapper">
+                            <p>{Role[employeeDetail.role]}</p> {/* Convert role enum to string */}
+                        </div>
+                    </div>
+                </div>
             </form>
-
-
 
             <div className="button-container">
                 <div className="back-button-container">
@@ -189,9 +205,6 @@ const EmployeeDetailPage: React.FC = () => {
                     </button>
                 </div>
             </div>
-
-
-
 
             {showUpdateModal && employeeDetail && (
                 <EmployeeUpdateModal

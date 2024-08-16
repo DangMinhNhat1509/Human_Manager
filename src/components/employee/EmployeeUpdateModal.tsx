@@ -1,88 +1,71 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { EmployeeDetail } from '../../types/EmployeeDetail';
-import validateField from '../../utils/validation';
-import employeeApi from '../../api/employeeApi'; // Đảm bảo rằng bạn đã nhập đúng đường dẫn
+import ValidateField from '../../utils/validation';
+import { updateEmployee } from '../../data/employeeService'; // Đảm bảo rằng bạn đã nhập đúng đường dẫn
 import '../../styles/EmployeeUpdateModal.css'; // Import file CSS
 
 interface EmployeeUpdateModalProps {
     show: boolean;
     onHide: () => void;
-    employeeDetail: EmployeeDetail;
+    employeeDetail: EmployeeDetail; // Sử dụng kiểu EmployeeDetail
     onUpdateSuccess: (updatedEmployee: EmployeeDetail) => void;
 }
 
 const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide, employeeDetail, onUpdateSuccess }) => {
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<EmployeeDetail>({
+        employeeId: employeeDetail.employeeId,
         name: employeeDetail.name,
-        gender: employeeDetail.gender,
         email: employeeDetail.email,
-        dateOfBirth: employeeDetail.dateOfBirth.split('T')[0],
-        phone: employeeDetail.phone,
+        gender: employeeDetail.gender,
+        phoneNumber: employeeDetail.phoneNumber,
+        dateOfBirth: employeeDetail.dateOfBirth,
         address: employeeDetail.address,
+        avatar: employeeDetail.avatar,
         status: employeeDetail.status,
-        avatar: employeeDetail.avatar
+        departmentName: employeeDetail.departmentName,
+        role: employeeDetail.role
     });
+    console.log(formData);
 
-    const [formErrors, setFormErrors] = useState<{ [key in keyof typeof formData]?: string }>({});
-    const [avatarPreview, setAvatarPreview] = useState<string>('');
-
-    useEffect(() => {
-        setFormData({
-            name: employeeDetail.name,
-            gender: employeeDetail.gender,
-            email: employeeDetail.email,
-            dateOfBirth: employeeDetail.dateOfBirth.split('T')[0],
-            phone: employeeDetail.phone,
-            address: employeeDetail.address,
-            status: employeeDetail.status,
-            avatar: employeeDetail.avatar
-        });
-        setAvatarPreview(employeeDetail.avatar);
-    }, [employeeDetail]);
+    const [formErrors, setFormErrors] = useState<{ [key in keyof EmployeeDetail]?: string }>({});
+    const [avatarPreview, setAvatarPreview] = useState<string>(employeeDetail.avatar);
 
     const handleClose = () => {
         onHide();
-        setFormData({
-            name: employeeDetail.name,
-            gender: employeeDetail.gender,
-            email: employeeDetail.email,
-            dateOfBirth: employeeDetail.dateOfBirth.split('T')[0],
-            phone: employeeDetail.phone,
-            address: employeeDetail.address,
-            status: employeeDetail.status,
-            avatar: employeeDetail.avatar
-        });
+        setFormData({ ...employeeDetail });
         setAvatarPreview(employeeDetail.avatar);
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type, checked } = e.target as HTMLInputElement;
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            [name]: type === 'checkbox' ? checked : value,
+        const fieldValue = type === 'checkbox' ? checked : name === 'departmentId' ? parseInt(value) : value;
+
+        setFormData((prevData) => ({
+            ...prevData,
+            [name as keyof EmployeeDetail]: fieldValue
         }));
 
         if (name === 'avatar') {
             setAvatarPreview(value);
         }
 
-        const error = validateField(name, value);
-        setFormErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
+        const error = ValidateField(name, value);
+        setFormErrors((prevErrors) => ({ ...prevErrors, [name as keyof EmployeeDetail]: error }));
     };
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        const error = validateField(name, value);
-        setFormErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
-
-        if (name === 'avatar') {
-            setAvatarPreview('');
-        }
+        const error = ValidateField(name, value);
+        setFormErrors(prevErrors => ({ ...prevErrors, [name]: error }));
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const hasErrors = Object.values(formErrors).some((error) => error !== null);
+        console.log('Submit Event:', e);
+
+        const hasErrors = Object.values(formErrors).some(error => error !== null);
+        console.log('Form Errors:', formErrors);
+        console.log('Has Errors:', hasErrors);
 
         if (hasErrors) {
             alert('Please fix the errors before submitting');
@@ -91,13 +74,17 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
 
         try {
             const updatedEmployee: EmployeeDetail = {
-                id: employeeDetail.id, // Đảm bảo ID được bao gồm
-                ...formData
+                ...formData,
+                employeeId: employeeDetail.employeeId
             };
 
-            await employeeApi.updateEmployee(employeeDetail.id, updatedEmployee);
+
+            console.log('Updated Employee:', updatedEmployee);
+
+            await updateEmployee(employeeDetail.employeeId, updatedEmployee);
 
             alert('Employee updated successfully!');
+            console.log('Update Success');
             onUpdateSuccess(updatedEmployee);
             handleClose();
         } catch (error) {
@@ -105,6 +92,7 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
             alert('Error updating employee. Please try again.');
         }
     };
+
 
     if (!show) return null;
 
@@ -178,14 +166,14 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
                                 <input
                                     type="text"
                                     id="phone"
-                                    name="phone"
-                                    value={formData.phone}
+                                    name="phoneNumber"
+                                    value={formData.phoneNumber}
                                     onChange={handleChange}
                                     onBlur={handleBlur}
                                     placeholder="Enter phone number"
                                     required
                                 />
-                                {formErrors.phone && <p className="error-message">{formErrors.phone}</p>}
+                                {formErrors.phoneNumber && <p className="error-message">{formErrors.phoneNumber}</p>}
                             </div>
                         </div>
                     </div>
@@ -234,14 +222,14 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
                         <label htmlFor="avatar">Avatar</label>
                         <div className="group-member">
                             <div className="input-wrapper">
-                                <textarea
-                                    rows={3}
+                                <input
+                                    type="text"
                                     id="avatar"
                                     name="avatar"
                                     value={formData.avatar}
                                     onChange={handleChange}
                                     onBlur={handleBlur}
-                                    placeholder="Enter avatar"
+                                    placeholder="Enter avatar URL"
                                     required
                                 />
                                 {formErrors.avatar && <p className="error-message">{formErrors.avatar}</p>}
@@ -267,35 +255,40 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
                                     name="status"
                                     checked={formData.status}
                                     onChange={handleChange}
-                                    onBlur={handleBlur}
                                 />
                                 <label htmlFor="status">Active</label>
-                                {formErrors.status && <p className="error-message">{formErrors.status}</p>}
                             </div>
                         </div>
                     </div>
 
-                    {/* Buttons */}
-                    <div className="button-container">
-                        <button
-                            type="button"
-                            className="cancel-button"
-                            onClick={handleClose}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="update-button"
-                        >
-                            Update
-                        </button>
+                    {/* Department */}
+                    <div className="form-group">
+                        <label htmlFor="departmentName">Department</label>
+                        <div className="group-member">
+                            <div className="input-wrapper">
+                                <input
+                                    type="text"
+                                    id="departmentName"
+                                    name="departmentName"
+                                    value={formData.departmentName}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    placeholder="Enter department name"
+                                    required
+                                />
+                                {/* {formErrors.departmentName && <p className="error-message">{formErrors.departmentName}</p>} */}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="form-buttons">
+                        <button type="submit" className="btn btn-primary">Save Changes</button>
+                        <button type="button" className="btn btn-secondary" onClick={handleClose}>Cancel</button>
                     </div>
                 </form>
             </div>
         </div>
     );
-
 };
 
 export default EmployeeUpdateModal;
