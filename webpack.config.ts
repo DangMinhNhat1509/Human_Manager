@@ -1,6 +1,7 @@
 import path from 'path';
 import type { Configuration } from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
+import webpack from 'webpack';
 
 const config: Configuration = {
     mode: 'development',
@@ -24,11 +25,20 @@ const config: Configuration = {
     },
     resolve: {
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        fallback: {
+            // Để các fallback không cần thiết hoặc bị lỗi
+            "path": require.resolve("path-browserify"),
+            "process": require.resolve("process/browser"),
+        }
     },
     plugins: [
         new HtmlWebpackPlugin({
             template: './src/index.html',
         }),
+        new webpack.ProvidePlugin({
+            process: 'process/browser',
+            Buffer: ['buffer', 'Buffer']
+        })
     ],
     devtool: 'source-map',
 };

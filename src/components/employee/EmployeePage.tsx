@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PacmanLoader } from 'react-spinners';
-import employeeApi from '../../api/employeeApi';
+import { getAllEmployees } from '../../data/employeeService';
 import PaginationNav from '../../utils/PaginationNav';
-import { Employee } from '../../types/Employee';
-import '../../styles/EmployeePage.css'; // Import file CSS
+import { EmployeeListItem } from '../../types/EmployeeListItem';
+import '../../styles/EmployeePage.css';
 
 const EmployeePage: React.FC = () => {
-    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [employees, setEmployees] = useState<EmployeeListItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
@@ -20,12 +20,14 @@ const EmployeePage: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
-                const response = await employeeApi.getAllEmployee();
-                setEmployees(response.data);
-                setTotalPages(Math.ceil(response.data.length / itemsPerPage));
+                const response = await getAllEmployees();
+                console.log(response);
+
+                setEmployees(response);
+                setTotalPages(Math.ceil(response.length / itemsPerPage));
             } catch (error: any) {
                 console.error('Error fetching employees:', error);
-                setError(error.response ? error.response.data : 'Network error');
+                setError(error.message || 'Network error');
             } finally {
                 setLoading(false);
             }
@@ -42,6 +44,10 @@ const EmployeePage: React.FC = () => {
     const endIndex = startIndex + itemsPerPage;
     const showEmployees = employees.slice(startIndex, endIndex);
 
+    const handleViewDetail = (employeeId: number) => {
+        navigate(`/employees/${employeeId}`, { state: { employee: { employeeId } }});
+    };
+
     if (loading) {
         return (
             <div className="loader-container">
@@ -53,10 +59,6 @@ const EmployeePage: React.FC = () => {
     if (error) {
         return <div>Error: {error}</div>;
     }
-
-    const handleViewDetail = (employee: Employee) => {
-        navigate(`/employees/${employee.id}`, { state: { employee } });
-    };
 
     return (
         <div className='container'>
@@ -72,26 +74,28 @@ const EmployeePage: React.FC = () => {
                 <div className="table-container">
                     <table className="table">
                         <thead>
-                            <tr className="table-header">
+                            <tr>
                                 <th>Name</th>
                                 <th>Email</th>
-                                <th>Phone</th>
+                                <th>Phone Number</th>
                                 <th>Gender</th>
-                                <th>Status</th>
-                                <th>Detail</th>
+                                <th>Department</th>
+                                <th>Role</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="table-body">
+                        <tbody>
                             {showEmployees.map((employee) => (
-                                <tr key={employee.id}>
+                                <tr key={employee.employeeId}>
                                     <td>{employee.name}</td>
                                     <td>{employee.email}</td>
-                                    <td>{employee.phone}</td>
-                                    <td>{employee.gender}</td>
-                                    <td className="text-center">{employee.status ? 'Active' : 'Inactive'}</td>
+                                    <td>{employee.phoneNumber}</td>
+                                    <td>{employee.gender}</td>  
+                                    <td className="text-center">{employee.departmentName}</td>
+                                    <td className="text-center">{employee.role}</td>
                                     <td className="text-center">
                                         <button
-                                            onClick={() => handleViewDetail(employee)}
+                                            onClick={() => handleViewDetail(employee.employeeId)}
                                             className="view-button">
                                             View
                                         </button>
@@ -100,17 +104,15 @@ const EmployeePage: React.FC = () => {
                             ))}
                         </tbody>
                     </table>
+                    <PaginationNav
+                        gotoPage={handlePageChange}
+                        canPreviousPage={currentPage > 1}
+                        canNextPage={currentPage < totalPages}
+                        pageCount={totalPages}
+                        pageIndex={currentPage - 1}
+                    />
                 </div>
             )}
-            <div className="pagination-container">
-                <PaginationNav
-                    gotoPage={handlePageChange}
-                    canPreviousPage={currentPage > 1}
-                    canNextPage={currentPage < totalPages}
-                    pageCount={totalPages}
-                    pageIndex={currentPage - 1}
-                />
-            </div>
         </div>
     );
 };
