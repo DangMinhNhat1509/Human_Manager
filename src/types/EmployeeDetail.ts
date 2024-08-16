@@ -1,11 +1,16 @@
+import {Role} from './Employee'
+
 export interface EmployeeDetail {
-    id: number;
+    employeeId: number;
     name: string;
     email: string;
     gender: string;
-    phone: string;
+    phoneNumber: string;
     dateOfBirth: string;
     address: string;
     avatar: string;
     status: boolean;
+    departmentName: string;  // Thay thế cho departmentId
+    role: Role;  // Sử dụng enum Role
 }
+

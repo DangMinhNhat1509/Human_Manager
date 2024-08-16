@@ -1,10 +1,20 @@
 export interface Employee {
-    id: number;
+    employeeId: number;
     name: string;
-    avatar: string;
     email: string;
     gender: string;
-    phone: string;
+    phoneNumber: string;
+    dateOfBirth: string;
     address: string;
+    avatar: string;
     status: boolean;
+    departmentId: number;
+    role: Role;  
+}
+
+export enum Role {
+    Manager = 'Manager',
+    Employee = 'Employee',
+    HR = 'HR',
+    Director = 'Director'
 }
