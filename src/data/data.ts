@@ -21,27 +21,23 @@ export const initializeLocalStorage = () => {
                 { employeeId: 13, name: "Liam Harris", email: "liam.harris@example.com", gender: "Male", phoneNumber: "345-678-9013", dateOfBirth: "1988-03-25", address: "1010 Pine Road", avatar: "avatar13.jpg", status: true, departmentId: 5, role: "Manager" },
                 { employeeId: 14, name: "Sophia Green", email: "sophia.green@example.com", gender: "Female", phoneNumber: "456-789-0124", dateOfBirth: "1986-04-12", address: "1111 Maple Drive", avatar: "avatar14.jpg", status: true, departmentId: 6, role: "Director" },
                 { employeeId: 15, name: "Daniel White", email: "daniel.white@example.com", gender: "Male", phoneNumber: "567-890-1235", dateOfBirth: "1990-05-16", address: "1212 Birch Street", avatar: "avatar15.jpg", status: true, departmentId: 1, role: "Employee" },
-                {
-                    "name": "Ứng Tuyết Loan",
-                    "email": "tienxuan12602@gmail.com",
-                    "gender": "Bixeal",
-                    "phoneNumber": "0706600157",
-                    "dateOfBirth": "2001-11-11",
-                    "address": "95 Đường số 7, Khu Đô thị An Phú An Khánh, An Phu, Quận 2, Thành Phố Hồ Chí Minh",
-                    "avatar": "http://localhost:3000/employees/create",
-                    "status": true,
-                    "departmentId": 2,
-                    "role": "Employee",
-                    "employeeId": 16
-                }
+                { employeeId: 17, name: "William King", email: "william.king@example.com", gender: "Male", phoneNumber: "678-901-2346", dateOfBirth: "1985-02-10", address: "303 Spruce Avenue", avatar: "avatar17.jpg", status: true, departmentId: 3, role: "Employee" },
+                { employeeId: 18, name: "Olivia Carter", email: "olivia.carter@example.com", gender: "Female", phoneNumber: "789-012-3457", dateOfBirth: "1992-06-18", address: "404 Fir Lane", avatar: "avatar18.jpg", status: true, departmentId: 4, role: "Employee" },
+                { employeeId: 19, name: "Noah Wright", email: "noah.wright@example.com", gender: "Male", phoneNumber: "890-123-4568", dateOfBirth: "1994-08-25", address: "505 Walnut Street", avatar: "avatar19.jpg", status: true, departmentId: 5, role: "HR" },
+                { employeeId: 20, name: "Isabella Clark", email: "isabella.clark@example.com", gender: "Female", phoneNumber: "901-234-5679", dateOfBirth: "1989-09-22", address: "606 Chestnut Avenue", avatar: "avatar20.jpg", status: true, departmentId: 6, role: "Employee" },
+                { employeeId: 21, name: "Henry Thompson", email: "henry.thompson@example.com", gender: "Male", phoneNumber: "012-345-6790", dateOfBirth: "1987-10-30", address: "707 Redwood Street", avatar: "avatar21.jpg", status: true, departmentId: 1, role: "Employee" },
+                { employeeId: 22, name: "Amelia Johnson", email: "amelia.johnson@example.com", gender: "Female", phoneNumber: "123-456-7892", dateOfBirth: "1991-11-15", address: "808 Birch Avenue", avatar: "avatar22.jpg", status: true, departmentId: 2, role: "Employee" },
+                { employeeId: 23, name: "Lucas Scott", email: "lucas.scott@example.com", gender: "Male", phoneNumber: "234-567-8903", dateOfBirth: "1986-12-05", address: "909 Oak Street", avatar: "avatar23.jpg", status: true, departmentId: 3, role: "HR" },
+                { employeeId: 24, name: "Mia Thomas", email: "mia.thomas@example.com", gender: "Female", phoneNumber: "345-678-9014", dateOfBirth: "1993-01-20", address: "1010 Maple Lane", avatar: "avatar24.jpg", status: true, departmentId: 4, role: "Employee" },
+                { employeeId: 25, name: "Elijah Walker", email: "elijah.walker@example.com", gender: "Male", phoneNumber: "456-789-0125", dateOfBirth: "1988-02-12", address: "1111 Pine Street", avatar: "avatar25.jpg", status: true, departmentId: 5, role: "Manager" },
+                { employeeId: 26, name: "Charlotte Harris", email: "charlotte.harris@example.com", gender: "Female", phoneNumber: "567-890-1236", dateOfBirth: "1990-03-14", address: "1212 Maple Avenue", avatar: "avatar26.jpg", status: true, departmentId: 6, role: "Director" }
             ],
             departments: [
                 { departmentId: 1, departmentName: "Sales", managerId: 1 },
                 { departmentId: 2, departmentName: "Marketing", managerId: 5 },
-                { departmentId: 3, departmentName: "HR", managerId: 7 },
-                { departmentId: 4, departmentName: "Finance", managerId: 8 },
-                { departmentId: 5, departmentName: "Engineering", managerId: 13 },
-                { departmentId: 6, departmentName: "Customer Support", managerId: 14 }
+                { departmentId: 3, departmentName: "Finance", managerId: 8 },
+                { departmentId: 4, departmentName: "Engineering", managerId: 13 },
+                { departmentId: 5, departmentName: "Customer Support", managerId: 14 }
             ],
             actions: [
                 { actionId: 1, employeeId: 2, actionType: "Reward", actionSubtype: "Bonus", reason: "Outstanding performance in Q1", actionDate: "2024-06-01", currentApproverId: 1, amount: 500, duration: null, status: "APPROVED" },

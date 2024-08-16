@@ -1,5 +1,6 @@
 import { EmployeeDetail } from '../types/EmployeeDetail';
 import { Action } from '../types/Action';
+import { RewardDisciplineListItem } from '../types/RewardDisciplineListItem';
 import { ApprovalLog } from '../types/ApprovalLog';
 import { Employee } from '../types/Employee';
 import { Department } from '../types/Department';
@@ -53,9 +54,6 @@ export const getAllEmployees = async (): Promise<EmployeeListItem[]> => {
     }
 };
 
-
-
-
 // Fetch employee by ID
 export const getEmployeeById = async (id: number): Promise<EmployeeDetail | null> => {
     try {
@@ -106,14 +104,14 @@ export const createEmployee = async (employee: CreateEmployee): Promise<void> =>
     }
 };
 
-
 // Update employee information
 export const updateEmployee = async (
     id: number,
     updateData: Partial<Omit<EmployeeDetail, 'employeeId'>> & { departmentId?: number }
 ): Promise<void> => {
     try {
-        const { employees, departments, actions, approvalLogs } = getHrmData();
+        const hrmData = getHrmData();
+        const { employees, departments, actions, approvalLogs } = hrmData;
         console.log('Data from getHrmData:', { employees, departments, actions, approvalLogs });
 
         // Chuyển đổi departmentName thành departmentId nếu có
@@ -150,19 +148,17 @@ export const updateEmployee = async (
     }
 };
 
-
-
-
 // Delete employee
 export const deleteEmployee = async (employeeId: number): Promise<void> => {
     try {
-        const { employees, departments } = getHrmData();
+        const hrmData = getHrmData();
+        const { employees, departments, actions, approvalLogs } = hrmData;
 
         // Xóa nhân viên khỏi danh sách
         const updatedEmployees = employees.filter(e => e.employeeId !== employeeId);
 
         // Cập nhật dữ liệu vào localStorage
-        localStorage.setItem(HRM_DATA_KEY, JSON.stringify({ employees: updatedEmployees, departments }));
+        localStorage.setItem(HRM_DATA_KEY, JSON.stringify({ employees: updatedEmployees, departments, actions, approvalLogs }));
     } catch (error) {
         console.error('Error deleting employee:', error);
         throw error;
@@ -170,12 +166,30 @@ export const deleteEmployee = async (employeeId: number): Promise<void> => {
 };
 
 // Fetch all actions
-export const getAllActions = async (): Promise<Action[]> => {
+export const getAllActions = async (): Promise<RewardDisciplineListItem[]> => {
     try {
+        // Giả sử getHrmData() là một hàm để lấy dữ liệu từ nguồn nào đó
         const { actions } = getHrmData();
-        return actions;
-    } catch (error) {
-        console.error('Error fetching all actions:', error);
+
+        // Kiểm tra xem `actions` có tồn tại trong `data` không
+        if (actions) {
+            // Ánh xạ dữ liệu từ Action sang RewardDisciplineListItem
+            const mappedActions: RewardDisciplineListItem[] = actions.map((action: Action, index: number) => ({
+                actionId: action.actionId,
+                employeeId: action.employeeId,
+                actionType: action.actionType,
+                actionSubtype: action.actionSubtype,
+                actionDate: action.actionDate,
+                status: action.status,
+                no: index + 1,  // Thêm thuộc tính `no` sau khi ánh xạ
+            }));
+
+            return mappedActions;
+        } else {
+            throw new Error('Actions not found in HRM data');
+        }
+    } catch (error: any) {
+        console.error('Error fetching all actions:', error.message || error);
         throw error;
     }
 };
@@ -194,10 +208,26 @@ export const getActionById = async (id: number): Promise<Action | null> => {
 // Create a new action
 export const createAction = async (action: Omit<Action, 'actionId'>): Promise<void> => {
     try {
-        const { actions } = getHrmData();
-        const newAction = { ...action, actionId: actions.length + 1 };
+        const hrmData = getHrmData();
+        const { actions, employees, departments, approvalLogs } = hrmData;
+
+        // Tìm actionId cao nhất hiện có và tạo actionId mới cho action
+        const maxId = actions.length > 0 ? Math.max(...actions.map(a => a.actionId)) : 0;
+        const newAction: Action = {
+            ...action,
+            actionId: maxId + 1,  // Tạo actionId mới dựa trên actionId cao nhất hiện có
+        };
+
+        // Thêm action mới vào danh sách
         actions.push(newAction);
-        localStorage.setItem(HRM_DATA_KEY, JSON.stringify({ actions }));
+
+        // Cập nhật toàn bộ dữ liệu vào localStorage
+        localStorage.setItem(HRM_DATA_KEY, JSON.stringify({
+            employees,
+            departments,
+            actions,
+            approvalLogs
+        }));
     } catch (error) {
         console.error('Error creating action:', error);
         throw error;
@@ -207,11 +237,18 @@ export const createAction = async (action: Omit<Action, 'actionId'>): Promise<vo
 // Update action information
 export const updateAction = async (id: number, updateData: Partial<Omit<Action, 'actionId'>>): Promise<void> => {
     try {
-        const { actions } = getHrmData();
+        const hrmData = getHrmData();
+        const { actions, employees, departments, approvalLogs } = hrmData;
+
         const updatedActions = actions.map(act =>
             act.actionId === id ? { ...act, ...updateData } : act
         );
-        localStorage.setItem(HRM_DATA_KEY, JSON.stringify({ actions: updatedActions }));
+        localStorage.setItem(HRM_DATA_KEY, JSON.stringify({
+            employees,
+            departments,
+            actions: updatedActions,
+            approvalLogs
+        }));
     } catch (error) {
         console.error('Error updating action:', error);
         throw error;
@@ -221,9 +258,16 @@ export const updateAction = async (id: number, updateData: Partial<Omit<Action, 
 // Delete action
 export const deleteAction = async (id: number): Promise<void> => {
     try {
-        const { actions } = getHrmData();
+        const hrmData = getHrmData();
+        const { actions, employees, departments, approvalLogs } = hrmData;
+
         const filteredActions = actions.filter(act => act.actionId !== id);
-        localStorage.setItem(HRM_DATA_KEY, JSON.stringify({ actions: filteredActions }));
+        localStorage.setItem(HRM_DATA_KEY, JSON.stringify({
+            employees,
+            departments,
+            actions: filteredActions,
+            approvalLogs
+        }));
     } catch (error) {
         console.error('Error deleting action:', error);
         throw error;
@@ -253,12 +297,28 @@ export const getApprovalLogById = async (id: number): Promise<ApprovalLog | null
 };
 
 // Create a new approval log
-export const createApprovalLog = async (log: Omit<ApprovalLog, 'approvalLogId'>): Promise<void> => {
+export const createApprovalLog = async (approvalLog: Omit<ApprovalLog, 'approvalLogId'>): Promise<void> => {
     try {
-        const { approvalLogs } = getHrmData();
-        const newLog = { ...log, approvalLogId: approvalLogs.length + 1 };
-        approvalLogs.push(newLog);
-        localStorage.setItem(HRM_DATA_KEY, JSON.stringify({ approvalLogs }));
+        const hrmData = getHrmData();
+        const { approvalLogs, employees, departments, actions } = hrmData;
+
+        // Tìm logId cao nhất hiện có và tạo logId mới cho approvalLog
+        const maxId = approvalLogs.length > 0 ? Math.max(...approvalLogs.map(log => log.approvalLogId)) : 0;
+        const newApprovalLog: ApprovalLog = {
+            ...approvalLog,
+            approvalLogId: maxId + 1,  // Tạo logId mới dựa trên logId cao nhất hiện có
+        };
+
+        // Thêm approvalLog mới vào danh sách
+        approvalLogs.push(newApprovalLog);
+
+        // Cập nhật toàn bộ dữ liệu vào localStorage
+        localStorage.setItem(HRM_DATA_KEY, JSON.stringify({
+            employees,
+            departments,
+            actions,
+            approvalLogs
+        }));
     } catch (error) {
         console.error('Error creating approval log:', error);
         throw error;
@@ -266,13 +326,21 @@ export const createApprovalLog = async (log: Omit<ApprovalLog, 'approvalLogId'>)
 };
 
 // Update approval log information
-export const updateApprovalLog = async (id: number, updateData: Partial<Omit<ApprovalLog, 'approvalLogId'>>): Promise<void> => {
+export const updateApprovalLog = async (id: number, updateData: Partial<Omit<ApprovalLog, 'logId'>>): Promise<void> => {
     try {
-        const { approvalLogs } = getHrmData();
-        const updatedLogs = approvalLogs.map(log =>
+        const hrmData = getHrmData();
+        const { approvalLogs, employees, departments, actions } = hrmData;
+
+        const updatedApprovalLogs = approvalLogs.map(log =>
             log.approvalLogId === id ? { ...log, ...updateData } : log
         );
-        localStorage.setItem(HRM_DATA_KEY, JSON.stringify({ approvalLogs: updatedLogs }));
+
+        localStorage.setItem(HRM_DATA_KEY, JSON.stringify({
+            employees,
+            departments,
+            actions,
+            approvalLogs: updatedApprovalLogs
+        }));
     } catch (error) {
         console.error('Error updating approval log:', error);
         throw error;
@@ -282,9 +350,17 @@ export const updateApprovalLog = async (id: number, updateData: Partial<Omit<App
 // Delete approval log
 export const deleteApprovalLog = async (id: number): Promise<void> => {
     try {
-        const { approvalLogs } = getHrmData();
-        const filteredLogs = approvalLogs.filter(log => log.approvalLogId !== id);
-        localStorage.setItem(HRM_DATA_KEY, JSON.stringify({ approvalLogs: filteredLogs }));
+        const hrmData = getHrmData();
+        const { approvalLogs, employees, departments, actions } = hrmData;
+
+        const filteredApprovalLogs = approvalLogs.filter(log => log.approvalLogId !== id);
+
+        localStorage.setItem(HRM_DATA_KEY, JSON.stringify({
+            employees,
+            departments,
+            actions,
+            approvalLogs: filteredApprovalLogs
+        }));
     } catch (error) {
         console.error('Error deleting approval log:', error);
         throw error;

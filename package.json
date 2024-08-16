@@ -14,6 +14,7 @@
     "assert": "^2.1.0",
     "autoprefixer": "^10.4.19",
     "axios": "^1.7.2",
+    "classnames": "^2.5.1",
     "dayjs": "^1.11.12",
     "firebase": "^10.12.5",
     "lodash": "^4.17.21",
@@ -21,7 +22,7 @@
     "react-dom": "^18.3.1",
     "react-icons": "^5.2.1",
     "react-modal": "^3.16.1",
-    "react-router-dom": "^6.24.0",
+    "react-router-dom": "^6.26.0",
     "react-scripts": "5.0.1",
     "react-spinners": "^0.13.8",
     "web-vitals": "^2.1.4"

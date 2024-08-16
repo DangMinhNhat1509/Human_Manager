@@ -1,0 +1,48 @@
+// components/RewardDiscipline/CreateRewardDisciplinePage.tsx
+import React, { useState } from 'react';
+import { Form, Input, Button, Select, notification } from 'antd';
+import { createRewardDiscipline } from '';
+import { CreateRewardDiscipline } from '../../types/CreateRewardDiscipline';
+
+const { Option } = Select;
+
+const CreateRewardDisciplinePage: React.FC = () => {
+  const [form] = Form.useForm();
+
+  const handleSubmit = async (values: CreateRewardDiscipline) => {
+    try {
+      await createRewardDiscipline(values);
+      notification.success({ message: 'Tạo mới thành công!' });
+      form.resetFields();
+    } catch (error) {
+      notification.error({ message: 'Tạo mới thất bại!' });
+    }
+  };
+
+  return (
+    <div>
+      <h2>Tạo mới Khen thưởng/Kỷ luật</h2>
+      <Form form={form} onFinish={handleSubmit}>
+        <Form.Item name="employeeId" label="Nhân viên" rules={[{ required: true }]}>
+          <Input />
+        </Form.Item>
+        <Form.Item name="type" label="Loại" rules={[{ required: true }]}>
+          <Select>
+            <Option value="reward">Khen thưởng</Option>
+            <Option value="discipline">Kỷ luật</Option>
+          </Select>
+        </Form.Item>
+        <Form.Item name="reason" label="Lý do" rules={[{ required: true }]}>
+          <Input.TextArea />
+        </Form.Item>
+        <Form.Item>
+          <Button type="primary" htmlType="submit">
+            Tạo mới
+          </Button>
+        </Form.Item>
+      </Form>
+    </div>
+  );
+};
+
+export default CreateRewardDisciplinePage;
