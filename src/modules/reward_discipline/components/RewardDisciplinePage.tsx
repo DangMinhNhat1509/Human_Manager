@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { PacmanLoader } from 'react-spinners';
-import { Table, Button, Pagination } from 'antd';
-import { getAllActions } from '../../data/employeeService';
-import { RewardDisciplineListItem } from '../../types/RewardDisciplineListItem';
-import '../../styles/RewardDiscipline/RewardDiscipline.css';
+import { Table, Button, Pagination, Spin, Typography } from 'antd';
+import { getAllActions } from '../../employee/services/employeeService';
+import { RewardDisciplineListItem } from '../types/RewardDisciplineListItem';
+
+const { Title } = Typography;
 
 const RewardDisciplinePage: React.FC = () => {
     const [actions, setActions] = useState<RewardDisciplineListItem[]>([]);
@@ -20,7 +20,6 @@ const RewardDisciplinePage: React.FC = () => {
             setError(null);
             try {
                 const response = await getAllActions();
-                console.log(response);
                 setActions(response);
             } catch (error: any) {
                 console.error('Error fetching actions:', error);
@@ -44,23 +43,11 @@ const RewardDisciplinePage: React.FC = () => {
         navigate(`/actions/${actionId}`, { state: { action: { actionId } } });
     };
 
-    if (loading) {
-        return (
-            <div className="loader-container">
-                <PacmanLoader color='#728FCE' size={70} />
-            </div>
-        );
-    }
-
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
-
     const columns = [
         {
             title: 'No',
-            dataIndex: 'no',
             key: 'no',
+            render: (_: any, __: any, index: number) => startIndex + index + 1,
         },
         {
             title: 'Employee ID',
@@ -91,37 +78,54 @@ const RewardDisciplinePage: React.FC = () => {
             title: 'Actions',
             key: 'actions',
             render: (_: any, record: RewardDisciplineListItem) => (
-                <Button onClick={() => handleViewDetail(record.actionId)}>
+                <Button type="link" onClick={() => handleViewDetail(record.actionId)}>
                     View
                 </Button>
             ),
         },
     ];
 
+    if (loading) {
+        return (
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                <Spin size="large" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                <Typography.Text type="danger">Error: {error}</Typography.Text>
+            </div>
+        );
+    }
+
     return (
-        <div className='container'>
-            <h1 className='title'>Action Page</h1>
-            <div className='create-button'>
+        <div style={{ padding: '24px' }}>
+            <Title level={1}>Quản lý Khen thưởng/Kỷ luật</Title>
+            <div style={{ marginBottom: '16px' }}>
                 <Link to="/actions/create">
                     <Button type="primary">Create New Action</Button>
                 </Link>
             </div>
             {actions && Array.isArray(actions) && (
-                <div className="table-container">
+                <>
                     <Table
                         dataSource={showActions}
                         columns={columns}
                         pagination={false}
                         rowKey="actionId"
+                        style={{ marginBottom: '16px' }}
                     />
                     <Pagination
                         current={currentPage}
-                        total={actions.length}
                         pageSize={itemsPerPage}
+                        total={actions.length}
                         onChange={handlePageChange}
-                        className="pagination"
+                        style={{ textAlign: 'center' }}
                     />
-                </div>
+                </>
             )}
         </div>
     );

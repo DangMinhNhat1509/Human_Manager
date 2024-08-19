@@ -1,9 +1,0 @@
-/* src/styles/Sidebar.css */
-.menu-item-active {
-    font-weight: bold;
-    background-color: #e6f7ff; /* Highlight color */
-}
-
-.sidebar-menu .ant-menu-submenu-title {
-    font-weight: bold;
-}

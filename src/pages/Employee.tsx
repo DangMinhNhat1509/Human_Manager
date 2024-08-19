@@ -1,5 +1,4 @@
-import React from "react";
-import EmployeePage from "../components/employee/EmployeePage";
+import EmployeePage from "../modules/employee/components/EmployeePage";
 const Employee = () => {
     return (
         <div>

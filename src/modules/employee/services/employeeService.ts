@@ -1,10 +1,10 @@
 import { EmployeeDetail } from '../types/EmployeeDetail';
-import { Action } from '../types/Action';
-import { RewardDisciplineListItem } from '../types/RewardDisciplineListItem';
-import { ApprovalLog } from '../types/ApprovalLog';
+import { Action } from '../../reward_discipline/types/Action';
+import { RewardDisciplineListItem } from '../../reward_discipline/types/RewardDisciplineListItem';
+import { ApprovalLog } from '../../reward_discipline/types/ApprovalLog';
 import { Employee } from '../types/Employee';
-import { Department } from '../types/Department';
-import { HRMData } from '../types/HRMData';
+import { Department } from '../../reward_discipline/types/Department';
+import { HRMData } from '../../reward_discipline/types/HRMData';
 import { CreateEmployee } from '../types/CreateEmployee';
 import { EmployeeListItem } from '../types/EmployeeListItem';
 
@@ -25,10 +25,6 @@ const getDepartmentIdByName = (departmentName: string): number | undefined => {
 export const getAllEmployees = async (): Promise<EmployeeListItem[]> => {
     try {
         const { employees, departments } = getHrmData();
-
-        // Log the data to inspect its structure
-        console.log('Employees:', employees);
-        console.log('Departments:', departments);
 
         if (!Array.isArray(employees) || !Array.isArray(departments)) {
             throw new Error('Invalid data format');
@@ -53,6 +49,18 @@ export const getAllEmployees = async (): Promise<EmployeeListItem[]> => {
         throw error;
     }
 };
+
+// Lấy danh sách nhân viên từ dữ liệu HRM
+export const getEmployeesByRole = async (role: string): Promise<EmployeeListItem[]> => {
+    try {
+        const employees: EmployeeListItem[] = await getAllEmployees(); // Sử dụng await để lấy dữ liệu từ Promise
+        return employees.filter((employee: EmployeeListItem) => employee.role === role);
+    } catch (error) {
+        console.error('Error fetching employees by role:', error);
+        throw error;
+    }
+};
+
 
 // Fetch employee by ID
 export const getEmployeeById = async (id: number): Promise<EmployeeDetail | null> => {
