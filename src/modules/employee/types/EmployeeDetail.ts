@@ -1,4 +1,4 @@
-import {Role} from './Employee'
+import { Role } from '../../../types/Employee'
 
 export interface EmployeeDetail {
     employeeId: number;
@@ -11,6 +11,7 @@ export interface EmployeeDetail {
     avatar: string;
     status: boolean;
     departmentName: string;  // Thay thế cho departmentId
+    departmentId: number;
     role: Role;  // Sử dụng enum Role
 }
 
