@@ -8,5 +8,6 @@ export interface RewardDisciplineListItem {
     actionDate: string;
     status: ActionStatus;
     actionId: number; // ID của hành động
+    departmentId:number;
     departmentName: string; // Tên phòng ban
 }

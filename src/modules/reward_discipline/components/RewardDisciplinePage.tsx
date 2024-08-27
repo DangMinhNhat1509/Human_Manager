@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Table, Button, Pagination, Spin, Typography } from 'antd';
-import { getAllActions } from '../../employee/services/employeeService';
+import { getActionsByDepartment, getAllActions } from '../services/RewardDisciplineService';
 import { RewardDisciplineListItem } from '../types/RewardDisciplineListItem';
+import { getCurrentUserRole, getCurrentUserDepartmentId } from '../../../utils/auth';
+import { ActionStatus } from '../../../types/Action'
+import dayjs from 'dayjs';
 
 const { Title } = Typography;
 
@@ -11,6 +14,7 @@ const RewardDisciplinePage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
+    const [userRole, setUserRole] = useState<string | null>(null);
     const itemsPerPage = 10;
     const navigate = useNavigate();
 
@@ -19,7 +23,18 @@ const RewardDisciplinePage: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
-                const response = await getAllActions();
+                const role = getCurrentUserRole();
+                setUserRole(role);
+
+                let response: RewardDisciplineListItem[] = [];
+                if (role === 'Manager') {
+                    const departmentId = await getCurrentUserDepartmentId();
+                    response = await getActionsByDepartment(departmentId);
+                } else if (role === 'HR' || role === 'Director') {
+                    response = await getAllActions();
+                    response = response.filter(action => action.status !== ActionStatus.Draft);
+                }
+
                 setActions(response);
             } catch (error: any) {
                 console.error('Error fetching actions:', error);
@@ -68,6 +83,7 @@ const RewardDisciplinePage: React.FC = () => {
             title: 'Action Date',
             dataIndex: 'actionDate',
             key: 'actionDate',
+            render: (date: string) => dayjs(date).format('MMMM D, YYYY h:mm:ss A'),
         },
         {
             title: 'Status',
@@ -103,12 +119,14 @@ const RewardDisciplinePage: React.FC = () => {
 
     return (
         <div style={{ padding: '24px' }}>
-            <Title level={1}>Quản lý Khen thưởng/Kỷ luật</Title>
-            <div style={{ marginBottom: '16px' }}>
-                <Link to="/actions/create">
-                    <Button type="primary">Create New Action</Button>
-                </Link>
-            </div>
+            <Title level={1}>Reward and Discipline Management</Title>
+            {userRole === 'Manager' && (
+                <div style={{ marginBottom: '16px' }}>
+                    <Link to="/actions/create">
+                        <Button type="primary">Create New Action</Button>
+                    </Link>
+                </div>
+            )}
             {actions && Array.isArray(actions) && (
                 <>
                     <Table

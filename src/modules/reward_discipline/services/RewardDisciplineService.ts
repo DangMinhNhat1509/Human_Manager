@@ -5,8 +5,8 @@ import { ApprovalLog, ApprovalAction } from '../../../types/ApprovalLog';
 import { CreateRewardDiscipline } from '../types/CreateRewardDiscipline';
 import { RewardDisciplineDetail } from '../types/RewardDisciplineDetail';
 import { RewardDisciplineListItem } from '../types/RewardDisciplineListItem';
-import { getHrmData, saveHrmData, getAllEmployees, getEmployeeById } from '../../employee/services/employeeService';
-
+import { getHrmData, saveHrmData, getEmployeesByRole, getEmployeeById } from '../../employee/services/employeeService';
+import { Role } from '../../../types/Employee';
 // Fetch all actions
 export const getAllActions = async (): Promise<RewardDisciplineListItem[]> => {
     try {
@@ -16,7 +16,7 @@ export const getAllActions = async (): Promise<RewardDisciplineListItem[]> => {
             throw new Error('Invalid data format for actions.');
         }
 
-        const employees = await getAllEmployees();
+        const employees = await getEmployeesByRole(Role.Employee);
 
         return actions.map(action => {
             const employee = employees.find(emp => emp.employeeId === action.employeeId);
@@ -33,6 +33,7 @@ export const getAllActions = async (): Promise<RewardDisciplineListItem[]> => {
                 actionSubtype: action.actionSubtype,
                 actionDate: action.actionDate,
                 status: action.status,
+                departmentId: employee.departmentId,
                 departmentName: employee.departmentName ?? 'Unknown',
             };
         });
@@ -43,48 +44,28 @@ export const getAllActions = async (): Promise<RewardDisciplineListItem[]> => {
 };
 
 // Fetch actions by department
-export const getActionsByDepartment = async (departmentName: string): Promise<RewardDisciplineListItem[]> => {
+export const getActionsByDepartment = async (departmentId: number): Promise<RewardDisciplineListItem[]> => {
     try {
-        const { actions } = getHrmData();
+        // Lấy tất cả các hành động
+        const allActions = await getAllActions();
 
-        if (!Array.isArray(actions)) {
-            throw new Error('Invalid data format for actions.');
+        if (!allActions || !Array.isArray(allActions)) {
+            console.error('Failed to fetch actions: Invalid data format.');
+            throw new Error('Failed to fetch actions: Invalid data format.');
         }
 
-        const employees = await getAllEmployees();
-        const departmentEmployees = employees.filter(employee => employee.departmentName === departmentName);
+        // Lọc hành động theo tên phòng ban
+        const filteredActions = allActions.filter(action => action.departmentId === departmentId);
 
-        return actions
-            .filter(action => departmentEmployees.some(emp => emp.employeeId === action.employeeId))
-            .map(action => {
-                const employee = employees.find(emp => emp.employeeId === action.employeeId);
 
-                if (!employee) {
-                    return {
-                        no: action.actionId,
-                        employeeId: action.employeeId,
-                        employeeName: 'Unknown',
-                        actionType: action.actionType,
-                        actionSubtype: action.actionSubtype,
-                        actionDate: action.actionDate,
-                        status: action.status,
-                        actionId: action.actionId,
-                        departmentName: 'Unknown',
-                    };
-                }
 
-                return {
-                    no: action.actionId,
-                    employeeId: action.employeeId,
-                    employeeName: employee.name ?? 'Unknown',
-                    actionType: action.actionType,
-                    actionSubtype: action.actionSubtype,
-                    actionDate: action.actionDate,
-                    status: action.status,
-                    actionId: action.actionId,
-                    departmentName: employee.departmentName ?? 'Unknown',
-                };
-            });
+
+
+        if (filteredActions.length === 0) {
+            console.warn(`No actions found for department: ${filteredActions}`);
+        }
+
+        return filteredActions;
     } catch (error) {
         console.error('Error fetching actions by department:', error);
         throw error;
@@ -142,8 +123,7 @@ export const createAction = async (action: CreateRewardDiscipline): Promise<void
         // Tạo action mới với actionId tăng dần
         const newAction: Action = {
             ...action,
-            actionId: maxId + 1,
-            status: ActionStatus.Draft
+            actionId: maxId + 1
         };
 
         // Thêm action mới vào danh sách actions
