@@ -5,6 +5,7 @@ import EmployeeUpdateModal from './EmployeeUpdateModal';
 import { EmployeeDetail } from '../types/EmployeeDetail';
 import { Role } from '../../../types/Employee';
 import { getEmployeeById, deleteEmployee } from '../services/employeeService';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
@@ -16,6 +17,10 @@ const EmployeeDetailPage: React.FC = () => {
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const handleBackClick = () => {
+        navigate(-1);
+    };
 
     useEffect(() => {
         const fetchEmployeeDetail = async () => {
@@ -101,30 +106,59 @@ const EmployeeDetailPage: React.FC = () => {
     }
 
     return (
-        <div style={{ padding: '20px' }}>
-            <Row style={{ marginBottom: '20px' }} gutter={20}>
-                <Col span={8}>
-                    <Card
-                        style={{ textAlign: 'center', borderRadius: '8px' }}
-                        cover={
-                            <img
-                                src={employeeDetail.avatar}
-                                alt="Avatar"
-                                style={{ width: '100%', borderRadius: '8px' }}
-                            />
-                        }
-                        actions={[
-                            <Button type="primary" block onClick={handleUpdateClick}>
-                                Update Profile
-                            </Button>,
-                            <Button type="primary" danger block onClick={handleDeleteClick}>
-                                Delete Employee
-                            </Button>
-                        ]}
-                    />
+        <div>
+            <Button
+                type="link"
+                icon={<ArrowLeftOutlined />}
+                onClick={handleBackClick}
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontSize: '16px',
+                    color: '#1890ff',
+                    padding: '20px 0',
+                }}
+            >
+                {employeeDetail.name}
+            </Button>
+
+            <Row style={{ marginBottom: '20px' }} gutter={24}>
+                <Col span={7}>
+                    <Card title="Profile Picture" style={{ borderRadius: '8px', textAlign: 'center' }}>
+                        <img
+                            src={employeeDetail.avatar}
+                            alt="Avatar"
+                            style={{ width: '80%', borderRadius: '8px', marginBottom: '10px' }}
+                        />
+                        <Button
+                            type="primary"
+                            block
+                            onClick={handleUpdateClick}
+                            style={{
+                                width: '80%',
+                                height: '36px',
+                                marginTop: '10px'
+                            }}
+                        >
+                            Update Profile
+                        </Button>
+
+                        <Button
+                            type="primary"
+                            danger
+                            block
+                            onClick={handleDeleteClick}
+                            style={{
+                                width: '80%',
+                                height: '36px',
+                                marginTop: '10px'
+                            }}
+                        >
+                            Delete Employee
+                        </Button>
+                    </Card>
                 </Col>
 
-                {/* Card for Employee Details */}
                 <Col span={16}>
                     <Card title="Employee Details" style={{ borderRadius: '8px' }}>
                         {[
@@ -140,7 +174,7 @@ const EmployeeDetailPage: React.FC = () => {
                         ].map(({ label, value }, index) => (
                             <Row key={index} style={{ marginBottom: '16px' }}>
                                 <Col span={8}>
-                                    <Title level={4} style={{ margin: 0 }}>{label}</Title>
+                                    <Title level={5} style={{ margin: 0 }}>{label}</Title>
                                 </Col>
                                 <Col span={16}>
                                     <Text style={{ backgroundColor: '#f0f2f5', padding: '4px 8px', borderRadius: '4px' }}>
@@ -162,6 +196,7 @@ const EmployeeDetailPage: React.FC = () => {
                 />
             )}
         </div>
+
     );
 };
 

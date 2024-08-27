@@ -10,6 +10,7 @@ import CreateEmployeePage from './modules/employee/components/CreateEmployeePage
 import Sidebar from './components/SideBar'; // Đảm bảo đường dẫn nhập đúng
 import RewardDisciplinePage from './modules/reward_discipline/components/RewardDisciplinePage';
 import RewardDisciplineDetailPage from './modules/reward_discipline/components/RewardDisciplineDetailPage';
+import CreateRewardDisciplinePage from './modules/reward_discipline/components/CreateRewardDisciplinePage';
 
 const { Content } = Layout;
 
@@ -30,6 +31,7 @@ const App: React.FC = () => {
                             <Route path="/requests" element={<RequestsPage />} />
                             <Route path="/notifications" element={<NotificationsPage />} /> */}
               <Route path="/actions" element={<RewardDisciplinePage />} />
+              <Route path="/actions/create" element={<CreateRewardDisciplinePage/>} />
               <Route path="/actions/:actionId" element={<RewardDisciplineDetailPage />} />
             </Routes>
           </Content>

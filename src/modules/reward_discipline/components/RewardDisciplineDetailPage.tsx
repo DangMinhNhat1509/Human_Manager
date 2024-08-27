@@ -138,13 +138,11 @@ const RewardDisciplineDetailPage: React.FC = () => {
                         rows={4}
                         style={{ marginBottom: 16 }}
                     />
-                    {action.status === ActionStatus.Approved || action.status === ActionStatus.Rejected ? (
-                        <Button type="default" onClick={handleRequestEdit} style={{ marginTop: 16 }}>
-                            Request Edit
-                        </Button>
-                    ) : null}
                     {action.status !== ActionStatus.Approved && action.status !== ActionStatus.Rejected && (
                         <>
+                            <Button type="default" onClick={handleRequestEdit} style={{ marginTop: 16 }}>
+                                Request Edit
+                            </Button>
                             <Button type="primary" onClick={handleApprove} style={{ marginRight: 8 }}>
                                 Approve
                             </Button>

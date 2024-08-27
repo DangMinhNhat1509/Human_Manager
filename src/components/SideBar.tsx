@@ -1,131 +1,166 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Layout, Menu, Select, Button, Modal } from 'antd';
+import { Layout, Menu, Select, Button, Modal, message } from 'antd';
 import { UserOutlined, TrophyOutlined, FileTextOutlined, BellOutlined } from '@ant-design/icons';
-import classNames from 'classnames';
-import { getEmployeesByRole } from '../modules/employee/services/employeeService';
-import { Role } from '../modules/employee/types/Employee';
+import { getAllEmployees, getAllDepartments } from '../modules/employee/services/employeeService';
+import { Role } from '../types/Employee';
 import { EmployeeListItem } from '../modules/employee/types/EmployeeListItem';
+import { Department } from '../types/Department';
+import { getCurrentUserRole, getCurrentUserId, setUserRole, setUserId } from '../utils/auth';
+
 const { Sider } = Layout;
 const { Option } = Select;
 
 const Sidebar: React.FC = () => {
     const [employeeList, setEmployeeList] = useState<EmployeeListItem[]>([]);
-    const [managerList, setManagerList] = useState<EmployeeListItem[]>([]);
-    const [hrList, setHrList] = useState<EmployeeListItem[]>([]);
-    const [directorList, setDirectorList] = useState<EmployeeListItem[]>([]);
-    const [selectedDirector, setSelectedDirector] = useState<number | undefined>(undefined);
-    const [selectedHR, setSelectedHR] = useState<number | undefined>(undefined);
-    const [selectedManager, setSelectedManager] = useState<number | undefined>(undefined);
+    const [departmentList, setDepartmentList] = useState<Department[]>([]);
     const [selectedEmployee, setSelectedEmployee] = useState<number | undefined>(undefined);
-    const [isModalOpen, setIsModalOpen] = useState(false); // Đổi từ `isModalVisible` sang `isModalOpen`
+    const [selectedDepartmentName, setSelectedDepartmentName] = useState<string | undefined>(undefined);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedRole, setSelectedRole] = useState<Role | undefined>(undefined);
+    const [filteredEmployees, setFilteredEmployees] = useState<EmployeeListItem[]>([]);
+    const [selectedEmployeeName, setSelectedEmployeeName] = useState<string | undefined>(undefined);
+
     const location = useLocation();
     const currentPath = location.pathname;
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchEmployees = async () => {
+        try {
+            const role = getCurrentUserRole();
+            const employeeId = getCurrentUserId();
+            setSelectedRole(role);
+            setSelectedEmployee(employeeId);
+        } catch (error) {
+            setIsModalOpen(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        const fetchData = async () => {
             try {
-                const directors = await getEmployeesByRole(Role.Director);
-                setDirectorList(directors);
-
-                const hrMembers = await getEmployeesByRole(Role.HR);
-                setHrList(hrMembers);
-
-                const managers = await getEmployeesByRole(Role.Manager);
-                setManagerList(managers);
-
-                const employees = await getEmployeesByRole(Role.Employee);
+                const [employees, departments] = await Promise.all([getAllEmployees(), getAllDepartments()]);
                 setEmployeeList(employees);
+                setDepartmentList(departments);
             } catch (error) {
-                console.error('Error fetching employees:', error);
+                console.error('Error fetching data in Sidebar:', error);
             }
         };
 
-        fetchEmployees();
+        fetchData();
     }, []);
 
-    const handleRoleSelection = (role: Role, id: number) => {
-        switch (role) {
-            case Role.Director:
-                setSelectedDirector(id);
-                break;
-            case Role.HR:
-                setSelectedHR(id);
-                break;
-            case Role.Manager:
-                setSelectedManager(id);
-                break;
-            case Role.Employee:
-                setSelectedEmployee(id);
-                break;
-            default:
-                break;
+    useEffect(() => {
+        if (selectedRole) {
+            const roleFilteredEmployees = selectedRole === Role.Employee
+                ? employeeList.filter(emp => emp.departmentName === selectedDepartmentName)
+                : employeeList.filter(emp => emp.role === selectedRole);
+            setFilteredEmployees(roleFilteredEmployees);
         }
-        localStorage.setItem(`${role}_selectedId`, id.toString());
+    }, [employeeList, selectedDepartmentName, selectedRole]);
+
+    useEffect(() => {
+        if (selectedRole === Role.Employee && selectedEmployee) {
+            const employee = employeeList.find(emp => emp.employeeId === selectedEmployee);
+            setSelectedEmployeeName(employee?.name);
+        } else {
+            setSelectedEmployeeName(undefined);
+        }
+    }, [selectedEmployee, selectedRole, employeeList]);
+
+    const handleRoleChange = (role: Role) => {
+        setSelectedRole(role);
+        setSelectedEmployee(undefined);
+        setSelectedDepartmentName(undefined);
+        setSelectedEmployeeName(undefined);
+    };
+
+    const handleDepartmentChange = (departmentName: string | undefined) => {
+        setSelectedDepartmentName(departmentName);
+    };
+
+    const handleEmployeeChange = (employeeId: number | undefined) => {
+        setSelectedEmployee(employeeId);
     };
 
     const handleSwitchAccount = () => {
         setIsModalOpen(true);
     };
 
+    const handleModalOk = () => {
+        if (selectedEmployee && selectedRole) {
+            setUserRole(selectedRole);
+            setUserId(selectedEmployee);
+            navigate(`/employees/${selectedEmployee}`);
+            setIsModalOpen(false);
+        } else {
+            message.error('Please select both role and employee.');
+        }
+    };
+
     const handleModalCancel = () => {
+        setSelectedRole(undefined);
+        setSelectedEmployee(undefined);
+        setSelectedDepartmentName(undefined);
+        setSelectedEmployeeName(undefined);
         setIsModalOpen(false);
     };
 
-    const menuItems = [
-        {
-            key: "management",
-            icon: <UserOutlined />,
-            label: "Quản lý",
-            children: [
-                {
-                    key: "/employees",
-                    label: <Link to="/employees">Quản lý Nhân viên</Link>,
-                    className: classNames({ 'menu-item-active': currentPath === '/employees' }),
-                },
-                {
-                    key: "/proposals",
-                    label: <Link to="/proposals">Đề xuất</Link>,
-                    className: classNames({ 'menu-item-active': currentPath === '/proposals' }),
-                },
-                {
-                    key: "/reward-discipline",
-                    label: <Link to="/reward-discipline">Tình trạng đơn</Link>,
-                    className: classNames({ 'menu-item-active': currentPath === '/reward-discipline' }),
-                },
-                (selectedDirector || selectedHR || selectedManager || selectedEmployee) && {
-                    key: "/employee-info",
-                    label: <Link to={`/employee-info/${selectedEmployee || selectedManager || selectedHR || selectedDirector}`}>Thông tin nhân viên</Link>,
-                    className: classNames({ 'menu-item-active': currentPath.startsWith('/employee-info') }),
-                },
-            ],
-        },
-        {
-            key: "actions",
-            icon: <TrophyOutlined />,
-            label: "Khen thưởng/Kỷ luật",
-            children: [
-                {
-                    key: "/actions",
-                    label: <Link to="/actions">Quản lý Khen thưởng/Kỷ luật</Link>,
-                    className: classNames({ 'menu-item-active': currentPath === '/actions' }),
-                },
-            ],
-        },
-        {
-            key: "/notifications",
-            icon: <BellOutlined />,
-            label: <Link to="/notifications">Thông báo</Link>,
-            className: classNames({ 'menu-item-active': currentPath === '/notifications' }),
-        },
-        {
-            key: "/reports",
-            icon: <FileTextOutlined />,
-            label: <Link to="/reports">Báo cáo & Thống kê</Link>,
-            className: classNames({ 'menu-item-active': currentPath === '/reports' }),
-        },
-    ];
+    const getMenuItems = () => {
+        const role = getCurrentUserRole();
+        const employeeId = getCurrentUserId();
+
+        if (!role) return [];
+
+        const menuItems = [];
+
+        if (role === Role.Manager) {
+            menuItems.push({
+                key: "management",
+                icon: <UserOutlined />,
+                label: "Management",
+                children: [
+                    { key: "/employees", label: <Link to="/employees">Manage Employees</Link> },
+                    { key: "/proposals", label: <Link to="/proposals">Proposals</Link> },
+                    { key: "/reward-discipline", label: <Link to="/reward-discipline">Request Status</Link> },
+                    employeeId && {
+                        key: `/employees/${employeeId}`,
+                        label: <Link to={`/employees/${employeeId}`}>Employee Information</Link>,
+                    },
+                ].filter(Boolean),
+            });
+            menuItems.push({
+                key: "actions",
+                icon: <TrophyOutlined />,
+                label: "Rewards/Disciplinary Actions",
+                children: [{ key: "/actions", label: <Link to="/actions">Manage Rewards/Disciplinary Actions</Link> }],
+            });
+        }
+
+        if (role === Role.Director || role === Role.HR) {
+            menuItems.push({
+                key: "actions",
+                icon: <TrophyOutlined />,
+                label: "Rewards/Disciplinary Actions",
+                children: [{ key: "/actions", label: <Link to="/actions">Manage Rewards/Disciplinary Actions</Link> }],
+            });
+        }
+
+        menuItems.push(
+            {
+                key: "/notifications",
+                icon: <BellOutlined />,
+                label: <Link to="/notifications">Notifications</Link>,
+            },
+            {
+                key: "/reports",
+                icon: <FileTextOutlined />,
+                label: <Link to="/reports">Reports & Statistics</Link>,
+            }
+        );
+
+        return menuItems;
+    };
 
     return (
         <>
@@ -138,70 +173,69 @@ const Sidebar: React.FC = () => {
 
                 <Menu
                     mode="inline"
-                    defaultSelectedKeys={[currentPath]}
+                    selectedKeys={[currentPath]}
                     style={{ height: '100%', borderRight: 0 }}
-                    className="sidebar-menu"
-                    items={menuItems} // Sử dụng `items` thay vì `children`
+                    items={getMenuItems()}
                 />
             </Sider>
 
             <Modal
                 title="Switch Account"
-                open={isModalOpen} // Đổi từ `visible` sang `open`
+                open={isModalOpen}
                 onCancel={handleModalCancel}
-                footer={null}
+                onOk={handleModalOk}
+                footer={[
+                    <Button key="cancel" onClick={handleModalCancel}>
+                        Cancel
+                    </Button>,
+                    <Button key="ok" type="primary" onClick={handleModalOk}>
+                        Confirm
+                    </Button>,
+                ]}
             >
                 <Select
-                    placeholder="Select Director"
-                    onChange={(id) => handleRoleSelection(Role.Director, id)}
-                    value={selectedDirector}
+                    placeholder="Select Role"
+                    onChange={handleRoleChange}
+                    value={selectedRole}
                     style={{ width: '100%', marginBottom: '10px' }}
                 >
-                    {directorList.map(director => (
-                        <Option key={director.employeeId} value={director.employeeId}>
-                            {director.name}
+                    {Object.values(Role).map(role => (
+                        <Option key={role} value={role}>
+                            {role}
                         </Option>
                     ))}
                 </Select>
-
+                {selectedRole === Role.Employee && (
+                    <Select
+                        placeholder="Select Department"
+                        onChange={handleDepartmentChange}
+                        value={selectedDepartmentName}
+                        style={{ width: '100%', marginBottom: '10px' }}
+                    >
+                        {departmentList.map(department => (
+                            <Option key={department.departmentName} value={department.departmentName}>
+                                {department.departmentName}
+                            </Option>
+                        ))}
+                    </Select>
+                )}
                 <Select
-                    placeholder="Select HR"
-                    onChange={(id) => handleRoleSelection(Role.HR, id)}
-                    value={selectedHR}
-                    style={{ width: '100%', marginBottom: '10px' }}
-                >
-                    {hrList.map(hr => (
-                        <Option key={hr.employeeId} value={hr.employeeId}>
-                            {hr.name}
-                        </Option>
-                    ))}
-                </Select>
-
-                <Select
-                    placeholder="Select Manager"
-                    onChange={(id) => handleRoleSelection(Role.Manager, id)}
-                    value={selectedManager}
-                    style={{ width: '100%', marginBottom: '10px' }}
-                >
-                    {managerList.map(manager => (
-                        <Option key={manager.employeeId} value={manager.employeeId}>
-                            {manager.name}
-                        </Option>
-                    ))}
-                </Select>
-
-                <Select
-                    placeholder="Select Employee"
-                    onChange={(id) => handleRoleSelection(Role.Employee, id)}
+                    placeholder={`Select ${selectedRole}`}
+                    onChange={handleEmployeeChange}
                     value={selectedEmployee}
-                    style={{ width: '100%' }}
+                    style={{ width: '100%', marginBottom: '10px' }}
                 >
-                    {employeeList.map(employee => (
+                    {filteredEmployees.map(employee => (
                         <Option key={employee.employeeId} value={employee.employeeId}>
                             {employee.name}
                         </Option>
                     ))}
                 </Select>
+                {selectedEmployeeName && (
+                    <div>
+                        <strong>Selected Employee:</strong> {selectedEmployeeName}
+                    </div>
+                )}
             </Modal>
         </>
     );
