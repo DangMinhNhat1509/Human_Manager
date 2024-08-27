@@ -5,6 +5,7 @@ export interface EmployeeListItem {
     email: string;
     gender: string;
     phoneNumber: string;
+    departmentId: number;
     departmentName: string;
     role: Role;
 }

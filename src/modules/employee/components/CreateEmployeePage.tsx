@@ -1,280 +1,232 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ValidateField from '../utils/validation';
-import { CreateEmployee } from '../types/CreateEmployee';
-import { createEmployee } from '../services/employeeService'; 
-import { Role } from '../types/Employee';
+import { Form, Input, Button, Checkbox, DatePicker, message } from 'antd';
+import { createEmployee } from '../services/employeeService';
+import dayjs from 'dayjs';
+import ValidateField from '../utils/validation';  // Import ValidateField
 
 const CreateEmployeePage: React.FC = () => {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState<CreateEmployee>({
-        name: '',
-        email: '',
-        gender: '',
-        phoneNumber: '',
-        dateOfBirth: '',
-        address: '',
-        avatar: '',
-        status: false,
-        departmentId: 0,
-        role: Role.Employee, // Role luôn là "employee"
-    });
-    const [formErrors, setFormErrors] = useState<{ [key in keyof CreateEmployee]?: string }>({});
-    const [avatarPreview, setAvatarPreview] = useState<string>('');
+    const [avatarUrl, setAvatarUrl] = useState<string>('');
+    const [isFocused, setIsFocused] = useState(false);
+    const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState<string | null>(null);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value, type, checked } = e.target as HTMLInputElement;
-        const fieldValue = type === 'checkbox' ? checked : name === 'departmentId' ? parseInt(value) : value;
+    const isPreviewVisible = avatarUrl && isFocused;
 
-        setFormData((prevData) => ({
-            ...prevData,
-            [name as keyof CreateEmployee]: fieldValue
-        }));
-
-        if (name === 'avatar') {
-            setAvatarPreview(value);
-        }
-
-        const error = ValidateField(name, value);
-        setFormErrors((prevErrors) => ({ ...prevErrors, [name as keyof CreateEmployee]: error }));
+    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setAvatarUrl(e.target.value);
     };
 
-
-    const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-
-        if (name === 'avatar') {
-            setAvatarPreview('');
-        }
-
-        const error = ValidateField(name, value);
-        setFormErrors((prevErrors) => ({ ...prevErrors, [name as keyof CreateEmployee]: error }));
+    const handleFocusBlur = (focus: boolean) => {
+        setIsFocused(focus);
     };
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const hasErrors = Object.values(formErrors).some((error) => error !== null);
-        if (hasErrors) {
-            alert('Please fix the errors before submitting the form.');
-            return;
-        }
-
+    const handleSubmit = async (values: any) => {
         setLoading(true);
-        setMessage(null);
-
         try {
-            await createEmployee(formData); // Call API with formData
-            setMessage('Employee has been successfully created!');
+            const formattedData = {
+                ...values,
+                dateOfBirth: dayjs(values.dateOfBirth).format('YYYY-MM-DD'),
+                departmentId: parseInt(values.departmentId, 10),
+                role: 'Employee',  // Set role as Employee
+            };
+            await createEmployee(formattedData);
+            message.success('Employee has been successfully created!');
             navigate('/employees');
         } catch (err) {
             console.error('Error creating employee:', err);
-            setMessage('An error occurred while creating the employee. Please try again later.');
+            message.error('An error occurred while creating the employee. Please try again later.');
         } finally {
             setLoading(false);
         }
     };
 
-
     return (
         <div className="container">
             <h1 className="title">Create Employee</h1>
-            <form onSubmit={handleSubmit}>
-                <div className="form-container">
-                    {/* Name */}
-                    <div className="form-group">
-                        <label htmlFor="name">Name</label>
-                        <div className="group-member">
-                            <div className="input-wrapper">
-                                <input
-                                    type="text"
-                                    id="name"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    required
-                                />
-                                {formErrors.name && <p className="error-message">{formErrors.name}</p>}
-                            </div>
-                        </div>
-                    </div>
+            <Form
+                form={form}
+                onFinish={handleSubmit}
+                layout="vertical"
+                style={{ maxWidth: 600, margin: '0 auto' }}
+                onValuesChange={(changedValues) => {
+                    // Validate fields on change
+                    Object.keys(changedValues).forEach((key) => {
+                        const error = ValidateField(key, changedValues[key]);
+                        if (error) {
+                            form.setFields([
+                                {
+                                    name: key,
+                                    errors: [error],
+                                },
+                            ]);
+                        } else {
+                            form.setFields([
+                                {
+                                    name: key,
+                                    errors: [],
+                                },
+                            ]);
+                        }
+                    });
+                }}
+            >
+                <Form.Item
+                    name="name"
+                    label="Name"
+                    rules={[
+                        { required: true, message: 'Please input the name!' },
+                        {
+                            validator: (_, value) => {
+                                const error = ValidateField('name', value);
+                                return error ? Promise.reject(new Error(error)) : Promise.resolve();
+                            },
+                        },
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
 
-                    {/* Gender */}
-                    <div className="form-group">
-                        <label htmlFor="gender">Gender</label>
-                        <div className="group-member">
-                            <div className="input-wrapper">
-                                <input
-                                    type="text"
-                                    id="gender"
-                                    name="gender"
-                                    value={formData.gender}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    required
-                                />
-                                {formErrors.gender && <p className="error-message">{formErrors.gender}</p>}
-                            </div>
-                        </div>
-                    </div>
+                <Form.Item
+                    name="gender"
+                    label="Gender"
+                    rules={[
+                        { required: true, message: 'Please input the gender!' },
+                        {
+                            validator: (_, value) => {
+                                const error = ValidateField('gender', value);
+                                return error ? Promise.reject(new Error(error)) : Promise.resolve();
+                            },
+                        },
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
 
-                    {/* Email */}
-                    <div className="form-group">
-                        <label htmlFor="email">Email</label>
-                        <div className="group-member">
-                            <div className="input-wrapper">
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    required
-                                />
-                                {formErrors.email && <p className="error-message">{formErrors.email}</p>}
-                            </div>
-                        </div>
-                    </div>
+                <Form.Item
+                    name="dateOfBirth"
+                    label="Date of Birth"
+                    rules={[
+                        { required: true, message: 'Please select the date of birth!' },
+                        {
+                            validator: (_, value) => {
+                                const dob = value ? dayjs(value).format('YYYY-MM-DD') : '';
+                                const error = ValidateField('dateOfBirth', dob);
+                                return error ? Promise.reject(new Error(error)) : Promise.resolve();
+                            },
+                        },
+                    ]}
+                >
+                    <DatePicker format="YYYY-MM-DD" />
+                </Form.Item>
 
-                    {/* Phone Number */}
-                    <div className="form-group">
-                        <label htmlFor="phoneNumber">Phone Number</label>
-                        <div className="group-member">
-                            <div className="input-wrapper">
-                                <input
-                                    type="text"
-                                    id="phoneNumber"
-                                    name="phoneNumber"
-                                    value={formData.phoneNumber}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    required
-                                />
-                                {formErrors.phoneNumber && <p className="error-message">{formErrors.phoneNumber}</p>}
-                            </div>
-                        </div>
-                    </div>
+                <Form.Item
+                    name="email"
+                    label="Email"
+                    rules={[
+                        { type: 'email', message: 'Please input a valid email!' },
+                        { required: true, message: 'Please input the email!' },
+                        {
+                            validator: (_, value) => {
+                                const error = ValidateField('email', value);
+                                return error ? Promise.reject(new Error(error)) : Promise.resolve();
+                            },
+                        },
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
 
-                    {/* Date of Birth */}
-                    <div className="form-group">
-                        <label htmlFor="dateOfBirth">Date of Birth</label>
-                        <div className="group-member">
-                            <div className="input-wrapper">
-                                <input
-                                    type="date"
-                                    id="dateOfBirth"
-                                    name="dateOfBirth"
-                                    value={formData.dateOfBirth}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    required
-                                />
-                                {formErrors.dateOfBirth && <p className="error-message">{formErrors.dateOfBirth}</p>}
-                            </div>
-                        </div>
-                    </div>
+                <Form.Item
+                    name="phoneNumber"
+                    label="Phone Number"
+                    rules={[
+                        { required: true, message: 'Please input the phone number!' },
+                        {
+                            validator: (_, value) => {
+                                const error = ValidateField('phone', value);
+                                return error ? Promise.reject(new Error(error)) : Promise.resolve();
+                            },
+                        },
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
 
-                    {/* Address */}
-                    <div className="form-group">
-                        <label htmlFor="address">Address</label>
-                        <div className="group-member">
-                            <div className="input-wrapper">
-                                <textarea
-                                    rows={3}
-                                    id="address"
-                                    name="address"
-                                    value={formData.address}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    required
-                                />
-                                {formErrors.address && <p className="error-message">{formErrors.address}</p>}
-                            </div>
-                        </div>
-                    </div>
+                <Form.Item
+                    name="address"
+                    label="Address"
+                    rules={[
+                        { required: true, message: 'Please input the address!' },
+                        {
+                            validator: (_, value) => {
+                                const error = ValidateField('address', value);
+                                return error ? Promise.reject(new Error(error)) : Promise.resolve();
+                            },
+                        },
+                    ]}
+                >
+                    <Input.TextArea />
+                </Form.Item>
 
-                    {/* Avatar */}
-                    <div className="form-group">
-                        <label htmlFor="avatar">Avatar URL</label>
-                        <div className="group-member">
-                            <div className="input-wrapper">
-                                <textarea
-                                    rows={3}
-                                    id="avatar"
-                                    name="avatar"
-                                    value={formData.avatar}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    required
-                                />
-                                {formErrors.avatar && <p className="error-message">{formErrors.avatar}</p>}
-                                {avatarPreview && (
-                                    <div className="avatar-preview">
-                                        <img
-                                            src={avatarPreview}
-                                            alt="Avatar Preview"
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+                <Form.Item
+                    name="avatar"
+                    label="Avatar URL"
+                    rules={[
+                        {
+                            validator: (_, value) => {
+                                const error = ValidateField('avatar', value);
+                                return error ? Promise.reject(new Error(error)) : Promise.resolve();
+                            },
+                        },
+                    ]}
+                >
+                    <Input
+                        placeholder="Enter Avatar URL"
+                        value={avatarUrl}
+                        onChange={handleAvatarChange}
+                        onFocus={() => handleFocusBlur(true)}
+                        onBlur={() => handleFocusBlur(false)}
+                    />
+                </Form.Item>
 
-                    {/* Status */}
-                    <div className="form-group">
-                        <label htmlFor="status">Status</label>
-                        <div className="group-member">
-                            <div className="checkbox-group">
-                                <input
-                                    type="checkbox"
-                                    id="status"
-                                    name="status"
-                                    checked={formData.status}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                />
-                                <label htmlFor="status">Active</label>
-                                {formErrors.status && <p className="error-message">{formErrors.status}</p>}
-                            </div>
-                        </div>
-                    </div>
+                {isPreviewVisible && (
+                    <Form.Item label="Preview">
+                        <img
+                            src={avatarUrl}
+                            alt="Avatar"
+                            style={{ width: '150px', height: '150px', borderRadius: '8px', objectFit: 'cover' }}
+                        />
+                    </Form.Item>
+                )}
 
-                    {/* Department ID */}
-                    <div className="form-group">
-                        <label htmlFor="departmentId">Department ID</label>
-                        <div className="group-member">
-                            <div className="input-wrapper">
-                                <input
-                                    type="number"
-                                    id="departmentId"
-                                    name="departmentId"
-                                    value={formData.departmentId || ''}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    required
-                                />
-                                {formErrors.departmentId && <p className="error-message">{formErrors.departmentId}</p>}
-                            </div>
-                        </div>
-                    </div>
+                <Form.Item name="status" valuePropName="checked">
+                    <Checkbox>Status</Checkbox>
+                </Form.Item>
 
-                    <div className="button-container">
-                        <div className='button-right'>
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="btn-create"
-                            >
-                                {loading ? 'Creating...' : 'Create Employee'}
-                            </button>
-                        </div>
-                    </div>
-                    {message && <p className="success-message">{message}</p>}
-                </div>
-            </form>
+                <Form.Item
+                    name="departmentId"
+                    label="Department"
+                    rules={[
+                        { required: true, message: 'Please input the department ID!' },
+                        {
+                            validator: (_, value) => {
+                                const error = ValidateField('departmentId', value);
+                                return error ? Promise.reject(new Error(error)) : Promise.resolve();
+                            },
+                        },
+                    ]}
+                >
+                    <Input type="number" />
+                </Form.Item>
+
+                <Form.Item>
+                    <Button type="primary" htmlType="submit" loading={loading}>
+                        Create Employee
+                    </Button>
+                </Form.Item>
+            </Form>
         </div>
     );
 };

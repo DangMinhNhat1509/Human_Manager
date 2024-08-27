@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Col, Row, Typography, Modal, Spin } from 'antd';
 import EmployeeUpdateModal from './EmployeeUpdateModal';
 import { EmployeeDetail } from '../types/EmployeeDetail';
-import { Role } from '../types/Employee';
+import { Role } from '../../../types/Employee';
 import { getEmployeeById, deleteEmployee } from '../services/employeeService';
 
 const { Title, Text } = Typography;
@@ -102,67 +102,56 @@ const EmployeeDetailPage: React.FC = () => {
 
     return (
         <div style={{ padding: '20px' }}>
-            <Title level={1}>Employee Details</Title>
-            <Card>
-                <Row gutter={16}>
-                    <Col span={8}>
-                        <img src={employeeDetail.avatar} alt="Avatar" style={{ width: '100%', borderRadius: '8px' }} />
-                    </Col>
-                    <Col span={16}>
-                        <div>
-                            <Title level={4}>Name</Title>
-                            <Text>{employeeDetail.name}</Text>
-                        </div>
-                        <div>
-                            <Title level={4}>Gender</Title>
-                            <Text>{employeeDetail.gender}</Text>
-                        </div>
-                        <div>
-                            <Title level={4}>Email</Title>
-                            <Text>{employeeDetail.email}</Text>
-                        </div>
-                        <div>
-                            <Title level={4}>Phone</Title>
-                            <Text>{employeeDetail.phoneNumber}</Text>
-                        </div>
-                        <div>
-                            <Title level={4}>Date of Birth</Title>
-                            <Text>{employeeDetail.dateOfBirth}</Text>
-                        </div>
-                        <div>
-                            <Title level={4}>Address</Title>
-                            <Text>{employeeDetail.address}</Text>
-                        </div>
-                        <div>
-                            <Title level={4}>Status</Title>
-                            <Text>{employeeDetail.status ? 'Active' : 'Inactive'}</Text>
-                        </div>
-                        <div>
-                            <Title level={4}>Department</Title>
-                            <Text>{employeeDetail.departmentName}</Text>
-                        </div>
-                        <div>
-                            <Title level={4}>Role</Title>
-                            <Text>{Role[employeeDetail.role]}</Text>
-                        </div>
-                    </Col>
-                </Row>
-                <div style={{ marginTop: '20px' }}>
-                    <Link to="/employees">
-                        <Button>Back to List</Button>
-                    </Link>
-                    <Button type="primary" style={{ margin: '0 8px' }} onClick={handleUpdateClick}>
-                        Update Info
-                    </Button>
-                    <Button
-                        type="primary"
-                        danger
-                        onClick={handleDeleteClick}
-                    >
-                        Delete
-                    </Button>
-                </div>
-            </Card>
+            <Row style={{ marginBottom: '20px' }} gutter={20}>
+                <Col span={8}>
+                    <Card
+                        style={{ textAlign: 'center', borderRadius: '8px' }}
+                        cover={
+                            <img
+                                src={employeeDetail.avatar}
+                                alt="Avatar"
+                                style={{ width: '100%', borderRadius: '8px' }}
+                            />
+                        }
+                        actions={[
+                            <Button type="primary" block onClick={handleUpdateClick}>
+                                Update Profile
+                            </Button>,
+                            <Button type="primary" danger block onClick={handleDeleteClick}>
+                                Delete Employee
+                            </Button>
+                        ]}
+                    />
+                </Col>
+
+                {/* Card for Employee Details */}
+                <Col span={16}>
+                    <Card title="Employee Details" style={{ borderRadius: '8px' }}>
+                        {[
+                            { label: 'Name', value: employeeDetail.name },
+                            { label: 'Gender', value: employeeDetail.gender },
+                            { label: 'Email', value: employeeDetail.email },
+                            { label: 'Phone', value: employeeDetail.phoneNumber },
+                            { label: 'Date of Birth', value: employeeDetail.dateOfBirth },
+                            { label: 'Address', value: employeeDetail.address },
+                            { label: 'Status', value: employeeDetail.status ? 'Active' : 'Inactive' },
+                            { label: 'Department', value: employeeDetail.departmentName },
+                            { label: 'Role', value: Role[employeeDetail.role] }
+                        ].map(({ label, value }, index) => (
+                            <Row key={index} style={{ marginBottom: '16px' }}>
+                                <Col span={8}>
+                                    <Title level={4} style={{ margin: 0 }}>{label}</Title>
+                                </Col>
+                                <Col span={16}>
+                                    <Text style={{ backgroundColor: '#f0f2f5', padding: '4px 8px', borderRadius: '4px' }}>
+                                        {value}
+                                    </Text>
+                                </Col>
+                            </Row>
+                        ))}
+                    </Card>
+                </Col>
+            </Row>
 
             {showUpdateModal && employeeDetail && (
                 <EmployeeUpdateModal

@@ -3,7 +3,7 @@ import { CreateEmployee } from '../types/CreateEmployee';
 import { EmployeeListItem } from '../types/EmployeeListItem';
 import { Role } from '../../../types/Employee';
 import { HRMData } from '../../../types/HRMData';
-
+import {Department} from '../../../types/Department';
 const HRM_DATA_KEY = 'hrmData';
 
 export const getHrmData = (): HRMData => {
@@ -21,11 +21,31 @@ const getDepartmentIdByName = (departmentName: string): number | undefined => {
     return department ? department.departmentId : undefined;
 };
 
+export const getAllDepartments = async (): Promise<Department[]> =>{
+    try {
+        const {departments} = getHrmData();
+        if (!Array.isArray(departments)){
+            throw new Error('Invalid data format for departments');
+        }
+
+        return departments.map(dep => ({
+            departmentId: dep.departmentId,
+            departmentName: dep.departmentName,
+            managerId: dep.managerId
+        }));
+    } catch(error) {
+        console.error('Error fetching all departments', error);
+        throw error;    
+    }
+
+    
+    
+}
+
 // Fetch all employees
 export const getAllEmployees = async (): Promise<EmployeeListItem[]> => {
     try {
         const { employees, departments } = getHrmData();
-        console.log(employees, departments);
         if (!Array.isArray(employees) || !Array.isArray(departments)) {
             throw new Error('Invalid data format');
         }
@@ -68,7 +88,7 @@ export const getEmployeeById = async (id: number): Promise<EmployeeDetail | null
         const { employees, departments } = getHrmData();
 
         const employee = employees.find(emp => emp.employeeId === id);
-        if (employee && employee.role === Role.Employee) {
+        if (employee) {
             const department = departments.find(dept => dept.departmentId === employee.departmentId);
             return {
                 ...employee,
@@ -85,16 +105,15 @@ export const getEmployeeById = async (id: number): Promise<EmployeeDetail | null
 
 // Create a new employee
 export const createEmployee = async (employee: CreateEmployee): Promise<void> => {
+    console.log(typeof employee.departmentId);
     try {
         const { employees, departments, actions, approvalLogs } = getHrmData();
-
+        
         if (employee.role !== Role.Employee) {
             throw new Error('Only employees with role "Employee" can be created.');
         }
 
         if (employee.departmentId && !departments.some(dep => dep.departmentId === employee.departmentId)) {
-            console.log(employee.departmentId);
-            console.log(departments.some(dep => dep.departmentId === employee.departmentId));
             throw new Error('Invalid department ID.');
         }
 

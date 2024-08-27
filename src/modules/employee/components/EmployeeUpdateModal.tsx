@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { EmployeeDetail } from '../types/EmployeeDetail';
-import { Modal, Form, Input, Checkbox, Button, DatePicker, Upload, message } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { Modal, Form, Input, Checkbox, Button, DatePicker, message } from 'antd';
 import { updateEmployee } from '../services/employeeService'; // Đảm bảo rằng bạn đã nhập đúng đường dẫn
 
 interface EmployeeUpdateModalProps {
@@ -93,7 +92,7 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
                     label="Date of Birth"
                     rules={[{ required: true, message: 'Please select the date of birth' }]}
                 >
-                    <DatePicker style={{ width: '100%' }} />
+                    <DatePicker style={{ width: '100%' }} format="YYYY-MM-DD" />
                 </Form.Item>
 
                 {/* Address */}
@@ -108,19 +107,14 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
                 {/* Avatar */}
                 <Form.Item
                     name="avatar"
-                    label="Avatar"
+                    label="Avatar URL"
+                    rules={[{ required: true, message: 'Please enter the avatar URL' }]}
                 >
-                    <Upload
-                        showUploadList={false}
-                        customRequest={({ file, onSuccess }) => {
-                            setTimeout(() => {
-                                onSuccess && onSuccess("ok");
-                                message.success('Avatar uploaded successfully!');
-                            }, 1000);
-                        }}
-                    >
-                        <Button icon={<UploadOutlined />}>Upload Avatar</Button>
-                    </Upload>
+                    <Input
+                        placeholder="Enter Avatar URL"
+                        value={employeeDetail.avatar}
+                        onChange={(e) => form.setFieldsValue({ avatar: e.target.value })}
+                    />
                 </Form.Item>
 
                 {/* Status */}
@@ -134,11 +128,11 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
 
                 {/* Department */}
                 <Form.Item
-                    name="departmentName"
-                    label="Department"
-                    rules={[{ required: true, message: 'Please enter the department name' }]}
+                    name="departmentId"
+                    label="Department ID"
+                    rules={[{ required: true, message: 'Please enter the department ID' }]}
                 >
-                    <Input />
+                    <Input type="number" />
                 </Form.Item>
 
                 <Form.Item>

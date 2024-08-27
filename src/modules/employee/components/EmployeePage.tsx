@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Table, Button, Spin, Pagination, Alert } from 'antd';
-import { getAllEmployees } from '../services/employeeService';
+import { getEmployeesByRole } from '../services/employeeService'; // Import hàm mới
 import { EmployeeListItem } from '../types/EmployeeListItem';
+import {Role} from '../../../types/Employee';
+import dayjs from 'dayjs'; // dayjs for date handling
+import _ from 'lodash'; // lodash for utility functions
 
 const EmployeePage: React.FC = () => {
     const [employees, setEmployees] = useState<EmployeeListItem[]>([]);
@@ -17,7 +20,8 @@ const EmployeePage: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
-                const response = await getAllEmployees();
+                // Sử dụng hàm getEmployeesByRole để lấy nhân viên có vai trò là "employee"
+                const response = await getEmployeesByRole(Role.Employee);
                 setEmployees(response);
             } catch (error: any) {
                 setError(error.message || 'Network error');
@@ -41,9 +45,24 @@ const EmployeePage: React.FC = () => {
         { title: 'Name', dataIndex: 'name', key: 'name' },
         { title: 'Email', dataIndex: 'email', key: 'email' },
         { title: 'Phone Number', dataIndex: 'phoneNumber', key: 'phoneNumber' },
-        { title: 'Gender', dataIndex: 'gender', key: 'gender' },
-        { title: 'Department', dataIndex: 'departmentName', key: 'departmentName' },
-        { title: 'Role', dataIndex: 'role', key: 'role' },
+        {
+            title: 'Gender',
+            dataIndex: 'gender',
+            key: 'gender',
+            render: (text: string) => <span>{_.capitalize(text)}</span> // Capitalize gender
+        },
+        {
+            title: 'Date of Birth',
+            dataIndex: 'dateOfBirth',
+            key: 'dateOfBirth',
+            render: (text: string) => <span>{dayjs(text).format('YYYY-MM-DD')}</span> // Format date
+        },
+        {
+            title: 'Department',
+            dataIndex: 'departmentName',
+            key: 'departmentName',
+            render: (text: string) => <span>{text}</span>
+        },
         {
             title: 'Actions',
             key: 'actions',
