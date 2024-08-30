@@ -4,17 +4,24 @@ import { Table, Button, Pagination, Spin, Typography } from 'antd';
 import { getActionsByDepartment, getAllActions } from '../services/RewardDisciplineService';
 import { RewardDisciplineListItem } from '../types/RewardDisciplineListItem';
 import { getCurrentUserRole, getCurrentUserDepartmentId } from '../../../utils/auth';
-import { ActionStatus } from '../../../types/Action'
+import { ActionStatus, ActionSubtype, ActionType } from '../../../types/Action'
+import { Input, Select, DatePicker } from 'antd';
+// import {getDepart}
+
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
-
+const { RangePicker } = DatePicker;
 const RewardDisciplinePage: React.FC = () => {
+    const [searchText, setSearchText] = useState<string>('');
+    const [selectedDepartment, setSelectedDepartment] = useState<string>('');
+    const [selectedActionType, setSelectedActionType] = useState<ActionType | undefined>(undefined);
+    const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
     const [actions, setActions] = useState<RewardDisciplineListItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [userRole, setUserRole] = useState<string | null>(null);
+    const [userRole, setUserRole] = useState<string | undefined>(undefined);
     const itemsPerPage = 10;
     const navigate = useNavigate();
 
@@ -29,13 +36,20 @@ const RewardDisciplinePage: React.FC = () => {
                 let response: RewardDisciplineListItem[] = [];
                 if (role === 'Manager') {
                     const departmentId = await getCurrentUserDepartmentId();
-                    response = await getActionsByDepartment(departmentId);
+
+                    if (departmentId !== undefined) {
+                        response = await getActionsByDepartment(departmentId);
+                    } else {
+                        setError('Department ID is not available.');
+                    }
                 } else if (role === 'HR' || role === 'Director') {
                     response = await getAllActions();
                     response = response.filter(action => action.status !== ActionStatus.Draft);
                 }
 
-                setActions(response);
+                if (response) {
+                    setActions(response);
+                }
             } catch (error: any) {
                 console.error('Error fetching actions:', error);
                 setError(error.message || 'Network error');
@@ -46,6 +60,7 @@ const RewardDisciplinePage: React.FC = () => {
 
         fetchActions();
     }, []);
+
 
     const handlePageChange = (pageNumber: number) => {
         setCurrentPage(pageNumber);
@@ -120,6 +135,41 @@ const RewardDisciplinePage: React.FC = () => {
     return (
         <div style={{ padding: '24px' }}>
             <Title level={1}>Reward and Discipline Management</Title>
+
+            <div style={{ marginBottom: '16px' }}>
+                <Input.Search
+                    placeholder="Search by EmployeeId or Action Type"
+                    enterButton
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                />
+            </div>
+            <div style={{ marginBottom: '16px' }}>
+                <Select
+                    placeholder="Select Department"
+                    style={{ width: 200, marginRight: '8px' }}
+                    value={selectedDepartment}
+                    onChange={(value) => setSelectedDepartment(value)}
+                ></Select>
+                <Select
+                    placeholder="Select Action Type"
+                    style={{ width: 200, marginRight: '8px' }}
+                    value={selectedActionType}
+                    onChange={(value) => setSelectedActionType(value as ActionType)}
+                >
+                    {Object.keys(ActionType).map((key) => (
+                        <Select.Option key={key} value={ActionType[key as keyof typeof ActionType]}>
+                            {ActionType[key as keyof typeof ActionType]}
+                        </Select.Option>
+                    ))}
+                </Select>
+                <RangePicker
+                    style={{ width: 300 }}
+                    value={dateRange}
+                    onChange={(dates) => setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs])}
+                />
+            </div>
+
             {userRole === 'Manager' && (
                 <div style={{ marginBottom: '16px' }}>
                     <Link to="/actions/create">

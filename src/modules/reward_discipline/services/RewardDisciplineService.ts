@@ -96,6 +96,8 @@ export const getActionById = async (actionId: number): Promise<RewardDisciplineD
             actionType: action.actionType,
             actionSubtype: action.actionSubtype,
             actionDate: action.actionDate,
+            amount: action.amount,
+            duration: action.duration,
             status: action.status,
             reason: action.reason,
             departmentName: departmentName,
@@ -163,6 +165,31 @@ export const updateAction = async (actionId: number, updateData: Partial<CreateR
     }
 };
 
+export const updateActionStatus = async (actionId: number, newStatus: ActionStatus): Promise<void> => {
+    try {
+        const { actions } = getHrmData();
+
+        if (!Array.isArray(actions)) {
+            throw new Error('Invalid data format for actions.');
+        }
+
+        const actionIndex = actions.findIndex(a => a.actionId === actionId);
+        if (actionIndex === -1) {
+            throw new Error('Action not found.');
+        }
+
+        actions[actionIndex] = {
+            ...actions[actionIndex],
+            status: newStatus,
+        };
+
+        saveHrmData({ ...getHrmData(), actions });
+    } catch (error) {
+        console.error('Error updating action status:', error);
+        throw error;
+    }
+};
+
 // Delete an action
 export const deleteAction = async (actionId: number): Promise<void> => {
     try {
@@ -186,7 +213,12 @@ export const deleteAction = async (actionId: number): Promise<void> => {
 };
 
 // Approve or reject an action
-export const approveOrRejectAction = async (actionId: number, approvalAction: ApprovalAction, note: string, approverId: number, approverName: string): Promise<void> => {
+export const approveOrRejectAction = async (
+    actionId: number,
+    approvalAction: ApprovalAction,
+    note: string,
+    approverId: number
+): Promise<void> => {
     try {
         const { actions, approvalLogs } = getHrmData();
 
@@ -199,21 +231,33 @@ export const approveOrRejectAction = async (actionId: number, approvalAction: Ap
             throw new Error('Action not found.');
         }
 
+        // Cập nhật trạng thái hành động dựa trên loại phê duyệt
         const action = actions[actionIndex];
-        if (approvalAction === ApprovalAction.Approve) {
-            action.status = ActionStatus.Approved;
-        } else if (approvalAction === ApprovalAction.Reject) {
-            action.status = ActionStatus.Rejected;
+        switch (approvalAction) {
+            case ApprovalAction.Approve:
+                action.status = ActionStatus.Approved;
+                break;
+            case ApprovalAction.Reject:
+                action.status = ActionStatus.Rejected;
+                break;
+            case ApprovalAction.RequestEdit:
+            case ApprovalAction.Submit:
+            case ApprovalAction.Cancel:
+                // Xử lý các hành động khác nếu cần
+                break;
+            default:
+                throw new Error('Invalid approval action.');
         }
 
+        // Tạo và thêm một log phê duyệt mới
         const maxLogId = approvalLogs.length > 0 ? Math.max(...approvalLogs.map(log => log.approvalLogId)) : 0;
         const newApprovalLog: ApprovalLog = {
             approvalLogId: maxLogId + 1,
-            actionId: action.actionId,
+            actionId,
             approverId,
-            action: approvalAction,
             note,
             approvalDate: new Date().toISOString(),
+            action: approvalAction,
         };
 
         approvalLogs.push(newApprovalLog);

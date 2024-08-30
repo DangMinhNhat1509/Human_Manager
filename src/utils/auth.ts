@@ -1,48 +1,67 @@
-import { Role } from '../types/Employee'; // Import enum Role
-import { getEmployeeById } from '../modules/employee/services/employeeService';
+    import { Role } from '../types/Employee';
+    import { getEmployeeById } from '../modules/employee/services/employeeService';
 
-// Lưu thông tin người dùng vào localStorage
-export const setUserRole = (role: Role): void => {
-    localStorage.setItem('currentUserRole', role);
-};
+    // Lưu thông tin người dùng vào sessionStorage
+    export const setUserRole = (role: Role): void => {
+        sessionStorage.setItem('currentUserRole', role);
+    };
 
-export const setUserId = (id: number): void => {
-    localStorage.setItem('currentUserId', id.toString());
-};
+    // Lưu ID người dùng vào sessionStorage
+    export const setUserId = (id: number): void => {
+        sessionStorage.setItem('currentUserId', id.toString());
+    };
 
-// Lấy thông tin người dùng từ localStorage
-export const getCurrentUserRole = (): Role => {
-    const role = localStorage.getItem('currentUserRole');
-    if (role && Object.values(Role).includes(role as Role)) {
-        return role as Role;
-    }
-    throw new Error('Role không hợp lệ được tìm thấy trong localStorage');
-};
-
-
-export const getCurrentUserDepartmentId = async (): Promise<number> => {
-    const userId = getCurrentUserId();
-    console.log(userId);
-    const employeeDetail = await getEmployeeById(userId);
-    if (employeeDetail && employeeDetail.departmentId) {
-        return employeeDetail.departmentId;
-    }
-    throw new Error('Không thể tìm thấy department cho user');
-};
-
-export const getCurrentUserId = (): number => {
-    const id = localStorage.getItem('currentUserId');
-    if (id) {
-        const parsedId = parseInt(id, 10);
-        if (!isNaN(parsedId)) {
-            return parsedId;
+    // Lấy thông tin vai trò người dùng từ sessionStorage
+    export const getCurrentUserRole = (): Role | undefined => {
+        try {
+            const role = sessionStorage.getItem('currentUserRole');
+            if (role && Object.values(Role).includes(role as Role)) {
+                return role as Role;
+            }
+            return undefined;
+        } catch (error) {
+            console.error('Error getting current user role:', error);
+            return undefined;
         }
-    }
-    throw new Error('User ID không hợp lệ được tìm thấy trong localStorage');
-};
+    };
 
-// Xóa thông tin người dùng khỏi localStorage
-export const clearUserData = (): void => {
-    localStorage.removeItem('currentUserRole');
-    localStorage.removeItem('currentUserId');
-};
+    // Lấy thông tin ID người dùng từ sessionStorage
+    export const getCurrentUserId = (): number | undefined => {
+        try {
+            const id = sessionStorage.getItem('currentUserId');
+            if (id) {
+                const parsedId = parseInt(id, 10);
+                if (!isNaN(parsedId)) {
+                    return parsedId;
+                }
+            }
+            return undefined;
+        } catch (error) {
+            console.error('Error getting current user ID:', error);
+            return undefined;
+        }
+    };
+
+    // Lấy ID phòng ban của người dùng hiện tại
+    export const getCurrentUserDepartmentId = async (): Promise<number | undefined> => {
+        try {
+            const userId = getCurrentUserId();
+            if (userId === undefined) {
+                throw new Error('User ID không hợp lệ trong sessionStorage');
+            }
+            const employeeDetail = await getEmployeeById(userId);
+            if (employeeDetail && employeeDetail.departmentId) {
+                return employeeDetail.departmentId;
+            }
+            return undefined;
+        } catch (error) {
+            console.error('Error getting current user department ID:', error);
+            return undefined;
+        }
+    };
+
+    // Xóa thông tin người dùng khỏi sessionStorage
+    export const clearUserData = (): void => {
+        sessionStorage.removeItem('currentUserRole');
+        sessionStorage.removeItem('currentUserId');
+    };

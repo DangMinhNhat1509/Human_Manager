@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Input, Card, List, Typography, Spin, message, Modal } from 'antd';
 import { getActionById, approveOrRejectAction, getApprovalLogs } from '../services/RewardDisciplineService';
-import { Action, ActionStatus } from '../../../types/Action';
+import { Action, ActionStatus, ActionType } from '../../../types/Action';
 import { Role } from '../../../types/Employee';
 import { ApprovalAction, ApprovalLog } from '../../../types/ApprovalLog';
 import { getCurrentUserRole } from '../../../utils/auth';
@@ -25,6 +25,7 @@ const RewardDisciplineDetailPage: React.FC = () => {
             setError(null);
             try {
                 if (actionId) {
+
                     const fetchedAction = await getActionById(parseInt(actionId, 10));
                     setAction(fetchedAction);
                     const logs = await getApprovalLogs(parseInt(actionId, 10));
@@ -51,7 +52,7 @@ const RewardDisciplineDetailPage: React.FC = () => {
                 title: 'Are you sure you want to approve this action?',
                 onOk: async () => {
                     try {
-                        await approveOrRejectAction(parseInt(actionId, 10), ApprovalAction.Approve, note, 1, 'Approver Name');
+                        await approveOrRejectAction(parseInt(actionId, 10), ApprovalAction.Approve, note, 1);
                         setAction({ ...action, status: ActionStatus.Approved });
                         message.success('Action approved successfully');
                     } catch (error) {
@@ -70,7 +71,7 @@ const RewardDisciplineDetailPage: React.FC = () => {
                 title: 'Are you sure you want to reject this action?',
                 onOk: async () => {
                     try {
-                        await approveOrRejectAction(parseInt(actionId, 10), ApprovalAction.Reject, note, 1, 'Approver Name');
+                        await approveOrRejectAction(parseInt(actionId, 10), ApprovalAction.Reject, note, 1);
                         setAction({ ...action, status: ActionStatus.Rejected });
                         message.success('Action rejected successfully');
                     } catch (error) {
@@ -85,8 +86,8 @@ const RewardDisciplineDetailPage: React.FC = () => {
     const handleRequestEdit = async () => {
         if (action && actionId) {
             try {
-                await approveOrRejectAction(parseInt(actionId, 10), ApprovalAction.RequestEdit, note, 1, 'Approver Name');
-                setAction({ ...action, status: ActionStatus.Editing });
+                await approveOrRejectAction(parseInt(actionId, 10), ApprovalAction.RequestEdit, note, 1);
+                setAction(prevAction => prevAction ? { ...action, status: ActionStatus.Editing } : null);
                 message.success('Request for edit sent successfully');
             } catch (error) {
                 console.error('Error requesting edit:', error);
@@ -97,7 +98,7 @@ const RewardDisciplineDetailPage: React.FC = () => {
 
     const handleEdit = () => {
         if (action && role === Role.Manager && (action.status === ActionStatus.Draft || action.status === ActionStatus.Editing)) {
-            navigate(`/actions/edit/${actionId}`);
+            navigate(`/actions/update/${actionId}`);
         }
     };
 
@@ -124,10 +125,14 @@ const RewardDisciplineDetailPage: React.FC = () => {
             <Paragraph><strong>Action Type:</strong> {action.actionType}</Paragraph>
             <Paragraph><strong>Action Subtype:</strong> {action.actionSubtype}</Paragraph>
             <Paragraph><strong>Action Date:</strong> {dayjs(action.actionDate).format('MMMM D, YYYY h:mm:ss A')}</Paragraph>
+            {action.actionType === ActionType.Reward && action.amount && (
+                <Paragraph><strong>Amount:</strong> {action.amount}</Paragraph>
+            )}
+            {action.actionType === ActionType.Disciplinary && action.duration && (
+                <Paragraph><strong>Duration:</strong> {action.duration} days</Paragraph>
+            )}
             <Paragraph><strong>Status:</strong> {action.status}</Paragraph>
             <Paragraph><strong>Reason:</strong> {action.reason}</Paragraph>
-            {action.amount && <Paragraph><strong>Amount:</strong> {action.amount}</Paragraph>}
-            {action.duration && <Paragraph><strong>Duration:</strong> {action.duration} days</Paragraph>}
 
             {(role === Role.HR || role === Role.Director) && (
                 <>

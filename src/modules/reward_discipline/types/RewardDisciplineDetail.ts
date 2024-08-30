@@ -9,6 +9,8 @@ export interface RewardDisciplineDetail {
     actionSubtype: ActionSubtype;
     actionDate: string;
     status: ActionStatus;
+    amount?: number;
+    duration?: number;
     reason: string; // Lý do khen thưởng/kỷ luật
     note?: string; // Ghi chú thêm (không bắt buộc)
     departmentName: string; // Tên phòng ban
