@@ -36,11 +36,8 @@ export const getAllDepartments = async (): Promise<Department[]> =>{
     } catch(error) {
         console.error('Error fetching all departments', error);
         throw error;    
-    }
-
-    
-    
-}
+    } 
+};
 
 // Fetch all employees
 export const getAllEmployees = async (): Promise<EmployeeListItem[]> => {
@@ -105,7 +102,6 @@ export const getEmployeeById = async (id: number): Promise<EmployeeDetail | null
 
 // Create a new employee
 export const createEmployee = async (employee: CreateEmployee): Promise<void> => {
-    console.log(typeof employee.departmentId);
     try {
         const { employees, departments, actions, approvalLogs } = getHrmData();
         
@@ -131,11 +127,9 @@ export const createEmployee = async (employee: CreateEmployee): Promise<void> =>
     }
 };
 
+
 // Update employee information
-export const updateEmployee = async (
-    id: number,
-    updateData: Partial<Omit<EmployeeDetail, 'employeeId'>> & { departmentName?: string }
-): Promise<void> => {
+export const updateEmployee = async (id: number, updateData: Partial<Omit<EmployeeDetail, 'employeeId'>>): Promise<void> => {
     try {
         const { employees, departments } = getHrmData();
 
@@ -149,24 +143,20 @@ export const updateEmployee = async (
             throw new Error('Only employees with role "Employee" can be updated.');
         }
 
-        // Xử lý departmentName
-        if (updateData.departmentName) {
-            const departmentId = getDepartmentIdByName(updateData.departmentName);
-            if (!departmentId) {
-                throw new Error(`Department with name ${updateData.departmentName} not found.`);
-            }
-            // Cập nhật departmentId vào updateData
-            updateData.departmentId = departmentId;
+        if (updateData.departmentId && !departments.some(dep => dep.departmentId === updateData.departmentId)) {
+            throw new Error('Invalid department ID.');
         }
 
         // Cập nhật nhân viên
         employees[employeeIndex] = { ...employee, ...updateData };
-        saveHrmData({ employees, departments, actions: [], approvalLogs: [] });
+        saveHrmData({ ...getHrmData(), employees });
     } catch (error) {
         console.error('Error updating employee:', error);
         throw error;
     }
 };
+
+
 
 
 // Delete employee

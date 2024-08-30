@@ -10,7 +10,7 @@ export interface EmployeeDetail {
     address: string;
     avatar: string;
     status: boolean;
-    departmentName: string;  // Thay thế cho departmentId
+    departmentName: string;  
     departmentId: number;
     role: Role;  // Sử dụng enum Role
 }

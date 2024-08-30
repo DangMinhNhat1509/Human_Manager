@@ -5,7 +5,7 @@ import { getEmployeesByRole } from '../services/employeeService'; // Import hàm
 import { EmployeeListItem } from '../types/EmployeeListItem';
 import {Role} from '../../../types/Employee';
 import dayjs from 'dayjs'; // dayjs for date handling
-import _ from 'lodash'; // lodash for utility functions
+import _ from 'lodash'; 
 
 const EmployeePage: React.FC = () => {
     const [employees, setEmployees] = useState<EmployeeListItem[]>([]);
@@ -49,13 +49,13 @@ const EmployeePage: React.FC = () => {
             title: 'Gender',
             dataIndex: 'gender',
             key: 'gender',
-            render: (text: string) => <span>{_.capitalize(text)}</span> // Capitalize gender
+            render: (text: string) => <span>{_.capitalize(text)}</span> 
         },
         {
             title: 'Date of Birth',
             dataIndex: 'dateOfBirth',
             key: 'dateOfBirth',
-            render: (text: string) => <span>{dayjs(text).format('YYYY-MM-DD')}</span> // Format date
+            render: (text: string) => <span>{dayjs(text).format('MMMM D YYYY')}</span> 
         },
         {
             title: 'Department',

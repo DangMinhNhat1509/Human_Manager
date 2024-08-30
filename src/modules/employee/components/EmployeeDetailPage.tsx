@@ -9,7 +9,11 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
-const EmployeeDetailPage: React.FC = () => {
+interface EmployeeDetailPageProps {
+    viewOnly?: boolean;
+}
+
+const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = false }) => {
     const { employeeId } = useParams<{ employeeId: string }>();
     const navigate = useNavigate();
     const [employeeDetail, setEmployeeDetail] = useState<EmployeeDetail | null>(null);
@@ -107,20 +111,22 @@ const EmployeeDetailPage: React.FC = () => {
 
     return (
         <div>
-            <Button
-                type="link"
-                icon={<ArrowLeftOutlined />}
-                onClick={handleBackClick}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    fontSize: '16px',
-                    color: '#1890ff',
-                    padding: '20px 0',
-                }}
-            >
-                {employeeDetail.name}
-            </Button>
+            {!viewOnly && (
+                <Button
+                    type="link"
+                    icon={<ArrowLeftOutlined />}
+                    onClick={handleBackClick}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        fontSize: '16px',
+                        color: '#1890ff',
+                        padding: '20px 0',
+                    }}
+                >
+                    {employeeDetail.name}
+                </Button>
+            )}
 
             <Row style={{ marginBottom: '20px' }} gutter={24}>
                 <Col span={7}>
@@ -130,32 +136,35 @@ const EmployeeDetailPage: React.FC = () => {
                             alt="Avatar"
                             style={{ width: '80%', borderRadius: '8px', marginBottom: '10px' }}
                         />
-                        <Button
-                            type="primary"
-                            block
-                            onClick={handleUpdateClick}
-                            style={{
-                                width: '80%',
-                                height: '36px',
-                                marginTop: '10px'
-                            }}
-                        >
-                            Update Profile
-                        </Button>
-
-                        <Button
-                            type="primary"
-                            danger
-                            block
-                            onClick={handleDeleteClick}
-                            style={{
-                                width: '80%',
-                                height: '36px',
-                                marginTop: '10px'
-                            }}
-                        >
-                            Delete Employee
-                        </Button>
+                        {!viewOnly && (
+                            <>
+                                <Button
+                                    type="primary"
+                                    block
+                                    onClick={handleUpdateClick}
+                                    style={{
+                                        width: '80%',
+                                        height: '36px',
+                                        marginTop: '10px'
+                                    }}
+                                >
+                                    Update Profile
+                                </Button>
+                                <Button
+                                    type="primary"
+                                    danger
+                                    block
+                                    onClick={handleDeleteClick}
+                                    style={{
+                                        width: '80%',
+                                        height: '36px',
+                                        marginTop: '10px'
+                                    }}
+                                >
+                                    Delete Employee
+                                </Button>
+                            </>
+                        )}
                     </Card>
                 </Col>
 
@@ -187,7 +196,7 @@ const EmployeeDetailPage: React.FC = () => {
                 </Col>
             </Row>
 
-            {showUpdateModal && employeeDetail && (
+            {showUpdateModal && employeeDetail && !viewOnly && (
                 <EmployeeUpdateModal
                     show={showUpdateModal}
                     onHide={() => setShowUpdateModal(false)}
