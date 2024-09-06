@@ -97,7 +97,7 @@ const Sidebar: React.FC = () => {
     const handleModalOk = () => {
         if (selectedEmployee && selectedRole) {
             if (selectedEmployee === getCurrentUserId()) {
-                message.error('Cannot switch account with yourself.');
+                message.error('Không thể đổi tài khoản với chính bạn.');
                 return;
             }
             setUserRole(selectedRole);
@@ -105,7 +105,7 @@ const Sidebar: React.FC = () => {
             navigate(`/employees/${selectedEmployee}?viewOnly=true`);
             setIsModalOpen(false);
         } else {
-            message.error('Please select both role and employee.');
+            message.error('Vui lòng chọn cả vai trò và nhân viên.');
         }
     };
 
@@ -119,7 +119,6 @@ const Sidebar: React.FC = () => {
 
     const getMenuItems = () => {
         const role = getCurrentUserRole();
-        const employeeId = getCurrentUserId();
 
         if (!role) return [];
 
@@ -128,14 +127,14 @@ const Sidebar: React.FC = () => {
         menuItems.push({
             key: "/accounts",
             icon: <SyncOutlined />,
-            label: <Link to='#' onClick={handleSwitchAccount}>Switch Account</Link>
+            label: <Link to='#' onClick={handleSwitchAccount}>Đổi tài khoản</Link>
         })
 
         if (role === Role.Director || role === Role.HR) {
             menuItems.push({
                 key: "/employees",
                 icon: <UserOutlined />,
-                label: <Link to="/employees">Manage Employees</Link>
+                label: <Link to="/employees">Quản lý nhân viên</Link>
             });
         }
 
@@ -143,7 +142,7 @@ const Sidebar: React.FC = () => {
             menuItems.push({
                 key: "/actions",
                 icon: <TrophyOutlined />,
-                label: <Link to="/actions">Manage Rewards/Disciplinary Actions</Link>
+                label: <Link to="/actions">Quản lý khen thưởng và kỷ luật</Link>
             });
         }
 
@@ -151,28 +150,28 @@ const Sidebar: React.FC = () => {
             {
                 key: "/notifications",
                 icon: <BellOutlined />,
-                label: <Link to="/notifications">Notifications</Link>,
+                label: <Link to="/notifications">Thông báo</Link>,
             },
             {
                 key: "/reports",
                 icon: <FileTextOutlined />,
-                label: <Link to="/reports">Reports & Statistics</Link>,
+                label: <Link to="/reports">Báo cáo và thống kê</Link>,
             },
             {
                 key: "/settings",
                 icon: <SettingOutlined />,
-                label: 'Settings',
+                label: 'Cài đặt',
                 children: [
                     {
                         key: "theme",
                         icon: <BgColorsOutlined />,
                         label: (
                             <span style={{ display: 'flex', alignItems: 'center' }}>
-                                Theme
+                                Chủ đề
                                 <Switch
                                     style={{ marginLeft: '8px' }}
-                                    checkedChildren='Dark'
-                                    unCheckedChildren='Light'
+                                    checkedChildren='Tối'
+                                    unCheckedChildren='Sáng'
                                     checked={menuTheme === 'dark'}
                                     onChange={checked => setMenuTheme(checked ? 'dark' : 'light')}
                                 />
@@ -213,21 +212,21 @@ const Sidebar: React.FC = () => {
                 />
 
                 <Modal
-                    title="Switch Account"
+                    title="Đổi tài khoản"
                     open={isModalOpen}
                     onCancel={handleModalCancel}
                     onOk={handleModalOk}
                     footer={[
                         <Button key="cancel" onClick={handleModalCancel}>
-                            Cancel
+                            Hủy
                         </Button>,
                         <Button key="ok" type="primary" onClick={handleModalOk}>
-                            Confirm
+                            Xác nhận
                         </Button>,
                     ]}
                 >
                     <Select
-                        placeholder="Select Role"
+                        placeholder="Chọn vai trò"
                         onChange={handleRoleChange}
                         value={selectedRole}
                         style={{ width: '100%', marginBottom: '10px' }}
@@ -238,9 +237,11 @@ const Sidebar: React.FC = () => {
                             </Option>
                         ))}
                     </Select>
+
+                    {/* Chỉ hiện trường chọn phòng ban khi vai trò là "Employee" */}
                     {selectedRole === Role.Employee && (
                         <Select
-                            placeholder="Select Department"
+                            placeholder="Chọn phòng ban"
                             onChange={handleDepartmentChange}
                             value={selectedDepartmentName}
                             style={{ width: '100%', marginBottom: '10px' }}
@@ -252,24 +253,24 @@ const Sidebar: React.FC = () => {
                             ))}
                         </Select>
                     )}
-                    <Select
-                        placeholder={`Select ${selectedRole}`}
-                        onChange={handleEmployeeChange}
-                        value={selectedEmployee}
-                        style={{ width: '100%', marginBottom: '10px' }}
-                    >
-                        {filteredEmployees.map(employee => (
-                            <Option key={employee.employeeId} value={employee.employeeId}>
-                                {employee.name}
-                            </Option>
-                        ))}
-                    </Select>
-                    {selectedEmployeeName && (
-                        <div>
-                            <strong>Selected Employee:</strong> {selectedEmployeeName}
-                        </div>
+
+                    {/* Chỉ hiện trường chọn nhân viên khi đã chọn phòng ban (với vai trò Employee) hoặc với các vai trò khác */}
+                    {((selectedRole === Role.Employee && selectedDepartmentName) || selectedRole !== Role.Employee) && (
+                        <Select
+                            placeholder={`Chọn ${selectedRole}`}
+                            onChange={handleEmployeeChange}
+                            value={selectedEmployee}
+                            style={{ width: '100%', marginBottom: '10px' }}
+                        >
+                            {filteredEmployees.map(employee => (
+                                <Option key={employee.employeeId} value={employee.employeeId}>
+                                    {employee.name}
+                                </Option>
+                            ))}
+                        </Select>
                     )}
                 </Modal>
+
             </Sider>
         </>
     );
