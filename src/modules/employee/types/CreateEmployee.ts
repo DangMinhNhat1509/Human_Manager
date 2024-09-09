@@ -10,5 +10,5 @@ export interface CreateEmployee {
     avatar: string;
     status: boolean;
     departmentId: number;
-    role: Role;  // Sử dụng enum Role
+    role: Role; 
 }

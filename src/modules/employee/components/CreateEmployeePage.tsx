@@ -4,7 +4,8 @@ import { Form, Input, Button, Checkbox, DatePicker, message, Card, Row, Col, Typ
 import { createEmployee, getAllDepartments } from '../services/employeeService';
 import dayjs from 'dayjs';
 import { Department } from '../../../types/Department';
-
+import { Role } from '../../../types/Employee';
+import { CreateEmployee } from '../types/CreateEmployee';
 const { Title } = Typography;
 const { Option } = Select;
 
@@ -45,15 +46,16 @@ const CreateEmployeePage: React.FC = () => {
         setIsFocused(false);
     };
 
-    const handleSubmit = async (values: any) => {
+    const handleSubmit = async (values: CreateEmployee) => {
         setLoading(true);
         try {
             const formattedData = {
                 ...values,
                 dateOfBirth: dayjs(values.dateOfBirth).format('YYYY-MM-DD'),
-                departmentId: departments.find(dep => dep.departmentName === values.department)?.departmentId,
-                role: 'Nhân viên',
+                role: Role.Employee,
+                departmentId: values.departmentId,
             };
+
             await createEmployee(formattedData);
             message.success('Nhân viên đã được tạo thành công!');
             navigate('/employees');
@@ -166,7 +168,7 @@ const CreateEmployeePage: React.FC = () => {
 
                         <Col span={24} md={12}>
                             <Form.Item
-                                name="department"
+                                name="departmentId"
                                 label="Phòng ban"
                                 rules={[
                                     { required: true, message: 'Vui lòng chọn phòng ban!' },
@@ -174,7 +176,7 @@ const CreateEmployeePage: React.FC = () => {
                             >
                                 <Select placeholder="Chọn phòng ban">
                                     {departments.map(dep => (
-                                        <Option key={dep.departmentId} value={dep.departmentName}>
+                                        <Option key={dep.departmentId} value={dep.departmentId}>
                                             {dep.departmentName}
                                         </Option>
                                     ))}

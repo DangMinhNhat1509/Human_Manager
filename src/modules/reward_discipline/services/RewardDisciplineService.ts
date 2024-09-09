@@ -1,5 +1,3 @@
-// src/modules/reward_discipline/services/RewardDisciplineService.ts
-
 import { Action, ActionStatus } from '../../../types/Action';
 import { ApprovalLog, ApprovalAction } from '../../../types/ApprovalLog';
 import { CreateRewardDiscipline } from '../types/CreateRewardDiscipline';
@@ -7,13 +5,15 @@ import { RewardDisciplineDetail } from '../types/RewardDisciplineDetail';
 import { RewardDisciplineListItem } from '../types/RewardDisciplineListItem';
 import { getHrmData, saveHrmData, getEmployeesByRole, getEmployeeById } from '../../employee/services/employeeService';
 import { Role } from '../../../types/Employee';
-// Fetch all actions
+import { message } from 'antd';
+
+// Lấy tất cả các hành động
 export const getAllActions = async (): Promise<RewardDisciplineListItem[]> => {
     try {
         const { actions } = getHrmData();
 
         if (!Array.isArray(actions)) {
-            throw new Error('Invalid data format for actions.');
+            throw new Error('Định dạng dữ liệu hành động không hợp lệ.');
         }
 
         const employees = await getEmployeesByRole(Role.Employee);
@@ -22,7 +22,7 @@ export const getAllActions = async (): Promise<RewardDisciplineListItem[]> => {
             const employee = employees.find(emp => emp.employeeId === action.employeeId);
 
             if (!employee) {
-                throw new Error(`Employee with id ${action.employeeId} not found`);
+                throw new Error(`Nhân viên với id ${action.employeeId} không được tìm thấy`);
             }
 
             return {
@@ -38,55 +38,54 @@ export const getAllActions = async (): Promise<RewardDisciplineListItem[]> => {
             };
         });
     } catch (error) {
-        console.error('Error fetching all actions:', error);
+        message.error('Lỗi khi lấy tất cả các hành động!');
         throw error;
     }
 };
 
-// Fetch actions by department
+// Lấy hành động theo phòng ban
 export const getActionsByDepartment = async (departmentId: number): Promise<RewardDisciplineListItem[]> => {
     try {
         // Lấy tất cả các hành động
         const allActions = await getAllActions();
 
         if (!allActions || !Array.isArray(allActions)) {
-            console.error('Failed to fetch actions: Invalid data format.');
-            throw new Error('Failed to fetch actions: Invalid data format.');
+            throw new Error('Không thể lấy các hành động: Định dạng dữ liệu không hợp lệ.');
         }
 
         // Lọc hành động theo tên phòng ban
         const filteredActions = allActions.filter(action => action.departmentId === departmentId);
 
         if (filteredActions.length === 0) {
-            console.warn(`No actions found for department: ${filteredActions}`);
+            message.warning(`Không tìm thấy hành động cho phòng ban: ${departmentId}`);
         }
 
         return filteredActions;
     } catch (error) {
-        console.error('Error fetching actions by department:', error);
+        message.error('Lỗi khi lấy hành động theo phòng ban!');
         throw error;
     }
 };
 
-// Fetch action by ID
+// Lấy chi tiết hành động theo ID
 export const getActionDetailById = async (actionId: number): Promise<RewardDisciplineDetail> => {
     try {
         const { actions, approvalLogs } = getHrmData();
 
         if (!Array.isArray(actions)) {
-            throw new Error('Invalid data format for actions.');
+            throw new Error('Định dạng dữ liệu hành động không hợp lệ.');
         }
         if (!Array.isArray(approvalLogs)) {
-            throw new Error('Invalid data format for approvalLogs.');
+            throw new Error('Định dạng dữ liệu approvalLogs không hợp lệ.');
         }
 
         const action = actions.find(action => action.actionId === actionId);
         if (!action) {
-            throw new Error(`Hành động với ${actionId} không tồn tại!`);
+            throw new Error(`Hành động với ID ${actionId} không tồn tại!`);
         }
 
         const employee = await getEmployeeById(action.employeeId);
-        const departmentName = employee?.departmentName ?? 'Không xác đinh!';
+        const departmentName = employee?.departmentName ?? 'Không xác định!';
 
         const approvalLogsWithNames = await Promise.all(
             approvalLogs
@@ -95,7 +94,7 @@ export const getActionDetailById = async (actionId: number): Promise<RewardDisci
                     const approver = await getEmployeeById(log.approverId);
                     return {
                         ...log,
-                        approverName: approver?.name?? 'Người phê duyệt đã bị xóa',
+                        approverName: approver?.name ?? 'Người phê duyệt đã bị xóa',
                     }
                 })
         )
@@ -113,22 +112,21 @@ export const getActionDetailById = async (actionId: number): Promise<RewardDisci
             reason: action.reason,
             departmentName: departmentName,
             approvalLogs: approvalLogsWithNames,
-
         };
     } catch (error) {
-        console.error('Error fetching action by ID:', error);
+        message.error('Lỗi khi lấy chi tiết hành động theo ID!');
         throw error;
     }
 };
 
-// Create a new action
+// Tạo một hành động mới
 export const createAction = async (action: CreateRewardDiscipline): Promise<void> => {
     try {
         const { actions } = getHrmData();
 
         // Kiểm tra định dạng của 'actions'
         if (!Array.isArray(actions)) {
-            throw new Error('Invalid data format for actions.');
+            throw new Error('Định dạng dữ liệu hành động không hợp lệ.');
         }
 
         const maxId = actions.length > 0 ? Math.max(...actions.map(a => a.actionId)) : 0;
@@ -142,24 +140,23 @@ export const createAction = async (action: CreateRewardDiscipline): Promise<void
 
         saveHrmData({ ...getHrmData(), actions });
     } catch (error) {
-        console.error('Error creating action:', error);
+        message.error('Lỗi khi tạo hành động!');
         throw error;
     }
 };
 
-
-// Update an action
+// Cập nhật một hành động
 export const updateAction = async (actionId: number, updateData: Partial<CreateRewardDiscipline>): Promise<void> => {
     try {
         const { actions } = getHrmData();
 
         if (!Array.isArray(actions)) {
-            throw new Error('Invalid data format for actions.');
+            throw new Error('Định dạng dữ liệu hành động không hợp lệ.');
         }
 
         const actionIndex = actions.findIndex(a => a.actionId === actionId);
         if (actionIndex === -1) {
-            throw new Error('Action not found.');
+            throw new Error('Hành động không được tìm thấy.');
         }
 
         actions[actionIndex] = {
@@ -168,22 +165,23 @@ export const updateAction = async (actionId: number, updateData: Partial<CreateR
         };
         saveHrmData({ ...getHrmData(), actions });
     } catch (error) {
-        console.error('Error updating action:', error);
+        message.error('Lỗi khi cập nhật hành động!');
         throw error;
     }
 };
 
+// Cập nhật trạng thái hành động
 export const updateActionStatus = async (actionId: number, newStatus: ActionStatus): Promise<void> => {
     try {
         const { actions } = getHrmData();
 
         if (!Array.isArray(actions)) {
-            throw new Error('Invalid data format for actions.');
+            throw new Error('Định dạng dữ liệu hành động không hợp lệ.');
         }
 
         const actionIndex = actions.findIndex(a => a.actionId === actionId);
         if (actionIndex === -1) {
-            throw new Error('Action not found.');
+            throw new Error('Hành động không được tìm thấy.');
         }
 
         actions[actionIndex] = {
@@ -193,34 +191,34 @@ export const updateActionStatus = async (actionId: number, newStatus: ActionStat
 
         saveHrmData({ ...getHrmData(), actions });
     } catch (error) {
-        console.error('Error updating action status:', error);
+        message.error('Lỗi khi cập nhật trạng thái hành động!');
         throw error;
     }
 };
 
-// Delete an action
+// Xóa một hành động
 export const deleteAction = async (actionId: number): Promise<void> => {
     try {
         const { actions } = getHrmData();
 
         if (!Array.isArray(actions)) {
-            throw new Error('Invalid data format for actions.');
+            throw new Error('Định dạng dữ liệu hành động không hợp lệ.');
         }
 
         const actionIndex = actions.findIndex(a => a.actionId === actionId);
         if (actionIndex === -1) {
-            throw new Error('Action not found.');
+            throw new Error('Hành động không được tìm thấy.');
         }
 
         actions.splice(actionIndex, 1);
         saveHrmData({ ...getHrmData(), actions });
     } catch (error) {
-        console.error('Error deleting action:', error);
+        message.error('Lỗi khi xóa hành động!');
         throw error;
     }
 };
 
-// Approve or reject an action
+// Phê duyệt hoặc từ chối một hành động
 export const approveOrRejectAction = async (
     actionId: number,
     approvalAction: ApprovalAction,
@@ -231,12 +229,12 @@ export const approveOrRejectAction = async (
         const { actions, approvalLogs } = getHrmData();
 
         if (!Array.isArray(actions) || !Array.isArray(approvalLogs)) {
-            throw new Error('Invalid data format for actions or approvalLogs.');
+            throw new Error('Định dạng dữ liệu hành động hoặc approvalLogs không hợp lệ.');
         }
 
         const actionIndex = actions.findIndex(a => a.actionId === actionId);
         if (actionIndex === -1) {
-            throw new Error('Action not found.');
+            throw new Error('Hành động không được tìm thấy.');
         }
 
         // Cập nhật trạng thái hành động dựa trên loại phê duyệt
@@ -254,7 +252,7 @@ export const approveOrRejectAction = async (
                 // Xử lý các hành động khác nếu cần
                 break;
             default:
-                throw new Error('Invalid approval action.');
+                throw new Error('Loại phê duyệt không hợp lệ.');
         }
 
         // Tạo và thêm một log phê duyệt mới
@@ -269,11 +267,10 @@ export const approveOrRejectAction = async (
         };
 
         approvalLogs.push(newApprovalLog);
+
         saveHrmData({ ...getHrmData(), actions, approvalLogs });
     } catch (error) {
-        console.error('Error approving or rejecting action:', error);
+        message.error('Lỗi khi phê duyệt hoặc từ chối hành động!');
         throw error;
     }
 };
-
-

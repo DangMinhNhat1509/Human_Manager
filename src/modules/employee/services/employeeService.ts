@@ -1,9 +1,11 @@
+import { message } from 'antd'; // Import message từ Ant Design
 import { EmployeeDetail } from '../types/EmployeeDetail';
 import { CreateEmployee } from '../types/CreateEmployee';
 import { EmployeeListItem } from '../types/EmployeeListItem';
 import { Role } from '../../../types/Employee';
 import { HRMData } from '../../../types/HRMData';
-import {Department} from '../../../types/Department';
+import { Department } from '../../../types/Department';
+
 const HRM_DATA_KEY = 'hrmData';
 
 export const getHrmData = (): HRMData => {
@@ -15,17 +17,11 @@ export const saveHrmData = (data: HRMData) => {
     localStorage.setItem(HRM_DATA_KEY, JSON.stringify(data));
 };
 
-const getDepartmentIdByName = (departmentName: string): number | undefined => {
-    const { departments } = getHrmData();
-    const department = departments.find(dep => dep.departmentName === departmentName);
-    return department ? department.departmentId : undefined;
-};
-
-export const getAllDepartments = async (): Promise<Department[]> =>{
+export const getAllDepartments = async (): Promise<Department[]> => {
     try {
-        const {departments} = getHrmData();
-        if (!Array.isArray(departments)){
-            throw new Error('Invalid data format for departments');
+        const { departments } = getHrmData();
+        if (!Array.isArray(departments)) {
+            throw new Error('Dữ liệu phòng ban không hợp lệ');
         }
 
         return departments.map(dep => ({
@@ -33,8 +29,8 @@ export const getAllDepartments = async (): Promise<Department[]> =>{
             departmentName: dep.departmentName,
             managerId: dep.managerId
         }));
-    } catch(error) {
-        console.error('Error fetching all departments', error);
+    } catch (error) {
+        message.error('Lỗi khi lấy danh sách phòng ban');
         throw error;    
     } 
 };
@@ -44,26 +40,25 @@ export const getAllEmployees = async (): Promise<EmployeeListItem[]> => {
     try {
         const { employees, departments } = getHrmData();
         if (!Array.isArray(employees) || !Array.isArray(departments)) {
-            throw new Error('Invalid data format');
+            throw new Error('Dữ liệu nhân viên hoặc phòng ban không hợp lệ');
         }
 
         if (!employees.every(emp => 'employeeId' in emp) ||
             !departments.every(dept => 'departmentId' in dept && 'departmentName' in dept)) {
-            throw new Error('Invalid employee or department object');
+            throw new Error('Dữ liệu nhân viên hoặc phòng ban không hợp lệ');
         }
-        
 
         const result = employees.map(emp => {
             const department = departments.find(dept => dept.departmentId === emp.departmentId);
             return {
                 ...emp,
-                departmentName: department ? department.departmentName : 'Unknown'
+                departmentName: department ? department.departmentName : 'Chưa xác định'
             };
         });
 
         return result;
     } catch (error) {
-        console.error('Error fetching all employees:', error);
+        message.error('Lỗi khi lấy danh sách nhân viên');
         throw error;
     }
 };
@@ -74,7 +69,7 @@ export const getEmployeesByRole = async (role: Role): Promise<EmployeeListItem[]
         const employees: EmployeeListItem[] = await getAllEmployees();
         return employees.filter((employee: EmployeeListItem) => employee.role === role);
     } catch (error) {
-        console.error('Error fetching employees by role:', error);
+        message.error('Lỗi khi lấy nhân viên theo vai trò');
         throw error;
     }
 };
@@ -89,13 +84,13 @@ export const getEmployeeById = async (id: number): Promise<EmployeeDetail | null
             const department = departments.find(dept => dept.departmentId === employee.departmentId);
             return {
                 ...employee,
-                departmentName: department ? department.departmentName : 'Unknown',
+                departmentName: department ? department.departmentName : 'Chưa xác định',
             };
         } else {
             return null;
         }
     } catch (error) {
-        console.error('Error fetching employee by ID:', error);
+        message.error('Lỗi khi lấy thông tin nhân viên theo ID');
         throw error;
     }
 };
@@ -103,14 +98,14 @@ export const getEmployeeById = async (id: number): Promise<EmployeeDetail | null
 // Create a new employee
 export const createEmployee = async (employee: CreateEmployee): Promise<void> => {
     try {
-        const { employees, departments, actions, approvalLogs } = getHrmData();
-        
+        const { employees, departments } = getHrmData();
+
         if (employee.role !== Role.Employee) {
-            throw new Error('Only employees with role "Employee" can be created.');
+            throw new Error('Chỉ nhân viên với vai trò "Employee" mới có thể được tạo.');
         }
 
-        if (employee.departmentId && !departments.some(dep => dep.departmentId === employee.departmentId)) {
-            throw new Error('Invalid department ID.');
+        if (!employee.departmentId || !departments.some(dep => dep.departmentId === employee.departmentId)) {
+            throw new Error('ID phòng ban không hợp lệ.');
         }
 
         const maxId = employees.length > 0 ? Math.max(...employees.map(e => e.employeeId)) : 0;
@@ -120,13 +115,12 @@ export const createEmployee = async (employee: CreateEmployee): Promise<void> =>
         };
 
         employees.push(newEmployee);
-        saveHrmData({ employees, departments, actions, approvalLogs });
+        saveHrmData({ ...getHrmData(), employees });
     } catch (error) {
-        console.error('Error creating employee:', error);
+        message.error('Lỗi khi tạo nhân viên mới');
         throw error;
     }
 };
-
 
 // Update employee information
 export const updateEmployee = async (id: number, updateData: Partial<Omit<EmployeeDetail, 'employeeId'>>): Promise<void> => {
@@ -135,29 +129,26 @@ export const updateEmployee = async (id: number, updateData: Partial<Omit<Employ
 
         const employeeIndex = employees.findIndex(emp => emp.employeeId === id);
         if (employeeIndex === -1) {
-            throw new Error('Employee not found.');
+            throw new Error('Nhân viên không tìm thấy.');
         }
 
         const employee = employees[employeeIndex];
         if (employee.role !== Role.Employee) {
-            throw new Error('Only employees with role "Employee" can be updated.');
+            throw new Error('Chỉ nhân viên với vai trò "Employee" mới có thể được cập nhật.');
         }
 
         if (updateData.departmentId && !departments.some(dep => dep.departmentId === updateData.departmentId)) {
-            throw new Error('Invalid department ID.');
+            throw new Error('ID phòng ban không hợp lệ.');
         }
 
         // Cập nhật nhân viên
         employees[employeeIndex] = { ...employee, ...updateData };
         saveHrmData({ ...getHrmData(), employees });
     } catch (error) {
-        console.error('Error updating employee:', error);
+        message.error('Lỗi khi cập nhật thông tin nhân viên');
         throw error;
     }
 };
-
-
-
 
 // Delete employee
 export const deleteEmployee = async (employeeId: number): Promise<void> => {
@@ -166,18 +157,18 @@ export const deleteEmployee = async (employeeId: number): Promise<void> => {
 
         const employeeIndex = employees.findIndex(e => e.employeeId === employeeId);
         if (employeeIndex === -1) {
-            throw new Error('Employee not found.');
+            throw new Error('Nhân viên không tìm thấy.');
         }
 
         const employee = employees[employeeIndex];
         if (employee.role !== Role.Employee) {
-            throw new Error('Only employees with role "Employee" can be deleted.');
+            throw new Error('Chỉ nhân viên với vai trò "Employee" mới có thể bị xóa.');
         }
 
         employees.splice(employeeIndex, 1);
         saveHrmData({ employees, departments, actions: [], approvalLogs: [] });
     } catch (error) {
-        console.error('Error deleting employee:', error);
+        message.error('Lỗi khi xóa nhân viên');
         throw error;
     }
 };
