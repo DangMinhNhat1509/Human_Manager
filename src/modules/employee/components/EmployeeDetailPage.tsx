@@ -65,23 +65,32 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
     };
 
     const handleDeleteClick = async () => {
-        if (employeeDetail && window.confirm('Bạn có chắc chắn muốn xóa nhân viên này không?')) {
-            setLoading(true);
-            setError(null);
-            try {
-                await deleteEmployee(employeeDetail.employeeId);
-                Modal.success({
-                    content: `${employeeDetail.name} đã được xóa`,
-                    onOk: () => navigate('/employees'),
-                });
-            } catch (error: any) {
-                setError(error.response ? error.response.data : 'Lỗi mạng');
-            } finally {
-                setLoading(false);
-            }
+        if (employeeDetail) {
+            Modal.confirm({
+                title: 'Xác nhận xóa nhân viên',
+                content: `Bạn có chắc chắn muốn xóa nhân viên ${employeeDetail.name} không?`,
+                okText: 'Xóa',
+                cancelText: 'Hủy',
+                onOk: async () => {
+                    setLoading(true);
+                    setError(null);
+                    try {
+                        await deleteEmployee(employeeDetail.employeeId);
+                        Modal.success({
+                            content: `${employeeDetail.name} đã bị xóa`,
+                            onOk: () => navigate('/employees'),
+                        })
+                    } catch (error: any) {
+                        setError(error.response ? error.response.data : 'Lỗi mạng');
+                    } finally {
+                        setLoading(false);
+                    }
+                },
+                onCancel() { },
+            })
         }
-    };
-
+    }
+    
     if (loading || updating) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
