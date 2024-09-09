@@ -1,8 +1,9 @@
 import { ActionType, ActionSubtype, ActionStatus } from '../../../types/Action';
 import { ApprovalLog } from '../../../types/ApprovalLog';
 
+
 export interface RewardDisciplineDetail {
-    actionId: number; // ID của hành động
+    actionId: number;
     employeeId: number;
     employeeName: string;
     actionType: ActionType;
@@ -11,8 +12,8 @@ export interface RewardDisciplineDetail {
     status: ActionStatus;
     amount?: number;
     duration?: number;
-    reason: string; // Lý do khen thưởng/kỷ luật
-    note?: string; // Ghi chú thêm (không bắt buộc)
-    departmentName: string; // Tên phòng ban
-    approvalLogs: ApprovalLog[]; 
+    reason: string;
+    note?: string;
+    departmentName: string;
+    approvalLogs: (ApprovalLog & { approverName?: string })[];
 }

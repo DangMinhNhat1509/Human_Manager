@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Input, Card, List, Typography, Spin, message, Modal } from 'antd';
-import { getActionById, approveOrRejectAction, getApprovalLogs } from '../services/RewardDisciplineService';
-import { Action, ActionStatus, ActionType } from '../../../types/Action';
+import { Button, Input, Card, Typography, Spin, message, Modal, Descriptions } from 'antd';
+import { getActionDetailById, approveOrRejectAction } from '../services/RewardDisciplineService';
+import { ActionStatus, ActionType } from '../../../types/Action';
+import { RewardDisciplineDetail } from '../types/RewardDisciplineDetail';
 import { Role } from '../../../types/Employee';
-import { ApprovalAction, ApprovalLog } from '../../../types/ApprovalLog';
+import { ApprovalAction } from '../../../types/ApprovalLog';
 import { getCurrentUserRole } from '../../../utils/auth';
 import dayjs from 'dayjs';
 const { Title, Paragraph } = Typography;
 
 const RewardDisciplineDetailPage: React.FC = () => {
     const { actionId } = useParams<{ actionId: string }>();
-    const [action, setAction] = useState<Action | null>(null);
+    const [action, setAction] = useState<RewardDisciplineDetail | null>(null);
     const [loading, setLoading] = useState(false);
-    const [approvalLogs, setApprovalLogs] = useState<ApprovalLog[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [note, setNote] = useState<string>('');
     const navigate = useNavigate();
@@ -26,14 +26,11 @@ const RewardDisciplineDetailPage: React.FC = () => {
             try {
                 if (actionId) {
 
-                    const fetchedAction = await getActionById(parseInt(actionId, 10));
+                    const fetchedAction = await getActionDetailById(parseInt(actionId, 10));
                     setAction(fetchedAction);
-                    const logs = await getApprovalLogs(parseInt(actionId, 10));
-                    setApprovalLogs(logs);
                 }
             } catch (error: any) {
-                console.error('Error fetching action:', error);
-                setError(error.message || 'Network error');
+                setError(error.message || 'Lỗi kết nối mạng');
             } finally {
                 setLoading(false);
             }
@@ -49,15 +46,14 @@ const RewardDisciplineDetailPage: React.FC = () => {
     const handleApprove = async () => {
         if (action && actionId) {
             Modal.confirm({
-                title: 'Are you sure you want to approve this action?',
+                title: 'Bạn có chắc chắn muốn phê duyệt hành động này không?',
                 onOk: async () => {
                     try {
                         await approveOrRejectAction(parseInt(actionId, 10), ApprovalAction.Approve, note, 1);
                         setAction({ ...action, status: ActionStatus.Approved });
-                        message.success('Action approved successfully');
+                        message.success('Phê duyệt thành công');
                     } catch (error) {
-                        console.error('Error approving action:', error);
-                        setError('Failed to approve action');
+                        setError('Phê duyệt thất bại');
                     }
                 },
             });
@@ -68,15 +64,14 @@ const RewardDisciplineDetailPage: React.FC = () => {
     const handleReject = async () => {
         if (action && actionId) {
             Modal.confirm({
-                title: 'Are you sure you want to reject this action?',
+                title: 'Bạn có chắc chắn muốn từ chối hành động này không?',
                 onOk: async () => {
                     try {
                         await approveOrRejectAction(parseInt(actionId, 10), ApprovalAction.Reject, note, 1);
                         setAction({ ...action, status: ActionStatus.Rejected });
-                        message.success('Action rejected successfully');
+                        message.success('Từ chối thành công');
                     } catch (error) {
-                        console.error('Error rejecting action:', error);
-                        setError('Failed to reject action');
+                        setError('Từ chối thất bại');
                     }
                 },
             });
@@ -88,10 +83,9 @@ const RewardDisciplineDetailPage: React.FC = () => {
             try {
                 await approveOrRejectAction(parseInt(actionId, 10), ApprovalAction.RequestEdit, note, 1);
                 setAction(prevAction => prevAction ? { ...action, status: ActionStatus.Editing } : null);
-                message.success('Request for edit sent successfully');
+                message.success('Yêu cầu chỉnh sửa đã được gửi');
             } catch (error) {
-                console.error('Error requesting edit:', error);
-                setError('Failed to request edit');
+                setError('Yêu cầu chỉnh sửa thất bại');
             }
         }
     };
@@ -111,71 +105,81 @@ const RewardDisciplineDetailPage: React.FC = () => {
     }
 
     if (!action) {
-        return <div style={{ textAlign: 'center', marginTop: 50 }}><Paragraph>Action not found</Paragraph></div>;
+        return <div style={{ textAlign: 'center', marginTop: 50 }}><Paragraph>Không tìm thấy hành động</Paragraph></div>;
     }
 
     return (
         <Card
-            title="Action Detail"
-            extra={<Button onClick={handleBack}>Back</Button>}
+            title="Chi tiết hành động"
+            extra={<Button onClick={handleBack}>Quay lại</Button>}
             style={{ maxWidth: 800, margin: '0 auto' }}
         >
-            <Title level={2}>Details</Title>
-            <Paragraph><strong>Employee ID:</strong> {action.employeeId}</Paragraph>
-            <Paragraph><strong>Action Type:</strong> {action.actionType}</Paragraph>
-            <Paragraph><strong>Action Subtype:</strong> {action.actionSubtype}</Paragraph>
-            <Paragraph><strong>Action Date:</strong> {dayjs(action.actionDate).format('MMMM D, YYYY h:mm:ss A')}</Paragraph>
+            <Title level={2}>Chi tiết</Title>
+            <Paragraph><strong>Nhân viên:</strong> {action.employeeName}</Paragraph>
+            <Paragraph><strong>Loại hành động:</strong> {action.actionType}</Paragraph>
+            <Paragraph><strong>Phân loại:</strong> {action.actionSubtype}</Paragraph>
+            <Paragraph><strong>Ngày thực hiện:</strong> {dayjs(action.actionDate).format('MMMM D, YYYY h:mm:ss A')}</Paragraph>
             {action.actionType === ActionType.Reward && action.amount && (
-                <Paragraph><strong>Amount:</strong> {action.amount}</Paragraph>
+                <Paragraph><strong>Số tiền:</strong> {action.amount}</Paragraph>
             )}
             {action.actionType === ActionType.Disciplinary && action.duration && (
-                <Paragraph><strong>Duration:</strong> {action.duration} days</Paragraph>
+                <Paragraph><strong>Thời gian:</strong> {action.duration} ngày</Paragraph>
             )}
-            <Paragraph><strong>Status:</strong> {action.status}</Paragraph>
-            <Paragraph><strong>Reason:</strong> {action.reason}</Paragraph>
+            <Paragraph><strong>Trạng thái:</strong> {action.status}</Paragraph>
+            <Paragraph><strong>Lý do:</strong> {action.reason}</Paragraph>
 
             {(role === Role.HR || role === Role.Director) && action.status !== ActionStatus.Approved && action.status !== ActionStatus.Rejected && (
                 <>
                     <Input.TextArea
                         value={note}
                         onChange={(e) => setNote(e.target.value)}
-                        placeholder="Enter your note"
+                        placeholder="Nhập ghi chú của bạn"
                         rows={4}
                         style={{ marginBottom: 16 }}
                     />
                     {(
                         <>
                             <Button type="default" onClick={handleRequestEdit} style={{ marginRight: 8 }}>
-                                Request Edit
+                                Yêu cầu chỉnh sửa
                             </Button>
                             <Button type="primary" onClick={handleApprove} style={{ marginRight: 8 }}>
-                                Approve
+                                Phê duyệt
                             </Button>
                             <Button danger type="primary" onClick={handleReject}>
-                                Reject
+                                Từ chối
                             </Button>
                         </>
                     )}
                 </>
             )}
 
-            <Title level={3}>Approval Logs</Title>
-            <List
-                bordered
-                dataSource={approvalLogs}
-                renderItem={(log) => (
-                    <List.Item>
-                        <Typography.Text><strong>Approver:</strong> {log.approverId}</Typography.Text>
-                        <Typography.Text><strong>Action:</strong> {log.action}</Typography.Text>
-                        <Typography.Text><strong>Date:</strong> {dayjs(log.approvalDate).format('MMMM D, YYYY h:mm:ss A')}</Typography.Text>
-                        <Typography.Text><strong>Note:</strong> {log.note}</Typography.Text>
-                    </List.Item>
-                )}
-            />
+            {action.approvalLogs && action.approvalLogs.length > 0 && (
+                <>
+                    <Title level={3}>Nhật ký phê duyệt</Title>
+                    <Descriptions bordered column={1}>
+                        {action.approvalLogs.map((log) => (
+                            <React.Fragment key={log.approvalLogId}>
+                                <Descriptions.Item label="Người phê duyệt">
+                                    {log.approverName}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Hành động">
+                                    {log.action}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Ngày">
+                                    {dayjs(log.approvalDate).format('MMMM D, YYYY h:mm:ss A')}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Ghi chú">
+                                    {log.note}
+                                </Descriptions.Item>
+                            </React.Fragment>
+                        ))}
+                    </Descriptions>
+                </>
+            )}
 
             {role === Role.Manager && (action.status === ActionStatus.Draft || action.status === ActionStatus.Editing) && (
                 <Button type="primary" onClick={handleEdit} style={{ marginTop: 16 }}>
-                    Edit
+                    Chỉnh sửa
                 </Button>
             )}
         </Card>

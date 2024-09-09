@@ -28,13 +28,13 @@ export const getAllActions = async (): Promise<RewardDisciplineListItem[]> => {
             return {
                 actionId: action.actionId,
                 employeeId: action.employeeId,
-                employeeName: employee.name ?? 'Unknown',
+                employeeName: employee.name,
                 actionType: action.actionType,
                 actionSubtype: action.actionSubtype,
                 actionDate: action.actionDate,
                 status: action.status,
                 departmentId: employee.departmentId,
-                departmentName: employee.departmentName ?? 'Unknown',
+                departmentName: employee.departmentName,
             };
         });
     } catch (error) {
@@ -57,10 +57,6 @@ export const getActionsByDepartment = async (departmentId: number): Promise<Rewa
         // Lọc hành động theo tên phòng ban
         const filteredActions = allActions.filter(action => action.departmentId === departmentId);
 
-
-
-
-
         if (filteredActions.length === 0) {
             console.warn(`No actions found for department: ${filteredActions}`);
         }
@@ -73,26 +69,41 @@ export const getActionsByDepartment = async (departmentId: number): Promise<Rewa
 };
 
 // Fetch action by ID
-export const getActionById = async (actionId: number): Promise<RewardDisciplineDetail | null> => {
+export const getActionDetailById = async (actionId: number): Promise<RewardDisciplineDetail> => {
     try {
-        const { actions } = getHrmData();
+        const { actions, approvalLogs } = getHrmData();
 
         if (!Array.isArray(actions)) {
             throw new Error('Invalid data format for actions.');
         }
+        if (!Array.isArray(approvalLogs)) {
+            throw new Error('Invalid data format for approvalLogs.');
+        }
 
         const action = actions.find(action => action.actionId === actionId);
-        if (!action) return null;
+        if (!action) {
+            throw new Error(`Hành động với ${actionId} không tồn tại!`);
+        }
 
         const employee = await getEmployeeById(action.employeeId);
-        const departmentName = employee?.departmentName ?? 'Unknown';
+        const departmentName = employee?.departmentName ?? 'Không xác đinh!';
 
-        const approvalLogs = await getApprovalLogs(actionId);
+        const approvalLogsWithNames = await Promise.all(
+            approvalLogs
+                .filter(log => log.actionId === actionId)
+                .map(async log => {
+                    const approver = await getEmployeeById(log.approverId);
+                    return {
+                        ...log,
+                        approverName: approver?.name?? 'Người phê duyệt đã bị xóa',
+                    }
+                })
+        )
 
         return {
             actionId: action.actionId,
             employeeId: action.employeeId,
-            employeeName: employee?.name ?? 'Unknown',
+            employeeName: employee?.name ?? 'Nhân viên đã bị xóa',
             actionType: action.actionType,
             actionSubtype: action.actionSubtype,
             actionDate: action.actionDate,
@@ -101,7 +112,8 @@ export const getActionById = async (actionId: number): Promise<RewardDisciplineD
             status: action.status,
             reason: action.reason,
             departmentName: departmentName,
-            approvalLogs: approvalLogs,
+            approvalLogs: approvalLogsWithNames,
+
         };
     } catch (error) {
         console.error('Error fetching action by ID:', error);
@@ -119,19 +131,15 @@ export const createAction = async (action: CreateRewardDiscipline): Promise<void
             throw new Error('Invalid data format for actions.');
         }
 
-        // Tìm actionId lớn nhất để tạo actionId mới
         const maxId = actions.length > 0 ? Math.max(...actions.map(a => a.actionId)) : 0;
 
-        // Tạo action mới với actionId tăng dần
         const newAction: Action = {
             ...action,
             actionId: maxId + 1
         };
 
-        // Thêm action mới vào danh sách actions
         actions.push(newAction);
 
-        // Lưu lại dữ liệu HRM sau khi cập nhật
         saveHrmData({ ...getHrmData(), actions });
     } catch (error) {
         console.error('Error creating action:', error);
@@ -268,18 +276,4 @@ export const approveOrRejectAction = async (
     }
 };
 
-// Fetch approval logs
-export const getApprovalLogs = async (actionId: number): Promise<ApprovalLog[]> => {
-    try {
-        const { approvalLogs } = getHrmData();
 
-        if (!Array.isArray(approvalLogs)) {
-            throw new Error('Invalid data format for approvalLogs.');
-        }
-
-        return approvalLogs.filter(log => log.actionId === actionId);
-    } catch (error) {
-        console.error('Error fetching approval logs:', error);
-        throw error;
-    }
-};

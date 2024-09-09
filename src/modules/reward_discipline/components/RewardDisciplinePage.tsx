@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Table, Button, Pagination, Spin, Typography } from 'antd';
+import { Table, Button, Pagination, Spin, Typography, Input, Select, DatePicker } from 'antd';
 import { getActionsByDepartment, getAllActions } from '../services/RewardDisciplineService';
 import { RewardDisciplineListItem } from '../types/RewardDisciplineListItem';
 import { getCurrentUserRole, getCurrentUserDepartmentId } from '../../../utils/auth';
-import { ActionStatus, ActionSubtype, ActionType } from '../../../types/Action'
-import { Input, Select, DatePicker } from 'antd';
-// import {getDepart}
-
+import { ActionStatus, ActionType } from '../../../types/Action';
+import { Role } from '../../../types/Employee';
 import dayjs from 'dayjs';
+
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
+
 const RewardDisciplinePage: React.FC = () => {
     const [searchText, setSearchText] = useState<string>('');
     const [selectedDepartment, setSelectedDepartment] = useState<string>('');
     const [selectedActionType, setSelectedActionType] = useState<ActionType | undefined>(undefined);
+    const [selectedStatus, setSelectedStatus] = useState<ActionStatus | undefined>(undefined);
     const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
     const [actions, setActions] = useState<RewardDisciplineListItem[]>([]);
     const [loading, setLoading] = useState(false);
@@ -34,15 +35,14 @@ const RewardDisciplinePage: React.FC = () => {
                 setUserRole(role);
 
                 let response: RewardDisciplineListItem[] = [];
-                if (role === 'Manager') {
+                if (role === Role.Manager) {
                     const departmentId = await getCurrentUserDepartmentId();
-
                     if (departmentId !== undefined) {
                         response = await getActionsByDepartment(departmentId);
                     } else {
-                        setError('Department ID is not available.');
+                        setError('Không có ID phòng ban.');
                     }
-                } else if (role === 'HR' || role === 'Director') {
+                } else if (role === Role.HR || role === Role.Director) {
                     response = await getAllActions();
                     response = response.filter(action => action.status !== ActionStatus.Draft);
                 }
@@ -51,8 +51,7 @@ const RewardDisciplinePage: React.FC = () => {
                     setActions(response);
                 }
             } catch (error: any) {
-                console.error('Error fetching actions:', error);
-                setError(error.message || 'Network error');
+                setError(error.message || 'Lỗi mạng');
             } finally {
                 setLoading(false);
             }
@@ -61,13 +60,30 @@ const RewardDisciplinePage: React.FC = () => {
         fetchActions();
     }, []);
 
-
     const handlePageChange = (pageNumber: number) => {
         setCurrentPage(pageNumber);
     };
 
+    const filterActions = (actions: RewardDisciplineListItem[]) => {
+        return actions
+            .filter(action => {
+                const matchesSearchText = action.employeeId.toString().includes(searchText) ||
+                    action.actionType.toLowerCase().includes(searchText.toLowerCase());
+                const matchesDepartment = userRole === Role.Manager || !selectedDepartment ? true : action.departmentName === selectedDepartment;
+                const matchesActionType = selectedActionType ? action.actionType === selectedActionType : true;
+                const matchesStatus = selectedStatus ? action.status === selectedStatus : true;
+                const matchesDateRange = dateRange ? (
+                    dayjs(action.actionDate).isAfter(dateRange[0], 'day') &&
+                    dayjs(action.actionDate).isBefore(dateRange[1], 'day')
+                ) : true;
+
+                return matchesSearchText && matchesDepartment && matchesActionType && matchesStatus && matchesDateRange;
+            })
+            .sort((a, b) => dayjs(b.actionDate).unix() - dayjs(a.actionDate).unix());
+    };
+
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const showActions = actions.slice(startIndex, startIndex + itemsPerPage);
+    const showActions = filterActions(actions).slice(startIndex, startIndex + itemsPerPage);
 
     const handleViewDetail = (actionId: number) => {
         navigate(`/actions/${actionId}`, { state: { action: { actionId } } });
@@ -75,42 +91,42 @@ const RewardDisciplinePage: React.FC = () => {
 
     const columns = [
         {
-            title: 'No',
+            title: 'STT',
             key: 'no',
             render: (_: any, __: any, index: number) => startIndex + index + 1,
         },
         {
-            title: 'Employee ID',
-            dataIndex: 'employeeId',
-            key: 'employeeId',
+            title: 'Nhân viên',
+            dataIndex: 'employeeName',
+            key: 'employeeName',
         },
         {
-            title: 'Action Type',
+            title: 'Loại hành động',
             dataIndex: 'actionType',
             key: 'actionType',
         },
         {
-            title: 'Action Subtype',
+            title: 'Phân loại hành động',
             dataIndex: 'actionSubtype',
             key: 'actionSubtype',
         },
         {
-            title: 'Action Date',
+            title: 'Ngày hành động',
             dataIndex: 'actionDate',
             key: 'actionDate',
             render: (date: string) => dayjs(date).format('MMMM D, YYYY h:mm:ss A'),
         },
         {
-            title: 'Status',
+            title: 'Trạng thái',
             dataIndex: 'status',
             key: 'status',
         },
         {
-            title: 'Actions',
+            title: 'Hành động',
             key: 'actions',
             render: (_: any, record: RewardDisciplineListItem) => (
                 <Button type="link" onClick={() => handleViewDetail(record.actionId)}>
-                    View
+                    Xem
                 </Button>
             ),
         },
@@ -127,32 +143,35 @@ const RewardDisciplinePage: React.FC = () => {
     if (error) {
         return (
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <Typography.Text type="danger">Error: {error}</Typography.Text>
+                <Typography.Text type="danger">Lỗi: {error}</Typography.Text>
             </div>
         );
     }
 
     return (
         <div style={{ padding: '24px' }}>
-            <Title level={1}>Reward and Discipline Management</Title>
+            <Title level={1}>Quản lý khen thưởng và kỷ luật</Title>
 
             <div style={{ marginBottom: '16px' }}>
                 <Input.Search
-                    placeholder="Search by EmployeeId or Action Type"
+                    placeholder="Tìm theo ID nhân viên hoặc Loại hành động"
                     enterButton
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                 />
             </div>
             <div style={{ marginBottom: '16px' }}>
+                {userRole !== Role.Manager && (
+                    <Select
+                        placeholder="Chọn Phòng ban"
+                        style={{ width: 200, marginRight: '8px' }}
+                        value={selectedDepartment}
+                        onChange={(value) => setSelectedDepartment(value)}
+                    >
+                    </Select>
+                )}
                 <Select
-                    placeholder="Select Department"
-                    style={{ width: 200, marginRight: '8px' }}
-                    value={selectedDepartment}
-                    onChange={(value) => setSelectedDepartment(value)}
-                ></Select>
-                <Select
-                    placeholder="Select Action Type"
+                    placeholder="Chọn Loại hành động"
                     style={{ width: 200, marginRight: '8px' }}
                     value={selectedActionType}
                     onChange={(value) => setSelectedActionType(value as ActionType)}
@@ -163,17 +182,29 @@ const RewardDisciplinePage: React.FC = () => {
                         </Select.Option>
                     ))}
                 </Select>
+                <Select
+                    placeholder="Chọn Trạng thái"
+                    style={{ width: 200, marginRight: '8px' }}
+                    value={selectedStatus}
+                    onChange={(value) => setSelectedStatus(value as ActionStatus)}
+                >
+                    {Object.keys(ActionStatus).map((key) => (
+                        <Select.Option key={key} value={ActionStatus[key as keyof typeof ActionStatus]}>
+                            {ActionStatus[key as keyof typeof ActionStatus]}
+                        </Select.Option>
+                    ))}
+                </Select>
                 <RangePicker
-                    style={{ width: 300 }}
+                    style={{ width: 300, marginLeft: '8px' }}
                     value={dateRange}
                     onChange={(dates) => setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs])}
                 />
             </div>
 
-            {userRole === 'Manager' && (
+            {userRole === Role.Manager && (
                 <div style={{ marginBottom: '16px' }}>
                     <Link to="/actions/create">
-                        <Button type="primary">Create New Action</Button>
+                        <Button type="primary">Tạo hành động mới</Button>
                     </Link>
                 </div>
             )}
@@ -189,7 +220,7 @@ const RewardDisciplinePage: React.FC = () => {
                     <Pagination
                         current={currentPage}
                         pageSize={itemsPerPage}
-                        total={actions.length}
+                        total={filterActions(actions).length}
                         onChange={handlePageChange}
                         style={{ textAlign: 'center' }}
                     />
