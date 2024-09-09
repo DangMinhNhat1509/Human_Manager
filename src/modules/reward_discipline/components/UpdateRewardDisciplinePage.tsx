@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Form, Input, DatePicker, Select, notification, Spin } from 'antd';
-import { updateAction, getActionById } from '../services/RewardDisciplineService';
+import { updateAction, getActionDetailById } from '../services/RewardDisciplineService';
 import { ActionType, ActionSubtype, ActionStatus } from '../../../types/Action';
 import { getEmployeesByRole } from '../../employee/services/employeeService';
 import { getCurrentUserDepartmentId } from '../../../utils/auth';
@@ -40,7 +40,7 @@ const UpdateRewardDisciplinePage: React.FC = () => {
             setLoading(true);
             setLoadingData(true);
 
-            const actionData = await getActionById(parseInt(actionId as string, 10));
+            const actionData = await getActionDetailById(parseInt(actionId as string, 10));
             if (!actionData) {
                 notification.error({
                     message: 'Error',

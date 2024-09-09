@@ -32,13 +32,12 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
             setError(null);
             try {
                 if (!employeeId) {
-                    throw new Error('Employee ID is not found');
+                    throw new Error('ID nhân viên không tìm thấy');
                 }
-                const response = await getEmployeeById(Number(employeeId)); // Convert employeeId to number if needed
+                const response = await getEmployeeById(Number(employeeId)); // Chuyển employeeId thành số nếu cần
                 setEmployeeDetail(response);
             } catch (error: any) {
-                console.error('Error fetching employee detail:', error);
-                setError(error.response ? error.response.data : 'Network error');
+                setError(error.response ? error.response.data : 'Lỗi mạng');
             } finally {
                 setLoading(false);
             }
@@ -59,26 +58,24 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
                 setEmployeeDetail(response);
                 setUpdating(false);
             }).catch((error) => {
-                console.error('Error fetching employee detail:', error);
-                setError(error.response ? error.response.data : 'Network error');
+                setError(error.response ? error.response.data : 'Lỗi mạng');
                 setUpdating(false);
             });
         }
     };
 
     const handleDeleteClick = async () => {
-        if (employeeDetail && window.confirm('Are you sure you want to delete this employee?')) {
+        if (employeeDetail && window.confirm('Bạn có chắc chắn muốn xóa nhân viên này không?')) {
             setLoading(true);
             setError(null);
             try {
                 await deleteEmployee(employeeDetail.employeeId);
                 Modal.success({
-                    content: `${employeeDetail.name} has been deleted`,
+                    content: `${employeeDetail.name} đã được xóa`,
                     onOk: () => navigate('/employees'),
                 });
             } catch (error: any) {
-                console.error('Error deleting employee:', error);
-                setError(error.response ? error.response.data : 'Network error');
+                setError(error.response ? error.response.data : 'Lỗi mạng');
             } finally {
                 setLoading(false);
             }
@@ -96,7 +93,7 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
     if (error) {
         return (
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <Text type="danger">Error: {error}</Text>
+                <Text type="danger">Lỗi: {error}</Text>
             </div>
         );
     }
@@ -104,7 +101,7 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
     if (!employeeDetail) {
         return (
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <Text>No employee details available.</Text>
+                <Text>Không có thông tin chi tiết về nhân viên.</Text>
             </div>
         );
     }
@@ -130,7 +127,7 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
 
             <Row style={{ marginBottom: '20px' }} gutter={24}>
                 <Col span={7}>
-                    <Card title="Profile Picture" style={{ borderRadius: '8px', textAlign: 'center' }}>
+                    <Card title="Ảnh đại diện" style={{ borderRadius: '8px', textAlign: 'center' }}>
                         <img
                             src={employeeDetail.avatar}
                             alt="Avatar"
@@ -148,7 +145,7 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
                                         marginTop: '10px'
                                     }}
                                 >
-                                    Update Profile
+                                    Cập nhật hồ sơ
                                 </Button>
                                 <Button
                                     type="primary"
@@ -161,7 +158,7 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
                                         marginTop: '10px'
                                     }}
                                 >
-                                    Delete Employee
+                                    Xóa nhân viên
                                 </Button>
                             </>
                         )}
@@ -169,17 +166,17 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
                 </Col>
 
                 <Col span={16}>
-                    <Card title="Employee Details" style={{ borderRadius: '8px' }}>
+                    <Card title="Chi tiết nhân viên" style={{ borderRadius: '8px' }}>
                         {[
-                            { label: 'Name', value: employeeDetail.name },
-                            { label: 'Gender', value: employeeDetail.gender },
+                            { label: 'Tên', value: employeeDetail.name },
+                            { label: 'Giới tính', value: employeeDetail.gender },
                             { label: 'Email', value: employeeDetail.email },
-                            { label: 'Phone', value: employeeDetail.phoneNumber },
-                            { label: 'Date of Birth', value: employeeDetail.dateOfBirth },
-                            { label: 'Address', value: employeeDetail.address },
-                            { label: 'Status', value: employeeDetail.status ? 'Active' : 'Inactive' },
-                            { label: 'Department', value: employeeDetail.departmentName },
-                            { label: 'Role', value: Role[employeeDetail.role] }
+                            { label: 'Số điện thoại', value: employeeDetail.phoneNumber },
+                            { label: 'Ngày sinh', value: employeeDetail.dateOfBirth },
+                            { label: 'Địa chỉ', value: employeeDetail.address },
+                            { label: 'Trạng thái', value: employeeDetail.status ? 'Hoạt động' : 'Không hoạt động' },
+                            { label: 'Phòng ban', value: employeeDetail.departmentName },
+                            { label: 'Vai trò', value: Role[employeeDetail.role] }
                         ].map(({ label, value }, index) => (
                             <Row key={index} style={{ marginBottom: '16px' }}>
                                 <Col span={8}>
@@ -205,7 +202,6 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
                 />
             )}
         </div>
-
     );
 };
 

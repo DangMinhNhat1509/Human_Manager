@@ -29,7 +29,7 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
                 const fetchedDepartments = await getAllDepartments();
                 setDepartments(fetchedDepartments);
             } catch (error) {
-                console.error('Error fetching departments:', error);
+                message.error('Lỗi khi lấy danh sách phòng ban!');
             }
         };
 
@@ -59,18 +59,17 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
 
             await updateEmployee(employeeDetail.employeeId, updatedEmployee);
 
-            message.success('Employee updated successfully!');
+            message.success('Cập nhật nhân viên thành công!');
             onUpdateSuccess(updatedEmployee);
             handleClose();
         } catch (error) {
-            console.error('Error updating employee:', error);
-            message.error('Error updating employee. Please try again.');
+            message.error('Lỗi khi cập nhật nhân viên. Vui lòng thử lại.');
         }
     };
 
     return (
         <Modal
-            title={<Title level={2}>Update Employee Information</Title>}
+            title={<Title level={2}>Cập nhật thông tin nhân viên</Title>}
             visible={show}
             onCancel={handleClose}
             footer={null}
@@ -93,20 +92,20 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
                         <Col span={24} md={12}>
                             <Form.Item
                                 name="name"
-                                label="Name"
-                                rules={[{ required: true, message: 'Please enter the employee name' }]}
+                                label="Tên"
+                                rules={[{ required: true, message: 'Vui lòng nhập tên nhân viên' }]}
                             >
-                                <Input placeholder="Enter employee name" />
+                                <Input placeholder="Nhập tên nhân viên" />
                             </Form.Item>
                         </Col>
 
                         <Col span={24} md={12}>
                             <Form.Item
                                 name="gender"
-                                label="Gender"
-                                rules={[{ required: true, message: 'Please enter the gender' }]}
+                                label="Giới tính"
+                                rules={[{ required: true, message: 'Vui lòng nhập giới tính' }]}
                             >
-                                <Input placeholder="Enter gender" />
+                                <Input placeholder="Nhập giới tính" />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -115,17 +114,17 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
                         <Col span={24} md={12}>
                             <Form.Item
                                 name="dateOfBirth"
-                                label="Date of Birth"
+                                label="Ngày sinh"
                                 rules={[
-                                    { required: true, message: 'Please select the date of birth' },
+                                    { required: true, message: 'Vui lòng chọn ngày sinh' },
                                     {
                                         validator: (_, value) => {
                                             if (value && !dayjs(value).isValid()) {
-                                                return Promise.reject('Invalid date format!');
+                                                return Promise.reject('Định dạng ngày không hợp lệ!');
                                             }
                                             const age = dayjs().diff(dayjs(value), 'year');
                                             if (age < 18 || age > 80) {
-                                                return Promise.reject('Age must be between 18 and 80 years!');
+                                                return Promise.reject('Tuổi phải từ 18 đến 80!');
                                             }
                                             return Promise.resolve();
                                         }
@@ -139,10 +138,10 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
                         <Col span={24} md={12}>
                             <Form.Item
                                 name="email"
-                                label="Email address"
-                                rules={[{ required: true, type: 'email', message: 'Please enter a valid email address' }]}
+                                label="Địa chỉ email"
+                                rules={[{ required: true, type: 'email', message: 'Vui lòng nhập địa chỉ email hợp lệ' }]}
                             >
-                                <Input placeholder="Enter email" />
+                                <Input placeholder="Nhập email" />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -151,20 +150,20 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
                         <Col span={24} md={12}>
                             <Form.Item
                                 name="phoneNumber"
-                                label="Phone"
-                                rules={[{ required: true, message: 'Please enter the phone number' }]}
+                                label="Số điện thoại"
+                                rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}
                             >
-                                <Input placeholder="Enter phone number" />
+                                <Input placeholder="Nhập số điện thoại" />
                             </Form.Item>
                         </Col>
 
                         <Col span={24} md={12}>
                             <Form.Item
                                 name="departmentId"
-                                label="Department"
-                                rules={[{ required: true, message: 'Please select the department' }]}
+                                label="Phòng ban"
+                                rules={[{ required: true, message: 'Vui lòng chọn phòng ban' }]}
                             >
-                                <Select placeholder="Select department">
+                                <Select placeholder="Chọn phòng ban">
                                     {departments.map(dep => (
                                         <Option key={dep.departmentId} value={dep.departmentId}>
                                             {dep.departmentName}
@@ -177,20 +176,20 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
 
                     <Form.Item
                         name="address"
-                        label="Address"
-                        rules={[{ required: true, message: 'Please enter the address' }]}
+                        label="Địa chỉ"
+                        rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
                     >
-                        <Input.TextArea rows={3} placeholder="Enter address" />
+                        <Input.TextArea rows={3} placeholder="Nhập địa chỉ" />
                     </Form.Item>
 
                     <Form.Item
                         name="avatar"
-                        label="Avatar URL"
+                        label="URL Avatar"
                         rules={[
                             {
                                 validator: (_, value) => {
                                     if (value && !/^https?:\/\/.+/.test(value)) {
-                                        return Promise.reject('Invalid URL format for avatar!');
+                                        return Promise.reject('Định dạng URL không hợp lệ!');
                                     }
                                     return Promise.resolve();
                                 },
@@ -198,7 +197,7 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
                         ]}
                     >
                         <Input
-                            placeholder="Enter Avatar URL"
+                            placeholder="Nhập URL Avatar"
                             value={avatarUrl}
                             onChange={handleAvatarChange}
                             onFocus={() => handleFocusBlur(true)}
@@ -207,7 +206,7 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
                     </Form.Item>
 
                     {avatarUrl && isFocused && (
-                        <Form.Item label="Avatar Preview">
+                        <Form.Item label="Xem trước Avatar">
                             <img
                                 src={avatarUrl}
                                 alt="Avatar"
@@ -218,18 +217,18 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
 
                     <Form.Item
                         name="status"
-                        label="Status"
+                        label="Trạng thái"
                         valuePropName="checked"
                     >
-                        <Checkbox>Active</Checkbox>
+                        <Checkbox>Đang hoạt động</Checkbox>
                     </Form.Item>
 
                     <Form.Item style={{ display: 'flex', justifyContent: 'flex-end' }}>
                         <Button type="primary" htmlType="submit" style={{ marginRight: '16px' }}>
-                            Save Changes
+                            Lưu thay đổi
                         </Button>
                         <Button onClick={handleClose}>
-                            Cancel
+                            Hủy bỏ
                         </Button>
                     </Form.Item>
                 </Form>

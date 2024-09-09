@@ -10,8 +10,8 @@ export enum ApprovalAction {
 export interface ApprovalLog {
     approvalLogId: number;
     actionId: number;
-    approverId: number; // ID của người thực hiện hành động phê duyệt
-    note: string; // Ghi chú của người phê duyệt
-    approvalDate: string; // ISO 8601 date string
-    action: ApprovalAction; // Hành động phê duyệt
+    approverId: number; 
+    note: string; 
+    approvalDate: string; 
+    action: ApprovalAction; 
 }

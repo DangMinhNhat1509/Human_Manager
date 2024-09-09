@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Table, Button, Spin, Pagination, Alert } from 'antd';
-import { getEmployeesByRole } from '../services/employeeService'; // Import hàm mới
+import { getEmployeesByRole } from '../services/employeeService';
 import { EmployeeListItem } from '../types/EmployeeListItem';
-import {Role} from '../../../types/Employee';
-import dayjs from 'dayjs'; // dayjs for date handling
-import _ from 'lodash'; 
+import { Role } from '../../../types/Employee';
+import dayjs from 'dayjs'; 
+import _ from 'lodash';
 
 const EmployeePage: React.FC = () => {
     const [employees, setEmployees] = useState<EmployeeListItem[]>([]);
@@ -20,11 +20,10 @@ const EmployeePage: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
-                // Sử dụng hàm getEmployeesByRole để lấy nhân viên có vai trò là "employee"
                 const response = await getEmployeesByRole(Role.Employee);
                 setEmployees(response);
             } catch (error: any) {
-                setError(error.message || 'Network error');
+                setError(error.message || 'Lỗi mạng');
             } finally {
                 setLoading(false);
             }
@@ -42,36 +41,36 @@ const EmployeePage: React.FC = () => {
     const showEmployees = employees.slice(startIndex, endIndex);
 
     const columns = [
-        { title: 'Name', dataIndex: 'name', key: 'name' },
+        { title: 'Tên', dataIndex: 'name', key: 'name' },
         { title: 'Email', dataIndex: 'email', key: 'email' },
-        { title: 'Phone Number', dataIndex: 'phoneNumber', key: 'phoneNumber' },
+        { title: 'Số điện thoại', dataIndex: 'phoneNumber', key: 'phoneNumber' },
         {
-            title: 'Gender',
+            title: 'Giới tính',
             dataIndex: 'gender',
             key: 'gender',
-            render: (text: string) => <span>{_.capitalize(text)}</span> 
+            render: (text: string) => <span>{_.capitalize(text)}</span>
         },
         {
-            title: 'Date of Birth',
+            title: 'Ngày sinh',
             dataIndex: 'dateOfBirth',
             key: 'dateOfBirth',
-            render: (text: string) => <span>{dayjs(text).format('MMMM D YYYY')}</span> 
+            render: (text: string) => <span>{dayjs(text).format('MMMM D YYYY')}</span>
         },
         {
-            title: 'Department',
+            title: 'Phòng ban',
             dataIndex: 'departmentName',
             key: 'departmentName',
             render: (text: string) => <span>{text}</span>
         },
         {
-            title: 'Actions',
+            title: 'Hành động',
             key: 'actions',
             render: (text: any, record: EmployeeListItem) => (
                 <Button
                     type="link"
                     onClick={() => navigate(`/employees/${record.employeeId}`, { state: { employee: { employeeId: record.employeeId } } })}
                 >
-                    View
+                    Xem
                 </Button>
             ),
         },
@@ -86,15 +85,15 @@ const EmployeePage: React.FC = () => {
     }
 
     if (error) {
-        return <Alert message="Error" description={error} type="error" showIcon />;
+        return <Alert message="Lỗi" description={error} type="error" showIcon />;
     }
 
     return (
         <div style={{ padding: '20px' }}>
-            <h1 style={{ textAlign: 'center' }}>Employee Page</h1>
+            <h1 style={{ textAlign: 'center' }}>Trang nhân viên</h1>
             <div style={{ marginBottom: '20px', textAlign: 'right' }}>
                 <Link to="/employees/create">
-                    <Button type="primary">Create New Employee</Button>
+                    <Button type="primary">Tạo nhân viên mới</Button>
                 </Link>
             </div>
             <Table

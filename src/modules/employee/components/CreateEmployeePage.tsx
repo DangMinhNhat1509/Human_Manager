@@ -24,7 +24,7 @@ const CreateEmployeePage: React.FC = () => {
                 const fetchedDepartments = await getAllDepartments();
                 setDepartments(fetchedDepartments);
             } catch (error) {
-                console.error('Error fetching departments:', error);
+                message.error('Lỗi khi lấy danh sách phòng ban. Vui lòng thử lại sau.');
             }
         };
 
@@ -52,14 +52,13 @@ const CreateEmployeePage: React.FC = () => {
                 ...values,
                 dateOfBirth: dayjs(values.dateOfBirth).format('YYYY-MM-DD'),
                 departmentId: departments.find(dep => dep.departmentName === values.department)?.departmentId,
-                role: 'Employee',
+                role: 'Nhân viên',
             };
             await createEmployee(formattedData);
-            message.success('Employee has been successfully created!');
+            message.success('Nhân viên đã được tạo thành công!');
             navigate('/employees');
         } catch (err) {
-            console.error('Error creating employee:', err);
-            message.error('An error occurred while creating the employee. Please try again later.');
+            message.error('Đã xảy ra lỗi khi tạo nhân viên. Vui lòng thử lại sau.');
         } finally {
             setLoading(false);
         }
@@ -71,7 +70,7 @@ const CreateEmployeePage: React.FC = () => {
                 bordered={false}
                 style={{ maxWidth: 800, margin: '0 auto', padding: '30px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
             >
-                <Title level={2} style={{ textAlign: 'center', marginBottom: '20px' }}>Create Employee</Title>
+                <Title level={2} style={{ textAlign: 'center', marginBottom: '20px' }}>Tạo Nhân Viên</Title>
                 <Form
                     form={form}
                     onFinish={handleSubmit}
@@ -82,26 +81,26 @@ const CreateEmployeePage: React.FC = () => {
                         <Col span={24} md={12}>
                             <Form.Item
                                 name="name"
-                                label="Name"
+                                label="Tên"
                                 rules={[
-                                    { required: true, message: 'Please input the name!' },
-                                    { max: 100, message: 'Name cannot be longer than 100 characters!' },
+                                    { required: true, message: 'Vui lòng nhập tên!' },
+                                    { max: 100, message: 'Tên không được dài quá 100 ký tự!' },
                                 ]}
                             >
-                                <Input placeholder="Enter employee name" />
+                                <Input placeholder="Nhập tên nhân viên" />
                             </Form.Item>
                         </Col>
 
                         <Col span={24} md={12}>
                             <Form.Item
                                 name="gender"
-                                label="Gender"
+                                label="Giới tính"
                                 rules={[
-                                    { required: true, message: 'Please input the gender!' },
-                                    { max: 10, message: 'Gender cannot be longer than 10 characters!' },
+                                    { required: true, message: 'Vui lòng nhập giới tính!' },
+                                    { max: 10, message: 'Giới tính không được dài quá 10 ký tự!' },
                                 ]}
                             >
-                                <Input placeholder="Enter gender" />
+                                <Input placeholder="Nhập giới tính" />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -110,20 +109,20 @@ const CreateEmployeePage: React.FC = () => {
                         <Col span={24} md={12}>
                             <Form.Item
                                 name="dateOfBirth"
-                                label="Date of Birth"
+                                label="Ngày sinh"
                                 rules={[
-                                    { required: true, message: 'Please select the date of birth!' },
+                                    { required: true, message: 'Vui lòng chọn ngày sinh!' },
                                     {
                                         validator: (_, value) => {
                                             if (value && !dayjs(value).isValid()) {
-                                                return Promise.reject('Invalid date format!');
+                                                return Promise.reject('Định dạng ngày không hợp lệ!');
                                             }
                                             if (value) {
                                                 const today = dayjs();
                                                 const dob = dayjs(value);
                                                 const age = today.diff(dob, 'year');
                                                 if (age < 18 || age > 80) {
-                                                    return Promise.reject('Age must be between 18 and 80 years');
+                                                    return Promise.reject('Tuổi phải từ 18 đến 80 tuổi');
                                                 }
 
                                             }
@@ -142,11 +141,11 @@ const CreateEmployeePage: React.FC = () => {
                                 name="email"
                                 label="Email"
                                 rules={[
-                                    { type: 'email', message: 'Please input a valid email!' },
-                                    { required: true, message: 'Please input the email!' },
+                                    { type: 'email', message: 'Vui lòng nhập email hợp lệ!' },
+                                    { required: true, message: 'Vui lòng nhập email!' },
                                 ]}
                             >
-                                <Input placeholder="Enter email" />
+                                <Input placeholder="Nhập email" />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -155,25 +154,25 @@ const CreateEmployeePage: React.FC = () => {
                         <Col span={24} md={12}>
                             <Form.Item
                                 name="phoneNumber"
-                                label="Phone Number"
+                                label="Số điện thoại"
                                 rules={[
-                                    { required: true, message: 'Please input the phone number!' },
-                                    { pattern: /^[0-9]+$/, message: 'Phone number must be numeric!' },
+                                    { required: true, message: 'Vui lòng nhập số điện thoại!' },
+                                    { pattern: /^[0-9]+$/, message: 'Số điện thoại phải là số!' },
                                 ]}
                             >
-                                <Input placeholder="Enter phone number" />
+                                <Input placeholder="Nhập số điện thoại" />
                             </Form.Item>
                         </Col>
 
                         <Col span={24} md={12}>
                             <Form.Item
                                 name="department"
-                                label="Department"
+                                label="Phòng ban"
                                 rules={[
-                                    { required: true, message: 'Please select the department!' },
+                                    { required: true, message: 'Vui lòng chọn phòng ban!' },
                                 ]}
                             >
-                                <Select placeholder="Select department">
+                                <Select placeholder="Chọn phòng ban">
                                     {departments.map(dep => (
                                         <Option key={dep.departmentId} value={dep.departmentName}>
                                             {dep.departmentName}
@@ -186,23 +185,23 @@ const CreateEmployeePage: React.FC = () => {
 
                     <Form.Item
                         name="address"
-                        label="Address"
+                        label="Địa chỉ"
                         rules={[
-                            { required: true, message: 'Please input the address!' },
-                            { max: 300, message: 'Address cannot be longer than 300 characters!' },
+                            { required: true, message: 'Vui lòng nhập địa chỉ!' },
+                            { max: 300, message: 'Địa chỉ không được dài quá 300 ký tự!' },
                         ]}
                     >
-                        <Input.TextArea placeholder="Enter address" rows={4} />
+                        <Input.TextArea placeholder="Nhập địa chỉ" rows={4} />
                     </Form.Item>
 
                     <Form.Item
                         name="avatar"
-                        label="Avatar URL"
+                        label="URL Ảnh đại diện"
                         rules={[
                             {
                                 validator: (_, value) => {
                                     if (value && !/^https?:\/\/.+/.test(value)) {
-                                        return Promise.reject('Invalid URL format for avatar!');
+                                        return Promise.reject('Định dạng URL ảnh đại diện không hợp lệ!');
                                     }
                                     return Promise.resolve();
                                 },
@@ -210,7 +209,7 @@ const CreateEmployeePage: React.FC = () => {
                         ]}
                     >
                         <Input
-                            placeholder="Enter Avatar URL"
+                            placeholder="Nhập URL Ảnh đại diện"
                             value={avatarUrl}
                             onChange={handleAvatarChange}
                             onFocus={() => handleFocusBlur(true)}
@@ -219,7 +218,7 @@ const CreateEmployeePage: React.FC = () => {
                     </Form.Item>
 
                     {isPreviewVisible && (
-                        <Form.Item label="Avatar Preview">
+                        <Form.Item label="Xem trước ảnh đại diện">
                             <img
                                 src={avatarUrl}
                                 alt="Avatar"
@@ -229,15 +228,15 @@ const CreateEmployeePage: React.FC = () => {
                     )}
 
                     <Form.Item name="status" valuePropName="checked">
-                        <Checkbox>Status</Checkbox>
+                        <Checkbox>Trạng thái</Checkbox>
                     </Form.Item>
 
                     <Form.Item style={{ display: 'flex', justifyContent: 'flex-end' }}>
                         <Button type='default' onClick={handleClear} style={{ marginRight: '16px' }}>
-                            Clear form
+                            Xóa mẫu
                         </Button>
                         <Button type="primary" htmlType="submit" loading={loading}>
-                            Create Employee
+                            Tạo Nhân Viên
                         </Button>
                     </Form.Item>
                 </Form>

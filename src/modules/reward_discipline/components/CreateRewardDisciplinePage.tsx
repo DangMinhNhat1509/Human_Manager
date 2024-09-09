@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Form, Input, DatePicker, Select, notification } from 'antd';
+import { Button, Form, Input, DatePicker, Select, InputNumber, message } from 'antd';
 import { createAction } from '../services/RewardDisciplineService';
 import { ActionType, ActionSubtype, ActionStatus } from '../../../types/Action';
 import { CreateRewardDiscipline } from '../types/CreateRewardDiscipline';
@@ -23,12 +23,13 @@ const createOptionsFromEnum = (enumObj: EnumType) => {
 };
 
 const CreateRewardDisciplinePage: React.FC = () => {
-    const [form] = Form.useForm();
+    const [form] = Form.useForm<CreateRewardDiscipline>();
     const [loading, setLoading] = useState(false);
     const [employeeOptions, setEmployeeOptions] = useState<JSX.Element[]>([]);
 
     const actionType = Form.useWatch('actionType', form);
 
+    // Lấy danh sách nhân viên theo phòng ban
     useEffect(() => {
         const fetchEmployees = async () => {
             try {
@@ -44,11 +45,7 @@ const CreateRewardDisciplinePage: React.FC = () => {
                     ))
                 );
             } catch (error) {
-                console.error('Error fetching employees:', error);
-                notification.error({
-                    message: 'Error',
-                    description: 'Failed to fetch employees.',
-                });
+                message.error('Không thể lấy danh sách nhân viên.');
             }
         };
 
@@ -66,64 +63,68 @@ const CreateRewardDisciplinePage: React.FC = () => {
             };
             await createAction(actionData);
 
-            notification.success({
-                message: 'Success',
-                description: 'The action proposal has been created successfully.',
-            });
-
+            message.success('Đề xuất hành động đã được tạo thành công.');
             form.resetFields();
         } catch (error) {
-            notification.error({
-                message: 'Error',
-                description: 'An error occurred while creating the action proposal.',
-            });
+            message.error('Đã xảy ra lỗi khi tạo đề xuất hành động.');
         } finally {
             setLoading(false);
         }
     };
 
+    // Reset actionSubtype khi actionType thay đổi
+    useEffect(() => {
+        form.setFieldsValue({ actionSubtype: undefined });
+    }, [actionType, form]);
+
     const handleDraft = () => {
         form.validateFields().then(value => {
             onFinish(value, ActionStatus.Draft);
+        }).catch(() => {
+            message.error("Hãy sửa lại biểu mẫu.");
         });
-    }
+    };
 
     const handleSubmit = () => {
         form.validateFields().then(value => {
             onFinish(value, ActionStatus.Pending);
+        }).catch(() => {
+            message.error("Hãy sửa lại biểu mẫu.");
         });
-    }
+    };
+
     return (
         <Form
             layout="vertical"
             form={form}
+            onFinish={handleSubmit}
         >
             <Form.Item
                 name="employeeId"
-                label="Employee ID"
-                rules={[{ required: true, message: 'Please select an employee ID' }]}
+                label="Nhân viên"
+                rules={[{ required: true, message: 'Vui lòng chọn nhân viên' }]}
             >
-                <Select placeholder="Select Employee ID">
+                <Select placeholder="Chọn nhân viên">
                     {employeeOptions}
                 </Select>
             </Form.Item>
 
             <Form.Item
                 name="actionType"
-                label="Action Type"
-                rules={[{ required: true, message: 'Please select the action type' }]}
+                label="Loại hành động"
+                rules={[{ required: true, message: 'Vui lòng chọn loại hành động' }]}
             >
-                <Select placeholder="Select Action Type">
+                <Select placeholder="Chọn loại hành động">
                     {createOptionsFromEnum(ActionType)}
                 </Select>
             </Form.Item>
 
             <Form.Item
                 name="actionSubtype"
-                label="Action Subtype"
-                rules={[{ required: true, message: 'Please select the action subtype' }]}
+                label="Phân loại hành động"
+                rules={[{ required: true, message: 'Vui lòng chọn phân loại hành động' }]}
             >
-                <Select placeholder="Select Action Subtype">
+                <Select placeholder="Chọn phân loại hành động">
                     {actionType === ActionType.Reward ? (
                         createOptionsFromEnum({
                             Bonus: ActionSubtype.Bonus,
@@ -144,8 +145,8 @@ const CreateRewardDisciplinePage: React.FC = () => {
 
             <Form.Item
                 name="actionDate"
-                label="Action Date"
-                rules={[{ required: true, message: 'Please select the action date' }]}
+                label="Ngày thực hiện"
+                rules={[{ required: true, message: 'Vui lòng chọn ngày thực hiện' }]}
             >
                 <DatePicker format="YYYY-MM-DD" />
             </Form.Item>
@@ -153,27 +154,43 @@ const CreateRewardDisciplinePage: React.FC = () => {
             {actionType === ActionType.Reward && (
                 <Form.Item
                     name="amount"
-                    label="Amount"
+                    label="Số tiền"
+                    rules={[
+                        { required: true, message: 'Vui lòng nhập số tiền!' },
+                        { type: 'number', max: 10000, message: 'Số tiền không được vượt quá 10.000!' },
+                        { type: 'number', min: 0, message: 'Số tiền phải lớn hơn 0!' }
+                    ]}
                 >
-                    <Input placeholder="Enter amount" type="number" />
+                    <InputNumber placeholder="Nhập số tiền" />
                 </Form.Item>
             )}
 
             {actionType === ActionType.Disciplinary && (
                 <Form.Item
                     name="duration"
-                    label="Duration"
+                    label="Thời gian"
+                    rules={[{ required: true, message: 'Vui lòng nhập thời gian' }]}
                 >
-                    <Input placeholder="Enter duration in days" type="number" />
+                    <InputNumber
+                        placeholder="Nhập thời gian (ngày)"
+                        min={0}
+                        max={90}
+                        style={{ width: '100%' }}
+                        onChange={(value) => {
+                            if (value && value > 90) {
+                                message.error('Thời gian không được quá 90 ngày.');
+                            }
+                        }}
+                    />
                 </Form.Item>
             )}
 
             <Form.Item
                 name="reason"
-                label="Reason"
-                rules={[{ required: true, message: 'Please enter the reason' }]}
+                label="Lý do"
+                rules={[{ required: true, message: 'Vui lòng nhập lý do' }]}
             >
-                <TextArea placeholder="Enter the reason for the action" rows={4} />
+                <TextArea placeholder="Nhập lý do thực hiện" rows={4} />
             </Form.Item>
 
             <Form.Item>
@@ -182,16 +199,15 @@ const CreateRewardDisciplinePage: React.FC = () => {
                     onClick={handleDraft}
                     loading={loading}
                 >
-                    Create Draft
+                    Lưu nháp
                 </Button>
                 <Button
                     type="primary"
-                    onClick={handleSubmit}
+                    htmlType="submit"
                     loading={loading}
                     style={{ marginLeft: '10px' }}
-
                 >
-                    Create Proposal
+                    Tạo đề xuất
                 </Button>
             </Form.Item>
         </Form>
