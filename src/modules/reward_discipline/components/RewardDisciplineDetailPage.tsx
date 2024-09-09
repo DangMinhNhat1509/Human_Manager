@@ -134,7 +134,7 @@ const RewardDisciplineDetailPage: React.FC = () => {
             <Paragraph><strong>Status:</strong> {action.status}</Paragraph>
             <Paragraph><strong>Reason:</strong> {action.reason}</Paragraph>
 
-            {(role === Role.HR || role === Role.Director) && (
+            {(role === Role.HR || role === Role.Director) && action.status !== ActionStatus.Approved && action.status !== ActionStatus.Rejected && (
                 <>
                     <Input.TextArea
                         value={note}
@@ -143,9 +143,9 @@ const RewardDisciplineDetailPage: React.FC = () => {
                         rows={4}
                         style={{ marginBottom: 16 }}
                     />
-                    {action.status !== ActionStatus.Approved && action.status !== ActionStatus.Rejected && (
+                    {(
                         <>
-                            <Button type="default" onClick={handleRequestEdit} style={{ marginTop: 16 }}>
+                            <Button type="default" onClick={handleRequestEdit} style={{ marginRight: 8 }}>
                                 Request Edit
                             </Button>
                             <Button type="primary" onClick={handleApprove} style={{ marginRight: 8 }}>
