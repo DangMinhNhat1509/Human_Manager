@@ -247,9 +247,10 @@ export const approveOrRejectAction = async (
                 action.status = ActionStatus.Rejected;
                 break;
             case ApprovalAction.RequestEdit:
-            case ApprovalAction.Submit:
+                action.status = ActionStatus.Editing;
+                break;
             case ApprovalAction.Cancel:
-                // Xử lý các hành động khác nếu cần
+                action.status = ActionStatus.Cancelled;
                 break;
             default:
                 throw new Error('Loại phê duyệt không hợp lệ.');

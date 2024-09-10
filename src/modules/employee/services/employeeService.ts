@@ -31,8 +31,8 @@ export const getAllDepartments = async (): Promise<Department[]> => {
         }));
     } catch (error) {
         message.error('Lỗi khi lấy danh sách phòng ban');
-        throw error;    
-    } 
+        throw error;
+    }
 };
 
 // Fetch all employees
@@ -153,7 +153,7 @@ export const updateEmployee = async (id: number, updateData: Partial<Omit<Employ
 // Delete employee
 export const deleteEmployee = async (employeeId: number): Promise<void> => {
     try {
-        const { employees, departments } = getHrmData();
+        const { employees } = getHrmData();
 
         const employeeIndex = employees.findIndex(e => e.employeeId === employeeId);
         if (employeeIndex === -1) {
@@ -166,7 +166,7 @@ export const deleteEmployee = async (employeeId: number): Promise<void> => {
         }
 
         employees.splice(employeeIndex, 1);
-        saveHrmData({ employees, departments, actions: [], approvalLogs: [] });
+        saveHrmData({ ...getHrmData(), employees });
     } catch (error) {
         message.error('Lỗi khi xóa nhân viên');
         throw error;
