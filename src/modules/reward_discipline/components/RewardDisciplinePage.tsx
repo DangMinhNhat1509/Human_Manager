@@ -101,6 +101,11 @@ const RewardDisciplinePage: React.FC = () => {
             key: 'employeeName',
         },
         {
+            title: 'Phòng ban',
+            dataIndex: 'departmentName',
+            key: 'departmentName',
+        },
+        {
             title: 'Loại hành động',
             dataIndex: 'actionType',
             key: 'actionType',
@@ -114,7 +119,7 @@ const RewardDisciplinePage: React.FC = () => {
             title: 'Ngày hành động',
             dataIndex: 'actionDate',
             key: 'actionDate',
-            render: (date: string) => dayjs(date).format('MMMM D, YYYY h:mm:ss A'),
+            render: (date: string) => dayjs(date).format('DD/MM/YYYY'),
         },
         {
             title: 'Trạng thái',

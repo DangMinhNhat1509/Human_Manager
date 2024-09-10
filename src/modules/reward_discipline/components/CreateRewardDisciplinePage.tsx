@@ -148,7 +148,7 @@ const CreateRewardDisciplinePage: React.FC = () => {
                 label="Ngày thực hiện"
                 rules={[{ required: true, message: 'Vui lòng chọn ngày thực hiện' }]}
             >
-                <DatePicker format="YYYY-MM-DD" />
+                <DatePicker format="DD/MM/YYYY" />
             </Form.Item>
 
             {actionType === ActionType.Reward && (

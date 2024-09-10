@@ -134,7 +134,7 @@ const CreateEmployeePage: React.FC = () => {
 
                                 ]}
                             >
-                                <DatePicker format="YYYY-MM-DD" style={{ width: '100%' }} />
+                                <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
                             </Form.Item>
                         </Col>
 

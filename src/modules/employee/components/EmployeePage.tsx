@@ -4,7 +4,7 @@ import { Table, Button, Spin, Pagination, Alert } from 'antd';
 import { getEmployeesByRole } from '../services/employeeService';
 import { EmployeeListItem } from '../types/EmployeeListItem';
 import { Role } from '../../../types/Employee';
-import dayjs from 'dayjs'; 
+import dayjs from 'dayjs';
 import _ from 'lodash';
 
 const EmployeePage: React.FC = () => {
@@ -41,9 +41,26 @@ const EmployeePage: React.FC = () => {
     const showEmployees = employees.slice(startIndex, endIndex);
 
     const columns = [
-        { title: 'Tên', dataIndex: 'name', key: 'name' },
-        { title: 'Email', dataIndex: 'email', key: 'email' },
-        { title: 'Số điện thoại', dataIndex: 'phoneNumber', key: 'phoneNumber' },
+        {
+            title: 'STT',
+            key: 'no',
+            render: (_: any, __: any, index: number) => startIndex + index + 1,
+        },
+        {
+            title: 'Tên',
+            dataIndex: 'name',
+            key: 'name'
+        },
+        {
+            title: 'Email',
+            dataIndex: 'email',
+            key: 'email'
+        },
+        {
+            title: 'Số điện thoại',
+            dataIndex: 'phoneNumber',
+            key: 'phoneNumber'
+        },
         {
             title: 'Giới tính',
             dataIndex: 'gender',
@@ -54,7 +71,7 @@ const EmployeePage: React.FC = () => {
             title: 'Ngày sinh',
             dataIndex: 'dateOfBirth',
             key: 'dateOfBirth',
-            render: (text: string) => <span>{dayjs(text).format('MMMM D YYYY')}</span>
+            render: (text: string) => <span>{dayjs(text).format('DD/MM/YYYY')}</span>
         },
         {
             title: 'Phòng ban',
@@ -63,7 +80,7 @@ const EmployeePage: React.FC = () => {
             render: (text: string) => <span>{text}</span>
         },
         {
-            title: 'Hành động',
+            title: 'Chi tiết',
             key: 'actions',
             render: (text: any, record: EmployeeListItem) => (
                 <Button

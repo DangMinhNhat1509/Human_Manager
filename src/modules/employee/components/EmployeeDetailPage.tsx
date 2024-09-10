@@ -6,6 +6,7 @@ import { EmployeeDetail } from '../types/EmployeeDetail';
 import { Role } from '../../../types/Employee';
 import { getEmployeeById, deleteEmployee } from '../services/employeeService';
 import { ArrowLeftOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
@@ -90,7 +91,7 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
             })
         }
     }
-    
+
     if (loading || updating) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -181,7 +182,7 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
                             { label: 'Giới tính', value: employeeDetail.gender },
                             { label: 'Email', value: employeeDetail.email },
                             { label: 'Số điện thoại', value: employeeDetail.phoneNumber },
-                            { label: 'Ngày sinh', value: employeeDetail.dateOfBirth },
+                            { label: 'Ngày sinh', value: dayjs(employeeDetail.dateOfBirth).format('DD/MM/YYYY') },
                             { label: 'Địa chỉ', value: employeeDetail.address },
                             { label: 'Trạng thái', value: employeeDetail.status ? 'Hoạt động' : 'Không hoạt động' },
                             { label: 'Phòng ban', value: employeeDetail.departmentName },

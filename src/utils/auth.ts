@@ -1,4 +1,4 @@
-import { message } from 'antd'; 
+import { message } from 'antd';
 import { Role } from '../types/Employee';
 import { getEmployeeById } from '../modules/employee/services/employeeService';
 
