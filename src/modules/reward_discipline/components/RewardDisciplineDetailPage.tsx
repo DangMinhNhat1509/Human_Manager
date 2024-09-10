@@ -125,7 +125,7 @@ const RewardDisciplineDetailPage: React.FC = () => {
                 <Paragraph><strong>Phòng ban:</strong> {action.departmentName}</Paragraph>
                 <Paragraph><strong>Loại hành động:</strong> {action.actionType}</Paragraph>
                 <Paragraph><strong>Phân loại:</strong> {action.actionSubtype}</Paragraph>
-                <Paragraph><strong>Ngày thực hiện:</strong> {dayjs(action.actionDate).format('MMMM D, YYYY')}</Paragraph>
+                <Paragraph><strong>Ngày thực hiện:</strong> {dayjs(action.actionDate).format('DD/MM/YYYY')}</Paragraph>
                 {action.actionType === ActionType.Reward && action.amount && (
                     <Paragraph><strong>Số tiền:</strong> {action.amount}</Paragraph>
                 )}

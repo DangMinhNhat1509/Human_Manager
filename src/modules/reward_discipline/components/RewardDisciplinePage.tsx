@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Table, Button, Pagination, Spin, Typography, Input, Select, DatePicker } from 'antd';
+import { Table, Button, Pagination, Spin, Typography, Input, Select, DatePicker, message } from 'antd';
 import { getActionsByDepartment, getAllActions } from '../services/RewardDisciplineService';
 import { RewardDisciplineListItem } from '../types/RewardDisciplineListItem';
 import { getCurrentUserRole, getCurrentUserDepartmentId } from '../../../utils/auth';
 import { ActionStatus, ActionType } from '../../../types/Action';
 import { Role } from '../../../types/Employee';
 import dayjs from 'dayjs';
+import { getAllDepartments } from '../../employee/services/employeeService';
+import { Department } from '../../../types/Department';
 
 
 const { Title } = Typography;
@@ -14,6 +16,7 @@ const { RangePicker } = DatePicker;
 
 const RewardDisciplinePage: React.FC = () => {
     const [searchText, setSearchText] = useState<string>('');
+    const [departments, setDepartments] = useState<Department[]>([]);
     const [selectedDepartment, setSelectedDepartment] = useState<string>('');
     const [selectedActionType, setSelectedActionType] = useState<ActionType | undefined>(undefined);
     const [selectedStatus, setSelectedStatus] = useState<ActionStatus | undefined>(undefined);
@@ -58,6 +61,17 @@ const RewardDisciplinePage: React.FC = () => {
         };
 
         fetchActions();
+
+        const fetchDepartments = async () => {
+            try {
+                const fetchedDepartments = await getAllDepartments();
+                setDepartments(fetchedDepartments);
+            } catch (error) {
+                message.error('Lỗi khi lấy danh sách phòng ban. Vui lòng thử lại sau.');
+            }
+        };
+
+        fetchDepartments();
     }, []);
 
     const handlePageChange = (pageNumber: number) => {
@@ -67,9 +81,9 @@ const RewardDisciplinePage: React.FC = () => {
     const filterActions = (actions: RewardDisciplineListItem[]) => {
         return actions
             .filter(action => {
-                const matchesSearchText = action.employeeId.toString().includes(searchText) ||
+                const matchesSearchText = action.employeeName.toLowerCase().includes(searchText) ||
                     action.actionType.toLowerCase().includes(searchText.toLowerCase());
-                const matchesDepartment = userRole === Role.Manager || !selectedDepartment ? true : action.departmentName === selectedDepartment;
+                const matchesDepartment = selectedDepartment ? action.departmentName === selectedDepartment : true;
                 const matchesActionType = selectedActionType ? action.actionType === selectedActionType : true;
                 const matchesStatus = selectedStatus ? action.status === selectedStatus : true;
                 const matchesDateRange = dateRange ? (
@@ -81,6 +95,12 @@ const RewardDisciplinePage: React.FC = () => {
             })
             .sort((a, b) => dayjs(b.actionDate).unix() - dayjs(a.actionDate).unix());
     };
+
+    const handleClearFilter = () => {
+        setSelectedDepartment('');
+        setSelectedActionType(undefined);
+        setSelectedStatus(undefined);
+    }
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const showActions = filterActions(actions).slice(startIndex, startIndex + itemsPerPage);
@@ -159,51 +179,66 @@ const RewardDisciplinePage: React.FC = () => {
 
             <div style={{ marginBottom: '16px' }}>
                 <Input.Search
-                    placeholder="Tìm theo ID nhân viên hoặc Loại hành động"
+                    placeholder="Tìm theo tên nhân viên hoặc Loại hành động"
                     enterButton
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                 />
             </div>
+
             <div style={{ marginBottom: '16px' }}>
                 {userRole !== Role.Manager && (
                     <Select
                         placeholder="Chọn Phòng ban"
                         style={{ width: 200, marginRight: '8px' }}
-                        value={selectedDepartment}
+                        value={selectedDepartment || undefined}
                         onChange={(value) => setSelectedDepartment(value)}
                     >
+                        {departments.map(department =>(
+                            <Select.Option key={department.departmentId} value={department.departmentName}>
+                                {department.departmentName}
+                            </Select.Option>
+                        ))}
                     </Select>
                 )}
+
                 <Select
                     placeholder="Chọn Loại hành động"
                     style={{ width: 200, marginRight: '8px' }}
                     value={selectedActionType}
                     onChange={(value) => setSelectedActionType(value as ActionType)}
                 >
-                    {Object.keys(ActionType).map((key) => (
-                        <Select.Option key={key} value={ActionType[key as keyof typeof ActionType]}>
-                            {ActionType[key as keyof typeof ActionType]}
-                        </Select.Option>
-                    ))}
+                    {Object.keys(ActionType)
+                        .map((key) => (
+                            <Select.Option key={key} value={ActionType[key as keyof typeof ActionType]}>
+                                {ActionType[key as keyof typeof ActionType]}
+                            </Select.Option>
+                        ))}
                 </Select>
+
                 <Select
                     placeholder="Chọn Trạng thái"
                     style={{ width: 200, marginRight: '8px' }}
                     value={selectedStatus}
                     onChange={(value) => setSelectedStatus(value as ActionStatus)}
                 >
-                    {Object.keys(ActionStatus).map((key) => (
-                        <Select.Option key={key} value={ActionStatus[key as keyof typeof ActionStatus]}>
-                            {ActionStatus[key as keyof typeof ActionStatus]}
-                        </Select.Option>
-                    ))}
+                    {Object.keys(ActionStatus)
+                        .filter(key => ActionStatus[key as keyof typeof ActionStatus] !== ActionStatus.Draft)
+                        .map((key) => (
+                            <Select.Option key={key} value={ActionStatus[key as keyof typeof ActionStatus]}>
+                                {ActionStatus[key as keyof typeof ActionStatus]}
+                            </Select.Option>
+                        ))}
                 </Select>
                 <RangePicker
                     style={{ width: 300, marginLeft: '8px' }}
                     value={dateRange}
                     onChange={(dates) => setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs])}
                 />
+
+                <Button onClick={handleClearFilter} style={{ marginLeft: '8px' }} type='primary'>
+                    Xóa bộ lọc
+                </Button>
             </div>
 
             {userRole === Role.Manager && (
