@@ -68,7 +68,7 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
     return (
         <Modal
             title={<Title level={2}>Cập nhật thông tin nhân viên</Title>}
-            visible={show}
+            open={show}
             onCancel={handleClose}
             footer={null}
             width={800}

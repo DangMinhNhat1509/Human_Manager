@@ -2,9 +2,9 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from 'antd';
 import Employee from './pages/Employee';
+import RewardDiscipline from './pages/RewardDiscipline';
 import EmployeeDetailPage from './modules/employee/components/EmployeeDetailPage';
 import CreateEmployeePage from './modules/employee/components/CreateEmployeePage';
-import RewardDisciplinePage from './modules/reward_discipline/components/RewardDisciplinePage';
 import RewardDisciplineDetailPage from './modules/reward_discipline/components/RewardDisciplineDetailPage';
 import CreateRewardDisciplinePage from './modules/reward_discipline/components/CreateRewardDisciplinePage';
 import UpdateRewardDisciplinePage from './modules/reward_discipline/components/UpdateRewardDisciplinePage';
@@ -38,7 +38,7 @@ const App: React.FC = () => {
               <Route path="/employees/:employeeId" element={<PrivateRoute roles={[Role.Director, Role.HR, Role.Manager, Role.Employee]} element={<EmployeeDetailPage />} />} />
 
               {/* Routes cho Reward/Discipline */}
-              <Route path="/actions" element={<PrivateRoute roles={[Role.Director, Role.Manager, Role.HR]} element={<RewardDisciplinePage />} />} />
+              <Route path="/actions" element={<PrivateRoute roles={[Role.Director, Role.Manager, Role.HR]} element={<RewardDiscipline />} />} />
               <Route path="/actions/create" element={<PrivateRoute roles={[Role.Manager]} element={<CreateRewardDisciplinePage />} />} />
               <Route path="/actions/:actionId" element={<PrivateRoute roles={[Role.Director, Role.Manager, Role.HR]} element={<RewardDisciplineDetailPage />} />} />
               <Route path="/actions/update/:actionId" element={<PrivateRoute roles={[Role.Manager]} element={<UpdateRewardDisciplinePage />} />} />
