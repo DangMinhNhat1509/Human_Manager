@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Input, Card, Typography, Spin, message, Modal, Descriptions, Collapse } from 'antd';
-import { getActionDetailById, approveOrRejectAction } from '../services/RewardDisciplineService';
-import { ActionStatus, ActionType } from '../../../types/Action';
-import { RewardDisciplineDetail } from '../types/RewardDisciplineDetail';
-import { Role } from '../../../types/Employee';
-import { ApprovalAction } from '../../../types/ApprovalLog';
+import { getActionDetailById, approveOrRejectAction } from '../services/reward_discipline_service';
+import { ActionStatus, ActionType } from '../../../types/action';
+import { RewardDisciplineDetail } from '../types/reward_discipline_detail';
+import { Role } from '../../../types/employee';
+import { ApprovalAction } from '../../../types/approval_log';
 import { getCurrentUserRole } from '../../../utils/auth';
 import dayjs from 'dayjs';
 

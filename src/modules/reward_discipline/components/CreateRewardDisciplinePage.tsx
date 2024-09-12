@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Form, Input, DatePicker, Select, InputNumber, message } from 'antd';
-import { createAction } from '../services/RewardDisciplineService';
-import { ActionType, ActionSubtype, ActionStatus } from '../../../types/Action';
-import { CreateRewardDiscipline } from '../types/CreateRewardDiscipline';
-import { getEmployeesByRole } from '../../employee/services/employeeService';
+import { createAction } from '../services/reward_discipline_service';
+import { ActionType, ActionSubtype, ActionStatus } from '../../../types/action';
+import { CreateRewardDiscipline } from '../types/create_reward_discipline';
+import { getEmployeesByRole } from '../../employee/services/employee_service';
 import { getCurrentUserDepartmentId } from '../../../utils/auth';
-import { Role } from '../../../types/Employee';
+import { Role } from '../../../types/employee';
 
 const { TextArea } = Input;
 const { Option } = Select;

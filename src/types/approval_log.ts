@@ -10,8 +10,8 @@ export enum ApprovalAction {
 export interface ApprovalLog {
     approvalLogId: number;
     actionId: number;
-    approverId: number; 
-    note: string; 
-    approvalDate: string; 
-    action: ApprovalAction; 
+    approverId: number;
+    note: string;
+    approvalDate: string;
+    action: ApprovalAction;
 }

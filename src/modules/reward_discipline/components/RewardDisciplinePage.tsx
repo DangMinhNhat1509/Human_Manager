@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Table, Button, Pagination, Spin, Typography, Input, Select, DatePicker, message } from 'antd';
-import { getActionsByDepartment, getAllActions } from '../services/RewardDisciplineService';
-import { RewardDisciplineListItem } from '../types/RewardDisciplineListItem';
+import { getActionsByDepartment, getAllActions } from '../services/reward_discipline_service';
+import { RewardDisciplineListItem } from '../types/reward_discipline_list_item';
 import { getCurrentUserRole, getCurrentUserDepartmentId } from '../../../utils/auth';
-import { ActionStatus, ActionType } from '../../../types/Action';
-import { Role } from '../../../types/Employee';
+import { ActionStatus, ActionType } from '../../../types/action';
+import { Role } from '../../../types/employee';
 import dayjs from 'dayjs';
-import { getAllDepartments } from '../../employee/services/employeeService';
-import { Department } from '../../../types/Department';
+import { getAllDepartments } from '../../employee/services/employee_service';
+import { Department } from '../../../types/department';
 
 
 const { Title } = Typography;
@@ -194,7 +194,7 @@ const RewardDisciplinePage: React.FC = () => {
                         value={selectedDepartment || undefined}
                         onChange={(value) => setSelectedDepartment(value)}
                     >
-                        {departments.map(department =>(
+                        {departments.map(department => (
                             <Select.Option key={department.departmentId} value={department.departmentName}>
                                 {department.departmentName}
                             </Select.Option>

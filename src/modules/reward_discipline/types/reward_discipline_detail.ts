@@ -1,5 +1,5 @@
-import { ActionType, ActionSubtype, ActionStatus } from '../../../types/Action';
-import { ApprovalLog } from '../../../types/ApprovalLog';
+import { ActionType, ActionSubtype, ActionStatus } from '../../../types/action';
+import { ApprovalLog } from '../../../types/approval_log';
 
 
 export interface RewardDisciplineDetail {

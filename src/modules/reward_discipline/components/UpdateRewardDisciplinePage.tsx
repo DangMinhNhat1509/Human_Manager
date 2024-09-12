@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Form, Input, DatePicker, Select, notification, Spin } from 'antd';
-import { updateAction, getActionDetailById } from '../services/RewardDisciplineService';
-import { ActionType, ActionSubtype, ActionStatus } from '../../../types/Action';
-import { getEmployeesByRole } from '../../employee/services/employeeService';
+import { updateAction, getActionDetailById } from '../services/reward_discipline_service';
+import { ActionType, ActionSubtype, ActionStatus } from '../../../types/action';
+import { getEmployeesByRole } from '../../employee/services/employee_service';
 import { getCurrentUserDepartmentId } from '../../../utils/auth';
-import { Role } from '../../../types/Employee';
+import { Role } from '../../../types/employee';
 import dayjs from 'dayjs';
 
 const { TextArea } = Input;
@@ -32,66 +32,67 @@ const UpdateRewardDisciplinePage: React.FC = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        const fetchActionAndEmployees = async () => {
+            try {
+                setLoading(true);
+                setLoadingData(true);
+
+                const actionData = await getActionDetailById(parseInt(actionId as string, 10));
+                if (!actionData) {
+                    notification.error({
+                        message: 'Error',
+                        description: 'Action data not found.',
+                    });
+                    navigate('/actions');
+                    return;
+                }
+
+                form.setFieldsValue({
+                    ...actionData,
+                    actionDate: dayjs(actionData.actionDate),
+                });
+
+                const departmentId = await getCurrentUserDepartmentId();
+                const role = Role.Employee;
+                const employeesList = await getEmployeesByRole(role);
+
+                if (!employeesList || employeesList.length === 0) {
+                    notification.error({
+                        message: 'Error',
+                        description: 'No employees found.',
+                    });
+                    return;
+                }
+
+                const filteredEmployees = employeesList.filter(emp => emp.departmentId === departmentId);
+                if (filteredEmployees.length === 0) {
+                    notification.error({
+                        message: 'Error',
+                        description: 'No employees found for the current department.',
+                    });
+                    return;
+                }
+
+                setEmployeeOptions(
+                    filteredEmployees.map(emp => (
+                        <Option key={emp.employeeId} value={emp.employeeId}>{emp.name}</Option>
+                    ))
+                );
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                notification.error({
+                    message: 'Error',
+                    description: 'Failed to fetch action or employees data.',
+                });
+            } finally {
+                setLoadingData(false);
+                setLoading(false);
+            }
+        };
         fetchActionAndEmployees();
-    }, [actionId, form]);
+    }, [actionId, form, navigate]);
 
-    const fetchActionAndEmployees = async () => {
-        try {
-            setLoading(true);
-            setLoadingData(true);
 
-            const actionData = await getActionDetailById(parseInt(actionId as string, 10));
-            if (!actionData) {
-                notification.error({
-                    message: 'Error',
-                    description: 'Action data not found.',
-                });
-                navigate('/actions');
-                return;
-            }
-
-            form.setFieldsValue({
-                ...actionData,
-                actionDate: dayjs(actionData.actionDate),
-            });
-
-            const departmentId = await getCurrentUserDepartmentId();
-            const role = Role.Employee;
-            const employeesList = await getEmployeesByRole(role);
-
-            if (!employeesList || employeesList.length === 0) {
-                notification.error({
-                    message: 'Error',
-                    description: 'No employees found.',
-                });
-                return;
-            }
-
-            const filteredEmployees = employeesList.filter(emp => emp.departmentId === departmentId);
-            if (filteredEmployees.length === 0) {
-                notification.error({
-                    message: 'Error',
-                    description: 'No employees found for the current department.',
-                });
-                return;
-            }
-
-            setEmployeeOptions(
-                filteredEmployees.map(emp => (
-                    <Option key={emp.employeeId} value={emp.employeeId}>{emp.name}</Option>
-                ))
-            );
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            notification.error({
-                message: 'Error',
-                description: 'Failed to fetch action or employees data.',
-            });
-        } finally {
-            setLoadingData(false);
-            setLoading(false);
-        }
-    };
 
     const onFinish = async (values: any, status: ActionStatus) => {
         setLoading(true);

@@ -1,4 +1,4 @@
-import { ActionType, ActionSubtype, ActionStatus } from '../../../types/Action';
+import { ActionType, ActionSubtype, ActionStatus } from '../../../types/action';
 
 export interface RewardDisciplineListItem {
     employeeId: number;

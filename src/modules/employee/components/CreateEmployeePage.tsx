@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Input, Button, Checkbox, DatePicker, message, Card, Row, Col, Typography, Select } from 'antd';
-import { createEmployee, getAllDepartments } from '../services/employeeService';
+import { createEmployee, getAllDepartments } from '../services/employee_service';
 import dayjs from 'dayjs';
-import { Department } from '../../../types/Department';
-import { Role } from '../../../types/Employee';
-import { CreateEmployee } from '../types/CreateEmployee';
+import { Department } from '../../../types/department';
+import { Role } from '../../../types/employee';
+import { CreateEmployee } from '../types/create_employee';
 const { Title } = Typography;
 const { Option } = Select;
 

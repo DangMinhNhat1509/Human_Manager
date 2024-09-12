@@ -9,7 +9,7 @@ import RewardDisciplineDetailPage from './modules/reward_discipline/components/R
 import CreateRewardDisciplinePage from './modules/reward_discipline/components/CreateRewardDisciplinePage';
 import UpdateRewardDisciplinePage from './modules/reward_discipline/components/UpdateRewardDisciplinePage';
 import { getCurrentUserRole } from './utils/auth';
-import { Role } from './types/Employee';
+import { Role } from './types/employee';
 import Sidebar from './components/SideBar';
 
 // Component để kiểm tra quyền truy cập

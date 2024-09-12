@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Col, Row, Typography, Modal, Spin } from 'antd';
 import EmployeeUpdateModal from './EmployeeUpdateModal';
-import { EmployeeDetail } from '../types/EmployeeDetail';
-import { Role } from '../../../types/Employee';
-import { getEmployeeById, deleteEmployee } from '../services/employeeService';
+import { EmployeeDetail } from '../types/employee_detail';
+import { Role } from '../../../types/employee';
+import { getEmployeeById, deleteEmployee } from '../services/employee_service';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 

@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Layout, Menu, Select, Button, Modal, message, Switch } from 'antd';
 import { UserOutlined, TrophyOutlined, FileTextOutlined, BellOutlined, SettingOutlined, SyncOutlined, BgColorsOutlined } from '@ant-design/icons';
-import { getAllEmployees, getAllDepartments } from '../modules/employee/services/employeeService';
-import { Role } from '../types/Employee';
-import { EmployeeListItem } from '../modules/employee/types/EmployeeListItem';
-import { Department } from '../types/Department';
+import { getAllEmployees, getAllDepartments } from '../modules/employee/services/employee_service';
+import { Role } from '../types/employee';
+import { EmployeeListItem } from '../modules/employee/types/employee_list_item';
+import { Department } from '../types/department';
 import { getCurrentUserRole, getCurrentUserId, setUserRole, setUserId } from '../utils/auth';
 
 const { Sider } = Layout;
@@ -19,7 +19,6 @@ const Sidebar: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<Role | undefined>(undefined);
     const [filteredEmployees, setFilteredEmployees] = useState<EmployeeListItem[]>([]);
-    const [selectedEmployeeName, setSelectedEmployeeName] = useState<string | undefined>(undefined);
     const [menuTheme, setMenuTheme] = useState<'light' | 'dark'>('light');
 
     const location = useLocation();
@@ -66,20 +65,10 @@ const Sidebar: React.FC = () => {
         }
     }, [employeeList, selectedDepartmentName, selectedRole]);
 
-    useEffect(() => {
-        if (selectedRole === Role.Employee && selectedEmployee) {
-            const employee = employeeList.find(emp => emp.employeeId === selectedEmployee);
-            setSelectedEmployeeName(employee?.name);
-        } else {
-            setSelectedEmployeeName(undefined);
-        }
-    }, [selectedEmployee, selectedRole, employeeList]);
-
     const handleRoleChange = (role: Role) => {
         setSelectedRole(role);
         setSelectedEmployee(undefined);
         setSelectedDepartmentName(undefined);
-        setSelectedEmployeeName(undefined);
     };
 
     const handleDepartmentChange = (departmentName: string | undefined) => {
@@ -113,7 +102,6 @@ const Sidebar: React.FC = () => {
         setSelectedRole(undefined);
         setSelectedEmployee(undefined);
         setSelectedDepartmentName(undefined);
-        setSelectedEmployeeName(undefined);
         setIsModalOpen(false);
     };
 

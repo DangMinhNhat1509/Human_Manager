@@ -1,4 +1,4 @@
-import { ActionType, ActionSubtype, ActionStatus } from '../../../types/Action';
+import { ActionType, ActionSubtype, ActionStatus } from '../../../types/action';
 export interface CreateRewardDiscipline {
     actionId?: number; // ID của hành động (không bắt buộc khi tạo mới)
     employeeId: number;

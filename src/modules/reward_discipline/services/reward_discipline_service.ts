@@ -1,10 +1,10 @@
-import { Action, ActionStatus } from '../../../types/Action';
-import { ApprovalLog, ApprovalAction } from '../../../types/ApprovalLog';
-import { CreateRewardDiscipline } from '../types/CreateRewardDiscipline';
-import { RewardDisciplineDetail } from '../types/RewardDisciplineDetail';
-import { RewardDisciplineListItem } from '../types/RewardDisciplineListItem';
-import { getHrmData, saveHrmData, getEmployeesByRole, getEmployeeById } from '../../employee/services/employeeService';
-import { Role } from '../../../types/Employee';
+import { Action, ActionStatus } from '../../../types/action';
+import { ApprovalLog, ApprovalAction } from '../../../types/approval_log';
+import { CreateRewardDiscipline } from '../types/create_reward_discipline';
+import { RewardDisciplineDetail } from '../types/reward_discipline_detail';
+import { RewardDisciplineListItem } from '../types/reward_discipline_list_item';
+import { getHrmData, saveHrmData, getEmployeesByRole, getEmployeeById } from '../../employee/services/employee_service';
+import { Role } from '../../../types/employee';
 import { message } from 'antd';
 
 // Lấy tất cả các hành động

@@ -1,10 +1,10 @@
-import { message } from 'antd'; // Import message từ Ant Design
-import { EmployeeDetail } from '../types/EmployeeDetail';
-import { CreateEmployee } from '../types/CreateEmployee';
-import { EmployeeListItem } from '../types/EmployeeListItem';
-import { Role } from '../../../types/Employee';
-import { HRMData } from '../../../types/HRMData';
-import { Department } from '../../../types/Department';
+import { message } from 'antd'; 
+import { EmployeeDetail } from '../types/employee_detail';
+import { CreateEmployee } from '../types/create_employee';
+import { EmployeeListItem } from '../types/employee_list_item';
+import { Role } from '../../../types/employee';
+import { HRMData } from '../../../types/hrm_data';
+import { Department } from '../../../types/department';
 
 const HRM_DATA_KEY = 'hrmData';
 

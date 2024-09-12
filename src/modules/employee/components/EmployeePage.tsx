@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Table, Button, Spin, Pagination, Alert } from 'antd';
-import { getEmployeesByRole } from '../services/employeeService';
-import { EmployeeListItem } from '../types/EmployeeListItem';
-import { Role } from '../../../types/Employee';
+import { getEmployeesByRole } from '../services/employee_service';
+import { EmployeeListItem } from '../types/employee_list_item';
+import { Role } from '../../../types/employee';
 import dayjs from 'dayjs';
 import _ from 'lodash';
 

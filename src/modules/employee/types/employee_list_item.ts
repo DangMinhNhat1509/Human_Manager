@@ -1,4 +1,4 @@
-import { Role } from '../../../types/Employee'
+import { Role } from '../../../types/employee'
 export interface EmployeeListItem {
     employeeId: number;
     name: string;

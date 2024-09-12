@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Checkbox, Button, DatePicker, message, Select, Row, Col, Typography, Card } from 'antd';
 import dayjs from 'dayjs';
-import { EmployeeDetail } from '../types/EmployeeDetail';
-import { updateEmployee, getAllDepartments } from '../services/employeeService';
-import { Department } from '../../../types/Department';
+import { EmployeeDetail } from '../types/employee_detail';
+import { updateEmployee, getAllDepartments } from '../services/employee_service';
+import { Department } from '../../../types/department';
 
 const { Option } = Select;
 const { Title } = Typography;
@@ -20,8 +20,6 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
     const [departments, setDepartments] = useState<Department[]>([]);
     const [avatarUrl, setAvatarUrl] = useState<string>(employeeDetail.avatar || '');
     const [isFocused, setIsFocused] = useState(false);
-
-    const isPreviewVisible = avatarUrl && isFocused;
 
     useEffect(() => {
         const fetchDepartments = async () => {

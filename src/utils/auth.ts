@@ -1,6 +1,6 @@
 import { message } from 'antd';
-import { Role } from '../types/Employee';
-import { getEmployeeById } from '../modules/employee/services/employeeService';
+import { Role } from '../types/employee';
+import { getEmployeeById } from '../modules/employee/services/employee_service';
 
 // Lưu thông tin người dùng vào sessionStorage
 export const setUserRole = (role: Role): void => {
