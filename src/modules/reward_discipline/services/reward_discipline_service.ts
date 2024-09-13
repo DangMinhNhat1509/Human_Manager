@@ -237,6 +237,7 @@ export const approveOrRejectAction = async (
             throw new Error('Hành động không được tìm thấy.');
         }
 
+
         // Cập nhật trạng thái hành động dựa trên loại phê duyệt
         const action = actions[actionIndex];
         switch (approvalAction) {
@@ -248,9 +249,6 @@ export const approveOrRejectAction = async (
                 break;
             case ApprovalAction.RequestEdit:
                 action.status = ActionStatus.Editing;
-                break;
-            case ApprovalAction.Cancel:
-                action.status = ActionStatus.Cancelled;
                 break;
             default:
                 throw new Error('Loại phê duyệt không hợp lệ.');

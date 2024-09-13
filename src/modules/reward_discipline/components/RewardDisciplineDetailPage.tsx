@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Input, Card, Typography, Spin, message, Modal, Descriptions, Collapse } from 'antd';
-import { getActionDetailById, approveOrRejectAction } from '../services/reward_discipline_service';
+import { getActionDetailById, approveOrRejectAction, updateActionStatus } from '../services/reward_discipline_service';
 import { ActionStatus, ActionType } from '../../../types/action';
 import { RewardDisciplineDetail } from '../types/reward_discipline_detail';
 import { Role } from '../../../types/employee';
 import { ApprovalAction } from '../../../types/approval_log';
-import { getCurrentUserRole } from '../../../utils/auth';
+import { getCurrentUserId, getCurrentUserRole } from '../../../utils/auth';
 import dayjs from 'dayjs';
 
 const { Title, Paragraph } = Typography;
@@ -20,25 +20,27 @@ const RewardDisciplineDetailPage: React.FC = () => {
     const [note, setNote] = useState<string>('');
     const navigate = useNavigate();
     const role = getCurrentUserRole();
+    const userId = Number(getCurrentUserId());
+
+    const fetchAction = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            if (actionId) {
+                const fetchedAction = await getActionDetailById(Number(actionId));
+                setAction(fetchedAction);
+            }
+        } catch (error: any) {
+            setError(error.message || 'Lỗi kết nối mạng');
+        } finally {
+            setLoading(false);
+        }
+    }, [actionId]);
+
 
     useEffect(() => {
-        const fetchAction = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                if (actionId) {
-                    const fetchedAction = await getActionDetailById(parseInt(actionId, 10));
-                    setAction(fetchedAction);
-                }
-            } catch (error: any) {
-                setError(error.message || 'Lỗi kết nối mạng');
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchAction();
-    }, [actionId]);
+    }, [fetchAction]);
 
     const handleBack = () => {
         navigate('/actions');
@@ -50,9 +52,10 @@ const RewardDisciplineDetailPage: React.FC = () => {
                 title: 'Bạn có chắc chắn muốn phê duyệt hành động này không?',
                 onOk: async () => {
                     try {
-                        await approveOrRejectAction(parseInt(actionId, 10), ApprovalAction.Approve, note, 1);
+                        await approveOrRejectAction(Number(actionId), ApprovalAction.Approve, note, userId);
                         setAction({ ...action, status: ActionStatus.Approved });
                         message.success('Phê duyệt thành công');
+                        fetchAction();
                     } catch (error) {
                         setError('Phê duyệt thất bại');
                     }
@@ -67,9 +70,10 @@ const RewardDisciplineDetailPage: React.FC = () => {
                 title: 'Bạn có chắc chắn muốn từ chối hành động này không?',
                 onOk: async () => {
                     try {
-                        await approveOrRejectAction(parseInt(actionId, 10), ApprovalAction.Reject, note, 1);
+                        await approveOrRejectAction(Number(actionId), ApprovalAction.Reject, note, userId);
                         setAction({ ...action, status: ActionStatus.Rejected });
                         message.success('Từ chối thành công');
+                        fetchAction();
                     } catch (error) {
                         setError('Từ chối thất bại');
                     }
@@ -78,13 +82,30 @@ const RewardDisciplineDetailPage: React.FC = () => {
         }
     };
 
+    const handleCancel = async () => {
+        if (action && actionId) {
+            Modal.confirm({
+                title: 'Bạn có chắc muốn hủy bỏ đề xuất này?',
+                onOk: async () => {
+                    try {
+                        await updateActionStatus(Number(actionId), ActionStatus.Cancelled);
+                        setAction({ ...action, status: ActionStatus.Cancelled });
+                        message.success('Hủy bỏ quyết định thành công')
+                        navigate('/actions')
+                    } catch {
+                        setError('Hủy bỏ đề xuất thất bại')
+                    }
+                }
+            })
+        }
+    }
     const handleRequestEdit = async () => {
         if (action && actionId) {
             Modal.confirm({
                 title: 'Bạn có chắc muốn yêu cầu chỉnh sửa hành động này không?',
                 onOk: async () => {
                     try {
-                        await approveOrRejectAction(parseInt(actionId, 10), ApprovalAction.RequestEdit, note, 1);
+                        await approveOrRejectAction(Number(actionId), ApprovalAction.RequestEdit, note, userId);
                         setAction(prevAction => prevAction ? { ...action, status: ActionStatus.Editing } : null);
                         message.success('Yêu cầu chỉnh sửa đã được gửi');
                     } catch (error) {
@@ -100,6 +121,8 @@ const RewardDisciplineDetailPage: React.FC = () => {
             navigate(`/actions/update/${actionId}`);
         }
     };
+
+
 
     if (loading) {
         return <div style={{ textAlign: 'center', marginTop: 50 }}><Spin size="large" /></div>;
@@ -135,6 +158,7 @@ const RewardDisciplineDetailPage: React.FC = () => {
                 <Paragraph><strong>Trạng thái:</strong> {action.status}</Paragraph>
                 <Paragraph><strong>Lý do:</strong> {action.reason}</Paragraph>
 
+                {/* Duyệt đơn với Role là HR hoặc Director */}
                 {(role === Role.HR || role === Role.Director) && action.status === ActionStatus.Pending && (
                     <>
                         <Input.TextArea
@@ -154,6 +178,21 @@ const RewardDisciplineDetailPage: React.FC = () => {
                             Từ chối
                         </Button>
                     </>
+                )}
+                {/* Cho phép manager cancel nếu đang pending */}
+                {role === Role.Manager && (action.status === ActionStatus.Pending) && (
+                    <>
+                        <Button type="primary" danger onClick={handleCancel} style={{ marginTop: 16 }}>
+                            Hủy bỏ đề xuất
+                        </Button>
+                    </>
+                )}
+
+                {/* Cho phép chỉnh sửa nếu là Manager */}
+                {role === Role.Manager && (action.status === ActionStatus.Draft || action.status === ActionStatus.Editing) && (
+                    <Button type="primary" onClick={handleEdit} style={{ marginTop: 16 }}>
+                        Chỉnh sửa
+                    </Button>
                 )}
 
                 {action.approvalLogs && action.approvalLogs.length > 0 && (
@@ -181,15 +220,10 @@ const RewardDisciplineDetailPage: React.FC = () => {
                         </Collapse>
                     </>
                 )}
-
-                {role === Role.Manager && (action.status === ActionStatus.Draft || action.status === ActionStatus.Editing) && (
-                    <Button type="primary" onClick={handleEdit} style={{ marginTop: 16 }}>
-                        Chỉnh sửa
-                    </Button>
-                )}
             </Card>
         </>
     );
 };
 
 export default RewardDisciplineDetailPage;
+

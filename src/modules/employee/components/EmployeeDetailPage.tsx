@@ -35,7 +35,7 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
                 if (!employeeId) {
                     throw new Error('ID nhân viên không tìm thấy');
                 }
-                const response = await getEmployeeById(Number(employeeId)); // Chuyển employeeId thành số nếu cần
+                const response = await getEmployeeById(Number(employeeId));
                 setEmployeeDetail(response);
             } catch (error: any) {
                 setError(error.response ? error.response.data : 'Lỗi mạng');

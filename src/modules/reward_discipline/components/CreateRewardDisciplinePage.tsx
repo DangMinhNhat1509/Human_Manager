@@ -57,8 +57,8 @@ const CreateRewardDisciplinePage: React.FC = () => {
         try {
             const actionData: CreateRewardDiscipline = {
                 ...values,
-                actionType: values.actionType,
-                actionSubtype: values.actionSubtype,
+                // actionType: values.actionType,
+                // actionSubtype: values.actionSubtype,
                 status: status
             };
             await createAction(actionData);

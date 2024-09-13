@@ -120,11 +120,11 @@ const RewardDisciplinePage: React.FC = () => {
             dataIndex: 'employeeName',
             key: 'employeeName',
         },
-        {
+        ...userRole === Role.Director || userRole === Role.HR ? [{
             title: 'Phòng ban',
             dataIndex: 'departmentName',
             key: 'departmentName',
-        },
+        }] : [],
         {
             title: 'Loại hành động',
             dataIndex: 'actionType',
