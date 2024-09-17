@@ -43,6 +43,20 @@ export const getAllActions = async (): Promise<RewardDisciplineListItem[]> => {
     }
 };
 
+// Lấy tất cả các hành động theo EmployeeId
+export const getApprovedActionsByEmployeeId = async (employeeId: number): Promise<RewardDisciplineListItem[]> => {
+    try {
+        const actions = await getAllActions();
+
+        const filteredActions = actions.filter(action => action.employeeId === employeeId && action.status === ActionStatus.Approved);
+        return filteredActions;
+
+    } catch (error) {
+        message.error('Lỗi khi lấy hành động theo Id nhân viên');
+        throw error;
+    }
+}
+
 // Lấy hành động theo phòng ban
 export const getActionsByDepartment = async (departmentId: number): Promise<RewardDisciplineListItem[]> => {
     try {
@@ -55,10 +69,6 @@ export const getActionsByDepartment = async (departmentId: number): Promise<Rewa
 
         // Lọc hành động theo tên phòng ban
         const filteredActions = allActions.filter(action => action.departmentId === departmentId);
-
-        if (filteredActions.length === 0) {
-            message.warning(`Không tìm thấy hành động cho phòng ban: ${departmentId}`);
-        }
 
         return filteredActions;
     } catch (error) {

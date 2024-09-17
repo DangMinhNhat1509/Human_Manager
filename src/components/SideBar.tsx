@@ -24,22 +24,21 @@ const Sidebar: React.FC = () => {
     const location = useLocation();
     const currentPath = location.pathname;
     const navigate = useNavigate();
+    const role = getCurrentUserRole();
+    const userId = getCurrentUserId();
 
     useEffect(() => {
         try {
-            const role = getCurrentUserRole();
-            const employeeId = getCurrentUserId();
-
-            if (!role || !employeeId) {
+            if (!role || !userId) {
                 setIsModalOpen(true);
             } else {
                 setSelectedRole(role);
-                setSelectedEmployee(employeeId);
+                setSelectedEmployee(userId);
             }
         } catch (error) {
             setIsModalOpen(true);
         }
-    }, []);
+    }, [role, userId]);
 
 
     useEffect(() => {
@@ -85,13 +84,13 @@ const Sidebar: React.FC = () => {
 
     const handleModalOk = () => {
         if (selectedEmployee && selectedRole) {
-            if (selectedEmployee === getCurrentUserId()) {
+            if (selectedEmployee === userId) {
                 message.error('Không thể đổi tài khoản với chính bạn.');
                 return;
             }
             setUserRole(selectedRole);
             setUserId(selectedEmployee);
-            navigate(`/employees/${selectedEmployee}?viewOnly=true`);
+            navigate(`/employees/${selectedEmployee}`);
             setIsModalOpen(false);
         } else {
             message.error('Vui lòng chọn cả vai trò và nhân viên.');
@@ -106,8 +105,6 @@ const Sidebar: React.FC = () => {
     };
 
     const getMenuItems = () => {
-        const role = getCurrentUserRole();
-
         if (!role) return [];
 
         const menuItems = [];
@@ -116,7 +113,13 @@ const Sidebar: React.FC = () => {
             key: "/accounts",
             icon: <SyncOutlined />,
             label: <Link to='#' onClick={handleSwitchAccount}>Đổi tài khoản</Link>
-        })
+        },
+            {
+                key: "/account",
+                icon: <UserOutlined />,
+                label: <Link to={`/employees/${userId}`}>Trang cá nhân</Link>
+            }
+        )
 
         if (role === Role.Director || role === Role.HR) {
             menuItems.push({
@@ -134,12 +137,16 @@ const Sidebar: React.FC = () => {
             });
         }
 
-        menuItems.push(
-            {
+        if (role === Role.Employee) {
+            menuItems.push({
                 key: "/notifications",
                 icon: <BellOutlined />,
                 label: <Link to="/notifications">Thông báo</Link>,
-            },
+
+            })
+        }
+
+        menuItems.push(
             {
                 key: "/reports",
                 icon: <FileTextOutlined />,
@@ -177,7 +184,6 @@ const Sidebar: React.FC = () => {
     return (
         <>
             <Sider
-                width={250}
                 trigger={null}
                 theme={menuTheme}
                 style={{
