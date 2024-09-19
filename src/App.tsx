@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from 'antd';
 import Employee from './pages/Employee';
@@ -25,11 +25,16 @@ const PrivateRoute: React.FC<{ roles: Role[], element: JSX.Element }> = ({ roles
 const { Content } = Layout;
 
 const App: React.FC = () => {
+  const [menuTheme, setMenuTheme] = useState<'light' | 'dark'>('light'); 
+
+  const handleThemeChange = (theme: 'light' | 'dark') => {
+    setMenuTheme(theme); 
+  };
   return (
     <BrowserRouter>
       <Layout style={{ minHeight: '100vh' }}>
-        <Sidebar />
-        <Layout style={{ padding: '0 24px', minHeight: 280, marginLeft: 250 }}>
+        <Sidebar onThemeChange={handleThemeChange} />
+        <Layout style={{ padding: '0 24px', minHeight: 280, marginLeft: 250, background: menuTheme === 'dark' ? '#001529' : '#fff' }}>
           <Content style={{ padding: 24, margin: 0, minHeight: 280 }}>
             <Routes>
 

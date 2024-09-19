@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Table, Button, Pagination, Spin, Typography, Input, Select, DatePicker, message } from 'antd';
+import { Table, Button, Pagination, Spin, Typography, Input, Select, DatePicker, message, Card } from 'antd';
 import { getActionsByDepartment, getAllActions } from '../services/reward_discipline_service';
 import { RewardDisciplineListItem } from '../types/reward_discipline_list_item';
 import { getCurrentUserRole, getCurrentUserDepartmentId } from '../../../utils/auth';
@@ -11,7 +11,6 @@ import { getAllDepartments } from '../../employee/services/employee_service';
 import { Department } from '../../../types/department';
 
 
-const { Title } = Typography;
 const { RangePicker } = DatePicker;
 
 const RewardDisciplinePage: React.FC = () => {
@@ -175,97 +174,90 @@ const RewardDisciplinePage: React.FC = () => {
 
     return (
         <div style={{ padding: '24px' }}>
-            <Title level={1}>Quản lý khen thưởng và kỷ luật</Title>
+            <Card title={'Quản lý khen thưởng và kỷ luật'}
+                extra={userRole === Role.Manager &&
+                    <Button type="primary"
+                        onClick={() => navigate('/actions/create')}
+                    >Tạo hành động mới</Button>}
+            >
 
-            <div style={{ marginBottom: '16px' }}>
-                <Input.Search
-                    placeholder="Tìm theo tên nhân viên hoặc Loại hành động"
-                    enterButton
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                />
-            </div>
-
-            <div style={{ marginBottom: '16px' }}>
-                {userRole !== Role.Manager && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    <Input.Search
+                        placeholder="Tìm theo tên nhân viên hoặc Loại hành động"
+                        enterButton
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        style={{ flex: '1 1 auto', minWidth: '200px' }}
+                    />
+                    {userRole !== Role.Manager && (
+                        <Select
+                            placeholder="Chọn Phòng ban"
+                            style={{ width: 150 }}
+                            value={selectedDepartment || undefined}
+                            onChange={(value) => setSelectedDepartment(value)}
+                        >
+                            {departments.map(department => (
+                                <Select.Option key={department.departmentId} value={department.departmentName}>
+                                    {department.departmentName}
+                                </Select.Option>
+                            ))}
+                        </Select>
+                    )}
                     <Select
-                        placeholder="Chọn Phòng ban"
-                        style={{ width: 200, marginRight: '8px' }}
-                        value={selectedDepartment || undefined}
-                        onChange={(value) => setSelectedDepartment(value)}
+                        placeholder="Chọn Loại hành động"
+                        style={{ width: 150 }}
+                        value={selectedActionType}
+                        onChange={(value) => setSelectedActionType(value as ActionType)}
                     >
-                        {departments.map(department => (
-                            <Select.Option key={department.departmentId} value={department.departmentName}>
-                                {department.departmentName}
-                            </Select.Option>
-                        ))}
-                    </Select>
-                )}
-
-                <Select
-                    placeholder="Chọn Loại hành động"
-                    style={{ width: 200, marginRight: '8px' }}
-                    value={selectedActionType}
-                    onChange={(value) => setSelectedActionType(value as ActionType)}
-                >
-                    {Object.keys(ActionType)
-                        .map((key) => (
+                        {Object.keys(ActionType).map((key) => (
                             <Select.Option key={key} value={ActionType[key as keyof typeof ActionType]}>
                                 {ActionType[key as keyof typeof ActionType]}
                             </Select.Option>
                         ))}
-                </Select>
-
-                <Select
-                    placeholder="Chọn Trạng thái"
-                    style={{ width: 200, marginRight: '8px' }}
-                    value={selectedStatus}
-                    onChange={(value) => setSelectedStatus(value as ActionStatus)}
-                >
-                    {Object.keys(ActionStatus)
-                        .filter(key => ActionStatus[key as keyof typeof ActionStatus] !== ActionStatus.Draft)
-                        .map((key) => (
-                            <Select.Option key={key} value={ActionStatus[key as keyof typeof ActionStatus]}>
-                                {ActionStatus[key as keyof typeof ActionStatus]}
-                            </Select.Option>
-                        ))}
-                </Select>
-                <RangePicker
-                    style={{ width: 300, marginLeft: '8px' }}
-                    value={dateRange}
-                    onChange={(dates) => setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs])}
-                />
-
-                <Button onClick={handleClearFilter} style={{ marginLeft: '8px' }} type='primary'>
-                    Xóa bộ lọc
-                </Button>
-            </div>
-
-            {userRole === Role.Manager && (
-                <div style={{ marginBottom: '16px' }}>
-                    <Link to="/actions/create">
-                        <Button type="primary">Tạo hành động mới</Button>
-                    </Link>
+                    </Select>
+                    <Select
+                        placeholder="Chọn Trạng thái"
+                        style={{ width: 150 }}
+                        value={selectedStatus}
+                        onChange={(value) => setSelectedStatus(value as ActionStatus)}
+                    >
+                        {Object.keys(ActionStatus)
+                            .filter(key => ActionStatus[key as keyof typeof ActionStatus] !== ActionStatus.Draft)
+                            .map((key) => (
+                                <Select.Option key={key} value={ActionStatus[key as keyof typeof ActionStatus]}>
+                                    {ActionStatus[key as keyof typeof ActionStatus]}
+                                </Select.Option>
+                            ))}
+                    </Select>
+                    <RangePicker
+                        style={{ flex: '1 1 auto', minWidth: '300px' }}
+                        value={dateRange}
+                        onChange={(dates) => setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs])}
+                    />
+                    <Button onClick={handleClearFilter} type="primary">
+                        Xóa bộ lọc
+                    </Button>
                 </div>
-            )}
-            {actions && Array.isArray(actions) && (
-                <>
-                    <Table
-                        dataSource={showActions}
-                        columns={columns}
-                        pagination={false}
-                        rowKey="actionId"
-                        style={{ marginBottom: '16px' }}
-                    />
-                    <Pagination
-                        current={currentPage}
-                        pageSize={itemsPerPage}
-                        total={filterActions(actions).length}
-                        onChange={handlePageChange}
-                        style={{ textAlign: 'center' }}
-                    />
-                </>
-            )}
+
+                {actions && Array.isArray(actions) && (
+                    <>
+                        <Table
+                            dataSource={showActions}
+                            columns={columns}
+                            pagination={false}
+                            rowKey="actionId"
+                            style={{ marginBottom: '16px' }}
+                        />
+                        <Pagination
+                            current={currentPage}
+                            pageSize={itemsPerPage}
+                            total={filterActions(actions).length}
+                            onChange={handlePageChange}
+                            style={{ textAlign: 'center' }}
+                        />
+                    </>
+                )}
+            </Card>
         </div>
     );
 };

@@ -55,7 +55,7 @@ const RewardDisciplineDetailPage: React.FC = () => {
                         await approveOrRejectAction(Number(actionId), ApprovalAction.Approve, note, userId);
                         setAction({ ...action, status: ActionStatus.Approved });
                         message.success('Phê duyệt thành công');
-                        fetchAction();
+                        await fetchAction();
                     } catch (error) {
                         setError('Phê duyệt thất bại');
                     }
@@ -73,7 +73,7 @@ const RewardDisciplineDetailPage: React.FC = () => {
                         await approveOrRejectAction(Number(actionId), ApprovalAction.Reject, note, userId);
                         setAction({ ...action, status: ActionStatus.Rejected });
                         message.success('Từ chối thành công');
-                        fetchAction();
+                        await fetchAction();
                     } catch (error) {
                         setError('Từ chối thất bại');
                     }
@@ -108,6 +108,7 @@ const RewardDisciplineDetailPage: React.FC = () => {
                         await approveOrRejectAction(Number(actionId), ApprovalAction.RequestEdit, note, userId);
                         setAction(prevAction => prevAction ? { ...action, status: ActionStatus.Editing } : null);
                         message.success('Yêu cầu chỉnh sửa đã được gửi');
+                        await fetchAction();
                     } catch (error) {
                         setError('Yêu cầu chỉnh sửa thất bại');
                     }
@@ -143,20 +144,23 @@ const RewardDisciplineDetailPage: React.FC = () => {
                 extra={<Button onClick={handleBack}>Quay lại</Button>}
                 style={{ maxWidth: 800, margin: '0 auto' }}
             >
-                <Title level={2}>Chi tiết</Title>
-                <Paragraph><strong>Nhân viên:</strong> {action.employeeName}</Paragraph>
-                <Paragraph><strong>Phòng ban:</strong> {action.departmentName}</Paragraph>
-                <Paragraph><strong>Loại hành động:</strong> {action.actionType}</Paragraph>
-                <Paragraph><strong>Phân loại:</strong> {action.actionSubtype}</Paragraph>
-                <Paragraph><strong>Ngày thực hiện:</strong> {dayjs(action.actionDate).format('DD/MM/YYYY')}</Paragraph>
-                {action.actionType === ActionType.Reward && action.amount && (
-                    <Paragraph><strong>Số tiền:</strong> {action.amount}</Paragraph>
-                )}
-                {action.actionType === ActionType.Disciplinary && action.duration && (
-                    <Paragraph><strong>Thời gian:</strong> {action.duration} ngày</Paragraph>
-                )}
-                <Paragraph><strong>Trạng thái:</strong> {action.status}</Paragraph>
-                <Paragraph><strong>Lý do:</strong> {action.reason}</Paragraph>
+                <Descriptions bordered column={1}>
+                    <Descriptions.Item label="Nhân viên">{action.employeeName}</Descriptions.Item>
+                    <Descriptions.Item label="Phòng ban">{action.departmentName}</Descriptions.Item>
+                    <Descriptions.Item label="Loại hành động">{action.actionType}</Descriptions.Item>
+                    <Descriptions.Item label="Phân loại">{action.actionSubtype}</Descriptions.Item>
+                    <Descriptions.Item label="Ngày thực hiện">{dayjs(action.actionDate).format('DD/MM/YYYY')}</Descriptions.Item>
+
+                    {action.actionType === ActionType.Reward && action.amount && (
+                        <Descriptions.Item label="Số tiền">{action.amount}</Descriptions.Item>
+                    )}
+                    {action.actionType === ActionType.Disciplinary && action.duration && (
+                        <Descriptions.Item label="Thời gian">{action.duration} ngày</Descriptions.Item>
+                    )}
+
+                    <Descriptions.Item label="Lý do">{action.reason}</Descriptions.Item>
+                    <Descriptions.Item label="Trạng thái">{action.status}</Descriptions.Item>
+                </Descriptions>
 
                 {/* Duyệt đơn với Role là HR hoặc Director */}
                 {(role === Role.HR || role === Role.Director) && action.status === ActionStatus.Pending && (
@@ -168,31 +172,35 @@ const RewardDisciplineDetailPage: React.FC = () => {
                             rows={4}
                             style={{ marginBottom: 16 }}
                         />
-                        <Button type="default" onClick={handleRequestEdit} style={{ marginRight: 8 }}>
-                            Yêu cầu chỉnh sửa
-                        </Button>
-                        <Button type="primary" onClick={handleApprove} style={{ marginRight: 8 }}>
-                            Phê duyệt
-                        </Button>
-                        <Button danger type="primary" onClick={handleReject}>
-                            Từ chối
-                        </Button>
+                        <div style={{ textAlign: 'right' }}>
+                            <Button type="default" onClick={handleRequestEdit} style={{ marginRight: 8 }}>
+                                Yêu cầu chỉnh sửa
+                            </Button>
+                            <Button type="primary" onClick={handleApprove} style={{ marginRight: 8 }}>
+                                Phê duyệt
+                            </Button>
+                            <Button danger type="primary" onClick={handleReject}>
+                                Từ chối
+                            </Button>
+                        </div>
                     </>
                 )}
                 {/* Cho phép manager cancel nếu đang pending */}
                 {role === Role.Manager && (action.status === ActionStatus.Pending) && (
-                    <>
-                        <Button type="primary" danger onClick={handleCancel} style={{ marginTop: 16 }}>
+                    <div style={{ textAlign: 'right' }}>
+                        <Button type="primary" danger onClick={handleCancel} style={{ marginTop: 24 }}>
                             Hủy bỏ đề xuất
                         </Button>
-                    </>
+                    </div>
                 )}
 
                 {/* Cho phép chỉnh sửa nếu là Manager */}
                 {role === Role.Manager && (action.status === ActionStatus.Draft || action.status === ActionStatus.Editing) && (
-                    <Button type="primary" onClick={handleEdit} style={{ marginTop: 16 }}>
-                        Chỉnh sửa
-                    </Button>
+                    <div style={{ textAlign: 'right' }}>
+                        <Button type="primary" onClick={handleEdit} style={{ marginTop: 24 }}>
+                            Chỉnh sửa
+                        </Button>
+                    </div>
                 )}
 
                 {action.approvalLogs && action.approvalLogs.length > 0 && (

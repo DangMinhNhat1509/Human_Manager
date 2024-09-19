@@ -11,7 +11,11 @@ import { getCurrentUserRole, getCurrentUserId, setUserRole, setUserId } from '..
 const { Sider } = Layout;
 const { Option } = Select;
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+    onThemeChange: (theme: 'light' | 'dark') => void; // Thêm prop cho việc thay đổi theme
+}
+
+const Sidebar: React.FC<SidebarProps> = ({onThemeChange}) => {
     const [employeeList, setEmployeeList] = useState<EmployeeListItem[]>([]);
     const [departmentList, setDepartmentList] = useState<Department[]>([]);
     const [selectedEmployee, setSelectedEmployee] = useState<number | undefined>(undefined);
@@ -55,6 +59,7 @@ const Sidebar: React.FC = () => {
         fetchData();
     }, []);
 
+    
     useEffect(() => {
         if (selectedRole) {
             const roleFilteredEmployees = selectedRole === Role.Employee
@@ -63,6 +68,12 @@ const Sidebar: React.FC = () => {
             setFilteredEmployees(roleFilteredEmployees);
         }
     }, [employeeList, selectedDepartmentName, selectedRole]);
+
+    const handleThemeChange = (checked: boolean) => {
+        const newTheme = checked ? 'dark' : 'light';
+        setMenuTheme(newTheme);
+        onThemeChange(newTheme); 
+    };
 
     const handleRoleChange = (role: Role) => {
         setSelectedRole(role);
@@ -168,7 +179,7 @@ const Sidebar: React.FC = () => {
                                     checkedChildren='Tối'
                                     unCheckedChildren='Sáng'
                                     checked={menuTheme === 'dark'}
-                                    onChange={checked => setMenuTheme(checked ? 'dark' : 'light')}
+                                    onChange={handleThemeChange}
                                 />
                             </span>
                         )
@@ -185,6 +196,7 @@ const Sidebar: React.FC = () => {
         <>
             <Sider
                 trigger={null}
+                width={'300px'}
                 theme={menuTheme}
                 style={{
                     overflow: 'auto',

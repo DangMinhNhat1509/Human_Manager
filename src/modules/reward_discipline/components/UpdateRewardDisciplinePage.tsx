@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Form, Input, DatePicker, Select, notification, Spin } from 'antd';
+import { Button, Form, Input, DatePicker, Select, notification, Spin, message, InputNumber } from 'antd';
 import { updateAction, getActionDetailById } from '../services/reward_discipline_service';
 import { ActionType, ActionSubtype, ActionStatus } from '../../../types/action';
 import { getEmployeesByRole } from '../../employee/services/employee_service';
@@ -29,6 +29,7 @@ const UpdateRewardDisciplinePage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [employeeOptions, setEmployeeOptions] = useState<JSX.Element[]>([]);
     const [loadingData, setLoadingData] = useState(true);
+    const actionType = Form.useWatch('actionType', form);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -37,11 +38,11 @@ const UpdateRewardDisciplinePage: React.FC = () => {
                 setLoading(true);
                 setLoadingData(true);
 
-                const actionData = await getActionDetailById(parseInt(actionId as string, 10));
+                const actionData = await getActionDetailById(Number(actionId));
                 if (!actionData) {
                     notification.error({
-                        message: 'Error',
-                        description: 'Action data not found.',
+                        message: 'Lỗi',
+                        description: 'Dữ liệu hành động không được tìm thấy.',
                     });
                     navigate('/actions');
                     return;
@@ -58,8 +59,8 @@ const UpdateRewardDisciplinePage: React.FC = () => {
 
                 if (!employeesList || employeesList.length === 0) {
                     notification.error({
-                        message: 'Error',
-                        description: 'No employees found.',
+                        message: 'Lỗi',
+                        description: 'Không tìm thấy nhân viên.',
                     });
                     return;
                 }
@@ -67,8 +68,8 @@ const UpdateRewardDisciplinePage: React.FC = () => {
                 const filteredEmployees = employeesList.filter(emp => emp.departmentId === departmentId);
                 if (filteredEmployees.length === 0) {
                     notification.error({
-                        message: 'Error',
-                        description: 'No employees found for the current department.',
+                        message: 'Lỗi',
+                        description: 'Không tìm thấy nhân viên cho phòng ban hiện tại.',
                     });
                     return;
                 }
@@ -79,10 +80,10 @@ const UpdateRewardDisciplinePage: React.FC = () => {
                     ))
                 );
             } catch (error) {
-                console.error('Error fetching data:', error);
+                console.error('Lỗi khi lấy dữ liệu:', error);
                 notification.error({
-                    message: 'Error',
-                    description: 'Failed to fetch action or employees data.',
+                    message: 'Lỗi',
+                    description: 'Lấy dữ liệu hành động hoặc nhân viên không thành công.',
                 });
             } finally {
                 setLoadingData(false);
@@ -91,8 +92,6 @@ const UpdateRewardDisciplinePage: React.FC = () => {
         };
         fetchActionAndEmployees();
     }, [actionId, form, navigate]);
-
-
 
     const onFinish = async (values: any, status: ActionStatus) => {
         setLoading(true);
@@ -103,23 +102,27 @@ const UpdateRewardDisciplinePage: React.FC = () => {
                 actionSubtype: values.actionSubtype,
                 status: status
             };
-            await updateAction(parseInt(actionId as string, 10), actionData);
+            await updateAction(Number(actionId), actionData);
 
             notification.success({
-                message: 'Success',
-                description: 'The action has been updated successfully.',
+                message: 'Thành công',
+                description: 'Hành động đã được cập nhật thành công.',
             });
 
             navigate('/actions');
         } catch (error) {
             notification.error({
-                message: 'Error',
-                description: 'An error occurred while updating the action.',
+                message: 'Lỗi',
+                description: 'Đã xảy ra lỗi khi cập nhật hành động.',
             });
         } finally {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        form.setFieldsValue({ actionSubtype: undefined });
+    }, [actionType, form]);
 
     const handleDraft = () => {
         form.validateFields().then(value => {
@@ -144,31 +147,31 @@ const UpdateRewardDisciplinePage: React.FC = () => {
         >
             <Form.Item
                 name="employeeId"
-                label="Employee ID"
-                rules={[{ required: true, message: 'Please select an employee ID' }]}
+                label="Nhân viên"
+                rules={[{ required: true, message: 'Vui lòng chọn nhân viên' }]}
             >
-                <Select placeholder="Select Employee ID">
+                <Select placeholder="Chọn nhân viên">
                     {employeeOptions}
                 </Select>
             </Form.Item>
 
             <Form.Item
                 name="actionType"
-                label="Action Type"
-                rules={[{ required: true, message: 'Please select the action type' }]}
+                label="Loại hành động"
+                rules={[{ required: true, message: 'Vui lòng chọn loại hành động' }]}
             >
-                <Select placeholder="Select Action Type">
+                <Select placeholder="Chọn loại hành động">
                     {createOptionsFromEnum(ActionType)}
                 </Select>
             </Form.Item>
 
             <Form.Item
                 name="actionSubtype"
-                label="Action Subtype"
-                rules={[{ required: true, message: 'Please select the action subtype' }]}
+                label="Phân loại hành động"
+                rules={[{ required: true, message: 'Vui lòng chọn phân loại hành động' }]}
             >
-                <Select placeholder="Select Action Subtype">
-                    {form.getFieldValue('actionType') === ActionType.Reward ? (
+                <Select placeholder="Chọn phân loại hành động">
+                    {actionType === ActionType.Reward ? (
                         createOptionsFromEnum({
                             Bonus: ActionSubtype.Bonus,
                             Promotion: ActionSubtype.Promotion,
@@ -181,6 +184,8 @@ const UpdateRewardDisciplinePage: React.FC = () => {
                         createOptionsFromEnum({
                             Warning: ActionSubtype.Warning,
                             Suspension: ActionSubtype.Suspension,
+                            Fines: ActionSubtype.Fines,
+                            Termination: ActionSubtype.Termination
                         })
                     )}
                 </Select>
@@ -188,36 +193,48 @@ const UpdateRewardDisciplinePage: React.FC = () => {
 
             <Form.Item
                 name="actionDate"
-                label="Action Date"
-                rules={[{ required: true, message: 'Please select the action date' }]}
+                label="Ngày thực hiện"
+                rules={[{ required: true, message: 'Vui lòng chọn ngày thực hiện' }]}
             >
-                <DatePicker format="YYYY-MM-DD" />
+                <DatePicker format="DD/MM/YYYY" />
             </Form.Item>
 
-            {form.getFieldValue('actionType') === ActionType.Reward && (
-                <Form.Item
-                    name="amount"
-                    label="Amount"
-                >
-                    <Input placeholder="Enter amount" type="number" />
-                </Form.Item>
-            )}
+            <Form.Item
+                name="amount"
+                label="Số tiền"
+                rules={[{ type: 'number', min: 100000, max: 100000000, message: 'Số tiền phải nằm trong khoảng từ 100,000 đến 100,000,000' }]}
+            >
+                <InputNumber
+                    placeholder="Nhập số tiền"
+                    addonAfter="VND"
+                    formatter={(value) => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
+                />
+            </Form.Item>
 
-            {form.getFieldValue('actionType') === ActionType.Disciplinary && (
-                <Form.Item
-                    name="duration"
-                    label="Duration"
-                >
-                    <Input placeholder="Enter duration in days" type="number" />
-                </Form.Item>
-            )}
+            <Form.Item
+                name="duration"
+                label="Thời gian"
+            >
+                <InputNumber
+                    placeholder="Nhập thời gian (ngày)"
+                    min={0}
+                    max={90}
+                    style={{ width: '100%' }}
+                    onChange={(value) => {
+                        if (value && value > 90) {
+                            message.error('Thời gian không được quá 90 ngày.');
+                        }
+                    }}
+                />
+            </Form.Item>
 
             <Form.Item
                 name="reason"
-                label="Reason"
-                rules={[{ required: true, message: 'Please enter the reason' }]}
+                label="Lý do"
+                rules={[{ required: true, message: 'Vui lòng nhập lý do' }]}
             >
-                <TextArea placeholder="Enter the reason for the action" rows={4} />
+                <TextArea placeholder="Nhập lý do thực hiện" rows={4} />
             </Form.Item>
 
             <Form.Item>
@@ -226,15 +243,16 @@ const UpdateRewardDisciplinePage: React.FC = () => {
                     onClick={handleDraft}
                     loading={loading}
                 >
-                    Save Draft
+                    Lưu nháp
                 </Button>
+                
                 <Button
                     type="primary"
                     onClick={handleSubmit}
                     loading={loading}
                     style={{ marginLeft: '10px' }}
                 >
-                    Update
+                    Cập nhật
                 </Button>
             </Form.Item>
         </Form>

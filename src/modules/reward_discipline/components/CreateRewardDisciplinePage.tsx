@@ -6,6 +6,7 @@ import { CreateRewardDiscipline } from '../types/create_reward_discipline';
 import { getEmployeesByRole } from '../../employee/services/employee_service';
 import { getCurrentUserDepartmentId } from '../../../utils/auth';
 import { Role } from '../../../types/employee';
+import { useNavigate } from 'react-router-dom';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -26,8 +27,8 @@ const CreateRewardDisciplinePage: React.FC = () => {
     const [form] = Form.useForm<CreateRewardDiscipline>();
     const [loading, setLoading] = useState(false);
     const [employeeOptions, setEmployeeOptions] = useState<JSX.Element[]>([]);
-
     const actionType = Form.useWatch('actionType', form);
+    const navigate = useNavigate();
 
     // Lấy danh sách nhân viên theo phòng ban
     useEffect(() => {
@@ -57,8 +58,6 @@ const CreateRewardDisciplinePage: React.FC = () => {
         try {
             const actionData: CreateRewardDiscipline = {
                 ...values,
-                // actionType: values.actionType,
-                // actionSubtype: values.actionSubtype,
                 status: status
             };
             await createAction(actionData);
@@ -80,6 +79,7 @@ const CreateRewardDisciplinePage: React.FC = () => {
     const handleDraft = () => {
         form.validateFields().then(value => {
             onFinish(value, ActionStatus.Draft);
+            navigate('/actions');
         }).catch(() => {
             message.error("Hãy sửa lại biểu mẫu.");
         });
@@ -88,6 +88,7 @@ const CreateRewardDisciplinePage: React.FC = () => {
     const handleSubmit = () => {
         form.validateFields().then(value => {
             onFinish(value, ActionStatus.Pending);
+            navigate('/actions');
         }).catch(() => {
             message.error("Hãy sửa lại biểu mẫu.");
         });
@@ -138,6 +139,8 @@ const CreateRewardDisciplinePage: React.FC = () => {
                         createOptionsFromEnum({
                             Warning: ActionSubtype.Warning,
                             Suspension: ActionSubtype.Suspension,
+                            Fines: ActionSubtype.Fines,
+                            Termination: ActionSubtype.Termination
                         })
                     )}
                 </Select>
@@ -151,39 +154,35 @@ const CreateRewardDisciplinePage: React.FC = () => {
                 <DatePicker format="DD/MM/YYYY" />
             </Form.Item>
 
-            {actionType === ActionType.Reward && (
-                <Form.Item
-                    name="amount"
-                    label="Số tiền"
-                    rules={[
-                        { required: true, message: 'Vui lòng nhập số tiền!' },
-                        { type: 'number', max: 10000, message: 'Số tiền không được vượt quá 10.000!' },
-                        { type: 'number', min: 0, message: 'Số tiền phải lớn hơn 0!' }
-                    ]}
-                >
-                    <InputNumber placeholder="Nhập số tiền" />
-                </Form.Item>
-            )}
+            <Form.Item
+                name="amount"
+                label="Số tiền"
+                rules={[{ type:'number', min:100000, max:100000000, message:'Số tiền phải nằm trong khoảng từ 100,000 đến 100,000,000' }]}
+            >
+                <InputNumber
+                    placeholder="Nhập số tiền"
+                    addonAfter="VND"
+                    formatter={(value) => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
+                />
+            </Form.Item>
 
-            {actionType === ActionType.Disciplinary && (
-                <Form.Item
-                    name="duration"
-                    label="Thời gian"
-                    rules={[{ required: true, message: 'Vui lòng nhập thời gian' }]}
-                >
-                    <InputNumber
-                        placeholder="Nhập thời gian (ngày)"
-                        min={0}
-                        max={90}
-                        style={{ width: '100%' }}
-                        onChange={(value) => {
-                            if (value && value > 90) {
-                                message.error('Thời gian không được quá 90 ngày.');
-                            }
-                        }}
-                    />
-                </Form.Item>
-            )}
+            <Form.Item
+                name="duration"
+                label="Thời gian"
+            >
+                <InputNumber
+                    placeholder="Nhập thời gian (ngày)"
+                    min={0}
+                    max={90}
+                    style={{ width: '100%' }}
+                    onChange={(value) => {
+                        if (value && value > 90) {
+                            message.error('Thời gian không được quá 90 ngày.');
+                        }
+                    }}
+                />
+            </Form.Item>
 
             <Form.Item
                 name="reason"

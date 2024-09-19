@@ -1,13 +1,14 @@
-// Các loại hành động chi tiết (Bonus, Promotion, Warning, Suspension, Training, Compliance, Audit, Certification)
 export enum ActionSubtype {
     Bonus = 'Bonus',
     Promotion = 'Promotion',
-    Warning = 'Warning',
-    Suspension = 'Suspension',
     Training = 'Training', // Đào tạo
     Compliance = 'Compliance', // Tuân thủ
     Audit = 'Audit', // Kiểm toán
     Certification = 'Certification', // Chứng nhận
+    Warning = 'Warning',
+    Suspension = 'Suspension',
+    Fines = 'Fines', 
+    Termination = 'Termination',
 }
 
 // Các loại hành động (Reward hoặc Disciplinary)

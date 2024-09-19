@@ -5,16 +5,15 @@ import EmployeeUpdateModal from './EmployeeUpdateModal';
 import { EmployeeDetail } from '../types/employee_detail';
 import { Role } from '../../../types/employee';
 import { getEmployeeById, deleteEmployee } from '../services/employee_service';
+import { getCurrentUserId } from '../../../utils/auth';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
-interface EmployeeDetailPageProps {
-    viewOnly?: boolean;
-}
 
-const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = false }) => {
+
+const EmployeeDetailPage: React.FC = () => {
     const { employeeId } = useParams<{ employeeId: string }>();
     const navigate = useNavigate();
     const [employeeDetail, setEmployeeDetail] = useState<EmployeeDetail | null>(null);
@@ -22,7 +21,7 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
+    const currentUserId = getCurrentUserId();
     const handleBackClick = () => {
         navigate(-1);
     };
@@ -118,7 +117,7 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
 
     return (
         <div>
-            {!viewOnly && (
+            {currentUserId !== employeeDetail.employeeId && (
                 <Button
                     type="link"
                     icon={<ArrowLeftOutlined />}
@@ -135,6 +134,7 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
                 </Button>
             )}
 
+
             <Row style={{ marginBottom: '20px' }} gutter={24}>
                 <Col span={7}>
                     <Card title="Ảnh đại diện" style={{ borderRadius: '8px', textAlign: 'center' }}>
@@ -143,7 +143,7 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
                             alt="Avatar"
                             style={{ width: '80%', borderRadius: '8px', marginBottom: '10px' }}
                         />
-                        {!viewOnly && (
+                        {currentUserId !== employeeDetail.employeeId && (
                             <>
                                 <Button
                                     type="primary"
@@ -203,7 +203,7 @@ const EmployeeDetailPage: React.FC<EmployeeDetailPageProps> = ({ viewOnly = fals
                 </Col>
             </Row>
 
-            {showUpdateModal && employeeDetail && !viewOnly && (
+            {showUpdateModal && employeeDetail && (
                 <EmployeeUpdateModal
                     show={showUpdateModal}
                     onHide={() => setShowUpdateModal(false)}
