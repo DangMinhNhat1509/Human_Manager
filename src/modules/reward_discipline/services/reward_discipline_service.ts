@@ -1,4 +1,4 @@
-import { Action, ActionStatus } from '../../../types/action';
+import { Action, ActionStatus, ActionType } from '../../../types/action';
 import { ApprovalLog, ApprovalAction } from '../../../types/approval_log';
 import { CreateRewardDiscipline } from '../types/create_reward_discipline';
 import { RewardDisciplineDetail } from '../types/reward_discipline_detail';
@@ -11,10 +11,6 @@ import { message } from 'antd';
 export const getAllActions = async (): Promise<RewardDisciplineListItem[]> => {
     try {
         const { actions } = getHrmData();
-
-        if (!Array.isArray(actions)) {
-            throw new Error('Định dạng dữ liệu hành động không hợp lệ.');
-        }
 
         const employees = await getEmployeesByRole(Role.Employee);
 
@@ -63,10 +59,6 @@ export const getActionsByDepartment = async (departmentId: number): Promise<Rewa
         // Lấy tất cả các hành động
         const allActions = await getAllActions();
 
-        if (!allActions || !Array.isArray(allActions)) {
-            throw new Error('Không thể lấy các hành động: Định dạng dữ liệu không hợp lệ.');
-        }
-
         // Lọc hành động theo tên phòng ban
         const filteredActions = allActions.filter(action => action.departmentId === departmentId);
 
@@ -81,13 +73,6 @@ export const getActionsByDepartment = async (departmentId: number): Promise<Rewa
 export const getActionDetailById = async (actionId: number): Promise<RewardDisciplineDetail> => {
     try {
         const { actions, approvalLogs } = getHrmData();
-
-        if (!Array.isArray(actions)) {
-            throw new Error('Định dạng dữ liệu hành động không hợp lệ.');
-        }
-        if (!Array.isArray(approvalLogs)) {
-            throw new Error('Định dạng dữ liệu approvalLogs không hợp lệ.');
-        }
 
         const action = actions.find(action => action.actionId === actionId);
         if (!action) {
@@ -134,11 +119,6 @@ export const createAction = async (action: CreateRewardDiscipline): Promise<void
     try {
         const { actions } = getHrmData();
 
-        // Kiểm tra định dạng của 'actions'
-        if (!Array.isArray(actions)) {
-            throw new Error('Định dạng dữ liệu hành động không hợp lệ.');
-        }
-
         const maxId = actions.length > 0 ? Math.max(...actions.map(a => a.actionId)) : 0;
 
         const newAction: Action = {
@@ -160,10 +140,6 @@ export const updateAction = async (actionId: number, updateData: Partial<CreateR
     try {
         const { actions } = getHrmData();
 
-        if (!Array.isArray(actions)) {
-            throw new Error('Định dạng dữ liệu hành động không hợp lệ.');
-        }
-
         const actionIndex = actions.findIndex(a => a.actionId === actionId);
         if (actionIndex === -1) {
             throw new Error('Hành động không được tìm thấy.');
@@ -184,10 +160,6 @@ export const updateAction = async (actionId: number, updateData: Partial<CreateR
 export const updateActionStatus = async (actionId: number, newStatus: ActionStatus): Promise<void> => {
     try {
         const { actions } = getHrmData();
-
-        if (!Array.isArray(actions)) {
-            throw new Error('Định dạng dữ liệu hành động không hợp lệ.');
-        }
 
         const actionIndex = actions.findIndex(a => a.actionId === actionId);
         if (actionIndex === -1) {
@@ -211,10 +183,6 @@ export const deleteAction = async (actionId: number): Promise<void> => {
     try {
         const { actions } = getHrmData();
 
-        if (!Array.isArray(actions)) {
-            throw new Error('Định dạng dữ liệu hành động không hợp lệ.');
-        }
-
         const actionIndex = actions.findIndex(a => a.actionId === actionId);
         if (actionIndex === -1) {
             throw new Error('Hành động không được tìm thấy.');
@@ -237,10 +205,6 @@ export const approveOrRejectAction = async (
 ): Promise<void> => {
     try {
         const { actions, approvalLogs } = getHrmData();
-
-        if (!Array.isArray(actions) || !Array.isArray(approvalLogs)) {
-            throw new Error('Định dạng dữ liệu hành động hoặc approvalLogs không hợp lệ.');
-        }
 
         const actionIndex = actions.findIndex(a => a.actionId === actionId);
         if (actionIndex === -1) {
@@ -283,3 +247,82 @@ export const approveOrRejectAction = async (
         throw error;
     }
 };
+
+// Lấy số lượng khen thưởng, kỷ luật
+export const getChartStatistics = async (
+    departmentId: number | null,
+    startDate: string,
+    endDate: string,
+    actionTypes: ActionType[] = [ActionType.Reward, ActionType.Disciplinary]
+): Promise<Record<string, number>> => {
+    try {
+        const actions = await getAllActions();
+        const result: Record<string, number> = {};
+
+        // Lọc hành động theo phòng ban và ngày tháng
+        actions.forEach(action => {
+            if (action.status === ActionStatus.Draft) {
+                return;
+            }
+
+            if (departmentId !== null && action.departmentId !== departmentId) {
+                return;
+            }
+
+            const dateToCheck = new Date(action.actionDate);
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+
+            if (dateToCheck >= start && dateToCheck <= end && actionTypes.includes(action.actionType)) {
+                const key = action.actionType;
+                result[key] = (result[key] || 0) + 1;
+            }
+        });
+
+        return result;
+    } catch (error) {
+        message.error("Lỗi khi lấy số liệu thống kê!");
+        throw error;
+    }
+};
+
+// Lấy báo cáo chi tiết
+export const getStatisticsCounts = async (departmentId: number | null, startDate: string, endDate: string): Promise<{ pending: number, total: number, rejected: number, approved: number }> => {
+    try {
+        const actions = await getAllActions();
+        let pendingCount = 0;
+        let totalCount = 0;
+        let rejectedCount = 0;
+        let approvedCount = 0;
+
+        actions.forEach(action => {
+            if (action.status === ActionStatus.Draft) {
+                pendingCount++;
+                return;
+            }
+
+            if (departmentId !== null && action.departmentId !== departmentId) {
+                return;
+            }
+
+            const dateToCheck = new Date(action.actionDate);
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+
+            if (dateToCheck >= start && dateToCheck <= end) {
+                totalCount++;
+                if (action.status === ActionStatus.Approved) {
+                    approvedCount++;
+                } else if (action.status === ActionStatus.Rejected) {
+                    rejectedCount++;
+                }
+            }
+        });
+
+        return { pending: pendingCount, total: totalCount, rejected: rejectedCount, approved: approvedCount };
+    } catch (error) {
+        message.error("Lỗi khi lấy số liệu thống kê!");
+        throw error;
+    }
+};
+

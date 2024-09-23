@@ -12,14 +12,14 @@ const { Sider } = Layout;
 const { Option } = Select;
 
 interface SidebarProps {
-    onThemeChange: (theme: 'light' | 'dark') => void; // Thêm prop cho việc thay đổi theme
+    onThemeChange: (theme: 'light' | 'dark') => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({onThemeChange}) => {
+const Sidebar: React.FC<SidebarProps> = ({ onThemeChange }) => {
     const [employeeList, setEmployeeList] = useState<EmployeeListItem[]>([]);
     const [departmentList, setDepartmentList] = useState<Department[]>([]);
     const [selectedEmployee, setSelectedEmployee] = useState<number | undefined>(undefined);
-    const [selectedDepartmentName, setSelectedDepartmentName] = useState<string | undefined>(undefined);
+    const [selectedDepartment, setSelectedDepartment] = useState<string | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<Role | undefined>(undefined);
     const [filteredEmployees, setFilteredEmployees] = useState<EmployeeListItem[]>([]);
@@ -59,30 +59,31 @@ const Sidebar: React.FC<SidebarProps> = ({onThemeChange}) => {
         fetchData();
     }, []);
 
-    
+
     useEffect(() => {
         if (selectedRole) {
             const roleFilteredEmployees = selectedRole === Role.Employee
-                ? employeeList.filter(emp => emp.departmentName === selectedDepartmentName)
+                ? employeeList.filter(emp => emp.role === Role.Employee && emp.departmentName === selectedDepartment)
                 : employeeList.filter(emp => emp.role === selectedRole);
             setFilteredEmployees(roleFilteredEmployees);
         }
-    }, [employeeList, selectedDepartmentName, selectedRole]);
+    }, [employeeList, selectedDepartment, selectedRole]);
 
     const handleThemeChange = (checked: boolean) => {
         const newTheme = checked ? 'dark' : 'light';
         setMenuTheme(newTheme);
-        onThemeChange(newTheme); 
+        onThemeChange(newTheme);
     };
 
     const handleRoleChange = (role: Role) => {
         setSelectedRole(role);
         setSelectedEmployee(undefined);
-        setSelectedDepartmentName(undefined);
+        setSelectedDepartment(undefined);
     };
 
     const handleDepartmentChange = (departmentName: string | undefined) => {
-        setSelectedDepartmentName(departmentName);
+        setSelectedDepartment(departmentName);
+        setSelectedEmployee(undefined);
     };
 
     const handleEmployeeChange = (employeeId: number | undefined) => {
@@ -91,6 +92,9 @@ const Sidebar: React.FC<SidebarProps> = ({onThemeChange}) => {
 
     const handleSwitchAccount = () => {
         setIsModalOpen(true);
+        setSelectedRole(undefined);
+        setSelectedDepartment(undefined);
+        setSelectedEmployee(undefined);
     };
 
     const handleModalOk = () => {
@@ -111,7 +115,7 @@ const Sidebar: React.FC<SidebarProps> = ({onThemeChange}) => {
     const handleModalCancel = () => {
         setSelectedRole(undefined);
         setSelectedEmployee(undefined);
-        setSelectedDepartmentName(undefined);
+        setSelectedDepartment(undefined);
         setIsModalOpen(false);
     };
 
@@ -137,7 +141,12 @@ const Sidebar: React.FC<SidebarProps> = ({onThemeChange}) => {
                 key: "/employees",
                 icon: <UserOutlined />,
                 label: <Link to="/employees">Quản lý nhân viên</Link>
-            });
+            },
+                {
+                    key: "/Statistics",
+                    icon: <FileTextOutlined />,
+                    label: <Link to="/statistics">Báo cáo và thống kê</Link>,
+                });
         }
 
         if (role === Role.Manager || role === Role.Director || role === Role.HR) {
@@ -158,11 +167,6 @@ const Sidebar: React.FC<SidebarProps> = ({onThemeChange}) => {
         }
 
         menuItems.push(
-            {
-                key: "/reports",
-                icon: <FileTextOutlined />,
-                label: <Link to="/reports">Báo cáo và thống kê</Link>,
-            },
             {
                 key: "/settings",
                 icon: <SettingOutlined />,
@@ -249,7 +253,7 @@ const Sidebar: React.FC<SidebarProps> = ({onThemeChange}) => {
                         <Select
                             placeholder="Chọn phòng ban"
                             onChange={handleDepartmentChange}
-                            value={selectedDepartmentName}
+                            value={selectedDepartment}
                             style={{ width: '100%', marginBottom: '10px' }}
                         >
                             {departmentList.map(department => (
@@ -261,7 +265,7 @@ const Sidebar: React.FC<SidebarProps> = ({onThemeChange}) => {
                     )}
 
                     {/* Chỉ hiện trường chọn nhân viên khi đã chọn phòng ban (với vai trò Employee) hoặc với các vai trò khác */}
-                    {((selectedRole === Role.Employee && selectedDepartmentName) || selectedRole !== Role.Employee) && (
+                    {selectedRole && ((selectedRole === Role.Employee && selectedDepartment) || selectedRole !== Role.Employee) && (
                         <Select
                             placeholder={`Chọn ${selectedRole}`}
                             onChange={handleEmployeeChange}

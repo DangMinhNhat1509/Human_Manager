@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Input, Card, Typography, Spin, message, Modal, Descriptions, Collapse } from 'antd';
 import { getActionDetailById, approveOrRejectAction, updateActionStatus } from '../services/reward_discipline_service';
-import { ActionStatus, ActionType } from '../../../types/action';
+import { ActionStatus } from '../../../types/action';
 import { RewardDisciplineDetail } from '../types/reward_discipline_detail';
 import { Role } from '../../../types/employee';
 import { ApprovalAction } from '../../../types/approval_log';
@@ -151,10 +151,10 @@ const RewardDisciplineDetailPage: React.FC = () => {
                     <Descriptions.Item label="Phân loại">{action.actionSubtype}</Descriptions.Item>
                     <Descriptions.Item label="Ngày thực hiện">{dayjs(action.actionDate).format('DD/MM/YYYY')}</Descriptions.Item>
 
-                    {action.actionType === ActionType.Reward && action.amount && (
-                        <Descriptions.Item label="Số tiền">{action.amount}</Descriptions.Item>
+                    {action.amount && (
+                        <Descriptions.Item label="Số tiền">{action.amount.toLocaleString('vi-VN')} VND</Descriptions.Item>
                     )}
-                    {action.actionType === ActionType.Disciplinary && action.duration && (
+                    {action.duration && (
                         <Descriptions.Item label="Thời gian">{action.duration} ngày</Descriptions.Item>
                     )}
 
@@ -170,7 +170,7 @@ const RewardDisciplineDetailPage: React.FC = () => {
                             onChange={(e) => setNote(e.target.value)}
                             placeholder="Nhập ghi chú của bạn"
                             rows={4}
-                            style={{ marginBottom: 16 }}
+                            style={{ margin: '16px 0' }}
                         />
                         <div style={{ textAlign: 'right' }}>
                             <Button type="default" onClick={handleRequestEdit} style={{ marginRight: 8 }}>

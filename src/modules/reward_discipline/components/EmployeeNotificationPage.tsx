@@ -140,7 +140,7 @@ const EmployeeNotificationPage: React.FC = () => {
                         <Paragraph><strong>Ngày thực hiện quyết định:</strong> {dayjs(selectedAction.actionDate).format('DD/MM/YYYY')}</Paragraph>
                         <Paragraph><strong>Lý do:</strong> {selectedAction.reason}</Paragraph>
                         {selectedAction.amount ? (
-                            <Paragraph><strong>Số tiền thưởng:</strong> {selectedAction.amount.toLocaleString('vi-VN')} VND</Paragraph>
+                            <Paragraph><strong>Số tiền:</strong> {selectedAction.amount.toLocaleString('vi-VN')} VND</Paragraph>
                         ) : null}
                         {selectedAction.duration ? (
                             <Paragraph><strong>Thời gian:</strong> {selectedAction.duration} ngày</Paragraph>

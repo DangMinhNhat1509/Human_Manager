@@ -9,6 +9,7 @@ import RewardDisciplineDetailPage from './modules/reward_discipline/components/R
 import CreateRewardDisciplinePage from './modules/reward_discipline/components/CreateRewardDisciplinePage';
 import UpdateRewardDisciplinePage from './modules/reward_discipline/components/UpdateRewardDisciplinePage';
 import NotificationPage from './modules/reward_discipline/components/EmployeeNotificationPage';
+import StatisticsPage from './modules/reward_discipline/components/StatisticsPage';
 import { getCurrentUserRole } from './utils/auth';
 import { Role } from './types/employee';
 import Sidebar from './components/SideBar';
@@ -51,6 +52,9 @@ const App: React.FC = () => {
 
               {/* Routes cho Notification */}
               <Route path="/notifications" element={<PrivateRoute roles={[Role.Employee]} element={<NotificationPage />} />} />
+
+              {/* Routes cho Statics */}
+              <Route path="/statistics" element={<PrivateRoute roles={[Role.Director, Role.Manager, Role.HR]} element={<StatisticsPage />} />} />
 
               {/* Trang 401 - Unauthorized */}
               <Route path="/unauthorized" element={<h1>Unauthorized - You do not have permission to view this page.</h1>} />

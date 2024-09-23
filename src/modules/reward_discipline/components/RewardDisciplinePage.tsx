@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Table, Button, Pagination, Spin, Typography, Input, Select, DatePicker, message, Card } from 'antd';
 import { getActionsByDepartment, getAllActions } from '../services/reward_discipline_service';
 import { RewardDisciplineListItem } from '../types/reward_discipline_list_item';

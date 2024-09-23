@@ -1,4 +1,4 @@
-import { message } from 'antd'; 
+import { message } from 'antd';
 import { EmployeeDetail } from '../types/employee_detail';
 import { CreateEmployee } from '../types/create_employee';
 import { EmployeeListItem } from '../types/employee_list_item';
@@ -10,7 +10,26 @@ const HRM_DATA_KEY = 'hrmData';
 
 export const getHrmData = (): HRMData => {
     const data = localStorage.getItem(HRM_DATA_KEY);
-    return data ? JSON.parse(data) : { employees: [], departments: [], actions: [], approvalLogs: [] };
+    const defaultData: HRMData = { employees: [], departments: [], actions: [], approvalLogs: [] };
+
+    if (data) {
+        try {
+            const prasedData = JSON.parse(data);
+
+            if (
+                Array.isArray(prasedData.employees) &&
+                Array.isArray(prasedData.departments) &&
+                Array.isArray(prasedData.actions) &&
+                Array.isArray(prasedData.approvalLogs)
+            ) {
+                return prasedData;
+            }
+        } catch (error) {
+            throw new Error('Dữ liệu Hrm bị lỗi khi prase từ LocalStorage');
+        }
+    }
+    return defaultData;
+
 };
 
 export const saveHrmData = (data: HRMData) => {
@@ -20,9 +39,6 @@ export const saveHrmData = (data: HRMData) => {
 export const getAllDepartments = async (): Promise<Department[]> => {
     try {
         const { departments } = getHrmData();
-        if (!Array.isArray(departments)) {
-            throw new Error('Dữ liệu phòng ban không hợp lệ');
-        }
 
         return departments.map(dep => ({
             departmentId: dep.departmentId,
@@ -39,9 +55,6 @@ export const getAllDepartments = async (): Promise<Department[]> => {
 export const getAllEmployees = async (): Promise<EmployeeListItem[]> => {
     try {
         const { employees, departments } = getHrmData();
-        if (!Array.isArray(employees) || !Array.isArray(departments)) {
-            throw new Error('Dữ liệu nhân viên hoặc phòng ban không hợp lệ');
-        }
 
         if (!employees.every(emp => 'employeeId' in emp) ||
             !departments.every(dept => 'departmentId' in dept && 'departmentName' in dept)) {
