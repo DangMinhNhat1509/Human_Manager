@@ -116,7 +116,7 @@ const EmployeeDetailPage: React.FC = () => {
     }
 
     return (
-        <div>
+        <div style={{ marginLeft: '20px' }}>
             {currentUserId !== employeeDetail.employeeId && (
                 <Button
                     type="link"

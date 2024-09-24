@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Input, Card, Typography, Spin, message, Modal, Descriptions, Collapse } from 'antd';
 import { getActionDetailById, approveOrRejectAction, updateActionStatus } from '../services/reward_discipline_service';
-import { ActionStatus } from '../../../types/action';
+import { ActionStatus, ActionSubtype } from '../../../types/action';
 import { RewardDisciplineDetail } from '../types/reward_discipline_detail';
 import { Role } from '../../../types/employee';
 import { ApprovalAction } from '../../../types/approval_log';
@@ -44,6 +44,13 @@ const RewardDisciplineDetailPage: React.FC = () => {
 
     const handleBack = () => {
         navigate('/actions');
+    };
+
+    const requiresDirectorApproval = (action: RewardDisciplineDetail) => {
+        const highAmount = action.amount && action.amount > 10000000;
+        const longDuration = action.duration && action.duration > 30;
+        const criticalSubtypes = [ActionSubtype.Audit, ActionSubtype.Termination].includes(action.actionSubtype);
+        return highAmount || longDuration || criticalSubtypes;
     };
 
     const handleApprove = async () => {
@@ -162,8 +169,8 @@ const RewardDisciplineDetailPage: React.FC = () => {
                     <Descriptions.Item label="Trạng thái">{action.status}</Descriptions.Item>
                 </Descriptions>
 
-                {/* Duyệt đơn với Role là HR hoặc Director */}
-                {(role === Role.HR || role === Role.Director) && action.status === ActionStatus.Pending && (
+                {/* Duyệt đơn nhẹ Role là HR */}
+                {role === Role.HR && !requiresDirectorApproval(action) && action.status === ActionStatus.Pending && (
                     <>
                         <Input.TextArea
                             value={note}
@@ -185,6 +192,32 @@ const RewardDisciplineDetailPage: React.FC = () => {
                         </div>
                     </>
                 )}
+
+                {/* Duyệt đơn nặng với role là Director */}
+                {role === Role.Director && requiresDirectorApproval(action) && action.status === ActionStatus.Pending && (
+                    <>
+                        <Input.TextArea
+                            value={note}
+                            onChange={(e) => setNote(e.target.value)}
+                            placeholder="Nhập ghi chú của bạn"
+                            rows={4}
+                            style={{ margin: '16px 0' }}
+                        />
+                        <div style={{ textAlign: 'right' }}>
+                            <Button type="default" onClick={handleRequestEdit} style={{ marginRight: 8 }}>
+                                Yêu cầu chỉnh sửa
+                            </Button>
+                            <Button type="primary" onClick={handleApprove} style={{ marginRight: 8 }}>
+                                Phê duyệt
+                            </Button>
+                            <Button danger type="primary" onClick={handleReject}>
+                                Từ chối
+                            </Button>
+                        </div>
+                    </>
+                )}
+
+
                 {/* Cho phép manager cancel nếu đang pending */}
                 {role === Role.Manager && (action.status === ActionStatus.Pending) && (
                     <div style={{ textAlign: 'right' }}>

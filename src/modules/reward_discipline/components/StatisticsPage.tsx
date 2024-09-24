@@ -225,7 +225,7 @@ const StatisticsPage: React.FC = () => {
 
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Card
-                            title="Thống kê Khen thưởng và Kỷ luật"
+                            title="Thống kê Khen thưởng và Kỷ luật (Theo ngày thực hiện)"
                             style={{ width: '48%', marginRight: '2%' }}
                         >
                             <div style={{ position: 'relative', height: '300px' }}>

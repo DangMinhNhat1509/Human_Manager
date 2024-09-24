@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Form, Input, DatePicker, Select, notification, Spin, message, InputNumber } from 'antd';
+import { Button, Form, Input, DatePicker, Select, notification, Spin, message, InputNumber, Card } from 'antd';
 import { updateAction, getActionDetailById } from '../services/reward_discipline_service';
 import { ActionType, ActionSubtype, ActionStatus } from '../../../types/action';
 import { getEmployeesByRole } from '../../employee/services/employee_service';
@@ -141,121 +141,122 @@ const UpdateRewardDisciplinePage: React.FC = () => {
     }
 
     return (
-        <Form
-            layout="vertical"
-            form={form}
-        >
-            <Form.Item
-                name="employeeId"
-                label="Nhân viên"
-                rules={[{ required: true, message: 'Vui lòng chọn nhân viên' }]}
-            >
-                <Select placeholder="Chọn nhân viên">
-                    {employeeOptions}
-                </Select>
-            </Form.Item>
-
-            <Form.Item
-                name="actionType"
-                label="Loại hành động"
-                rules={[{ required: true, message: 'Vui lòng chọn loại hành động' }]}
-            >
-                <Select placeholder="Chọn loại hành động">
-                    {createOptionsFromEnum(ActionType)}
-                </Select>
-            </Form.Item>
-
-            <Form.Item
-                name="actionSubtype"
-                label="Phân loại hành động"
-                rules={[{ required: true, message: 'Vui lòng chọn phân loại hành động' }]}
-            >
-                <Select placeholder="Chọn phân loại hành động">
-                    {actionType === ActionType.Reward ? (
-                        createOptionsFromEnum({
-                            Bonus: ActionSubtype.Bonus,
-                            Promotion: ActionSubtype.Promotion,
-                            Certification: ActionSubtype.Certification,
-                            Training: ActionSubtype.Training,
-                            Compliance: ActionSubtype.Compliance,
-                            Audit: ActionSubtype.Audit,
-                        })
-                    ) : (
-                        createOptionsFromEnum({
-                            Warning: ActionSubtype.Warning,
-                            Suspension: ActionSubtype.Suspension,
-                            Fines: ActionSubtype.Fines,
-                            Termination: ActionSubtype.Termination
-                        })
-                    )}
-                </Select>
-            </Form.Item>
-
-            <Form.Item
-                name="actionDate"
-                label="Ngày thực hiện"
-                rules={[{ required: true, message: 'Vui lòng chọn ngày thực hiện' }]}
-            >
-                <DatePicker format="DD/MM/YYYY" />
-            </Form.Item>
-
-            <Form.Item
-                name="amount"
-                label="Số tiền"
-                rules={[{ type: 'number', min: 100000, max: 100000000, message: 'Số tiền phải nằm trong khoảng từ 100,000 đến 100,000,000' }]}
-            >
-                <InputNumber
-                    placeholder="Nhập số tiền"
-                    addonAfter="VND"
-                    formatter={(value) => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
-                />
-            </Form.Item>
-
-            <Form.Item
-                name="duration"
-                label="Thời gian"
-            >
-                <InputNumber
-                    placeholder="Nhập thời gian (ngày)"
-                    min={0}
-                    max={90}
-                    style={{ width: '100%' }}
-                    onChange={(value) => {
-                        if (value && value > 90) {
-                            message.error('Thời gian không được quá 90 ngày.');
-                        }
-                    }}
-                />
-            </Form.Item>
-
-            <Form.Item
-                name="reason"
-                label="Lý do"
-                rules={[{ required: true, message: 'Vui lòng nhập lý do' }]}
-            >
-                <TextArea placeholder="Nhập lý do thực hiện" rows={4} />
-            </Form.Item>
-
-            <Form.Item>
-                <Button
-                    type="default"
-                    onClick={handleDraft}
-                    loading={loading}
+        <Card title="Cập nhật hành động" style={{ margin: '20px' }}>
+            <Form layout="vertical" form={form}>
+                <Form.Item
+                    name="employeeId"
+                    label="Nhân viên"
+                    rules={[{ required: true, message: 'Vui lòng chọn nhân viên' }]}
                 >
-                    Lưu nháp
-                </Button>
-                
-                <Button
-                    type="primary"
-                    onClick={handleSubmit}
-                    loading={loading}
-                    style={{ marginLeft: '10px' }}
+                    <Select placeholder="Chọn nhân viên">
+                        {employeeOptions}
+                    </Select>
+                </Form.Item>
+
+                <Form.Item
+                    name="actionType"
+                    label="Loại hành động"
+                    rules={[{ required: true, message: 'Vui lòng chọn loại hành động' }]}
                 >
-                    Cập nhật
-                </Button>
-            </Form.Item>
-        </Form>
+                    <Select placeholder="Chọn loại hành động">
+                        {createOptionsFromEnum(ActionType)}
+                    </Select>
+                </Form.Item>
+
+                <Form.Item
+                    name="actionSubtype"
+                    label="Phân loại hành động"
+                    rules={[{ required: true, message: 'Vui lòng chọn phân loại hành động' }]}
+                >
+                    <Select placeholder="Chọn phân loại hành động">
+                        {actionType === ActionType.Reward ? (
+                            createOptionsFromEnum({
+                                Bonus: ActionSubtype.Bonus,
+                                Promotion: ActionSubtype.Promotion,
+                                Certification: ActionSubtype.Certification,
+                                Training: ActionSubtype.Training,
+                                Compliance: ActionSubtype.Compliance,
+                                Audit: ActionSubtype.Audit,
+                            })
+                        ) : (
+                            createOptionsFromEnum({
+                                Warning: ActionSubtype.Warning,
+                                Suspension: ActionSubtype.Suspension,
+                                Fines: ActionSubtype.Fines,
+                                Termination: ActionSubtype.Termination
+                            })
+                        )}
+                    </Select>
+                </Form.Item>
+
+                <Form.Item
+                    name="actionDate"
+                    label="Ngày thực hiện"
+                    rules={[{ required: true, message: 'Vui lòng chọn ngày thực hiện' }]}
+                >
+                    <DatePicker format="DD/MM/YYYY" />
+                </Form.Item>
+
+                <Form.Item
+                    name="amount"
+                    label="Số tiền"
+                    rules={[{ type: 'number', min: 100000, max: 100000000, message: 'Số tiền phải nằm trong khoảng từ 100,000 đến 100,000,000' }]}
+                >
+                    <InputNumber
+                        placeholder="Nhập số tiền"
+                        addonAfter="VND"
+                        formatter={(value) => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                        parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
+                    />
+                </Form.Item>
+
+                <Form.Item
+                    name="duration"
+                    label="Thời gian"
+                >
+                    <InputNumber
+                        placeholder="Nhập thời gian (ngày)"
+                        min={0}
+                        max={90}
+                        style={{ width: '100%' }}
+                        onChange={(value) => {
+                            if (value && value > 90) {
+                                message.error('Thời gian không được quá 90 ngày.');
+                            }
+                        }}
+                    />
+                </Form.Item>
+
+                <Form.Item
+                    name="reason"
+                    label="Lý do"
+                    rules={[{ required: true, message: 'Vui lòng nhập lý do' }]}
+                >
+                    <TextArea placeholder="Nhập lý do thực hiện" rows={4} />
+                </Form.Item>
+
+                <Form.Item>
+                    <div style={{ textAlign: 'right' }}>
+                        <Button
+                            type="default"
+                            onClick={handleDraft}
+                            loading={loading}
+                        >
+                            Lưu nháp
+                        </Button>
+
+                        <Button
+                            type="primary"
+                            onClick={handleSubmit}
+                            loading={loading}
+                            style={{ marginLeft: '10px' }}
+                        >
+                            Cập nhật
+                        </Button>
+                    </div>
+                </Form.Item>
+            </Form>
+        </Card>
     );
 };
 

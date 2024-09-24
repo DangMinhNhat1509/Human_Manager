@@ -80,8 +80,7 @@ const RewardDisciplinePage: React.FC = () => {
     const filterActions = (actions: RewardDisciplineListItem[]) => {
         return actions
             .filter(action => {
-                const matchesSearchText = action.employeeName.toLowerCase().includes(searchText) ||
-                    action.actionType.toLowerCase().includes(searchText.toLowerCase());
+                const matchesSearchText = action.employeeName.toLowerCase().includes(searchText);
                 const matchesDepartment = selectedDepartment ? action.departmentName === selectedDepartment : true;
                 const matchesActionType = selectedActionType ? action.actionType === selectedActionType : true;
                 const matchesStatus = selectedStatus ? action.status === selectedStatus : true;
@@ -174,20 +173,26 @@ const RewardDisciplinePage: React.FC = () => {
 
     return (
         <div style={{ padding: '24px' }}>
-            <Card title={'Quản lý khen thưởng và kỷ luật'}
+            <Card
+                title={'Quản lý khen thưởng và kỷ luật'}
                 extra={userRole === Role.Manager &&
-                    <Button type="primary"
+                    <Button
+                        type="primary"
                         onClick={() => navigate('/actions/create')}
-                    >Tạo hành động mới</Button>}
+                    >
+                        Tạo hành động mới
+                    </Button>
+                }
+                style={{ margin: '0 auto', padding: '10px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
             >
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: 16 }}>
                     <Input.Search
-                        placeholder="Tìm theo tên nhân viên hoặc Loại hành động"
+                        placeholder="Tìm theo tên nhân viên"
                         enterButton
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
-                        style={{ flex: '1 1 auto', minWidth: '200px' }}
+                        style={{ flex: '0 0 auto', maxWidth: '250px', marginRight: 'auto' }}
                     />
                     {userRole !== Role.Manager && (
                         <Select
@@ -230,17 +235,24 @@ const RewardDisciplinePage: React.FC = () => {
                             ))}
                     </Select>
                     <RangePicker
-                        style={{ flex: '1 1 auto', minWidth: '300px' }}
+                        style={{ flex: '1 1 auto', maxWidth: '250px' }}
                         value={dateRange}
                         onChange={(dates) => setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs])}
                     />
-                    <Button onClick={handleClearFilter} type="primary">
-                        Xóa bộ lọc
+                    <Button
+                        onClick={handleClearFilter}
+                        danger
+                        type="primary"
+                        style={{ fontSize: '16px' }}
+                    >
+                        X
                     </Button>
                 </div>
 
+
+
                 {actions && Array.isArray(actions) && (
-                    <>
+                    <div>
                         <Table
                             dataSource={showActions}
                             columns={columns}
@@ -248,17 +260,19 @@ const RewardDisciplinePage: React.FC = () => {
                             rowKey="actionId"
                             style={{ marginBottom: '16px' }}
                         />
-                        <Pagination
-                            current={currentPage}
-                            pageSize={itemsPerPage}
-                            total={filterActions(actions).length}
-                            onChange={handlePageChange}
-                            style={{ textAlign: 'center' }}
-                        />
-                    </>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', marginRight: '20px' }}>
+                            <Pagination
+                                current={currentPage}
+                                pageSize={itemsPerPage}
+                                total={filterActions(actions).length}
+                                onChange={handlePageChange}
+                                style={{ textAlign: 'center' }}
+                            />
+                        </div>
+                    </div>
                 )}
             </Card>
-        </div>
+        </div >
     );
 };
 

@@ -106,7 +106,7 @@ const EmployeePage: React.FC = () => {
     }
 
     return (
-        <div style={{ padding: '20px' }}>
+        <div style={{ padding: '20px', marginLeft: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
             <h1 style={{ textAlign: 'center' }}>Trang nhân viên</h1>
             <div style={{ marginBottom: '20px', textAlign: 'right' }}>
                 <Link to="/employees/create">
@@ -118,14 +118,16 @@ const EmployeePage: React.FC = () => {
                 columns={columns}
                 rowKey="employeeId"
                 pagination={false}
+                style={{ margin: '10px' }}
             />
-            <Pagination
-                current={currentPage}
-                pageSize={itemsPerPage}
-                total={employees.length}
-                onChange={handlePageChange}
-                style={{ textAlign: 'center', marginTop: '20px' }}
-            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', marginRight: '20px' }}>
+                <Pagination
+                    current={currentPage}
+                    pageSize={itemsPerPage}
+                    total={employees.length}
+                    onChange={handlePageChange}
+                />
+            </div>
         </div>
     );
 };

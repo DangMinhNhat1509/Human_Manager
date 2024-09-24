@@ -67,7 +67,7 @@ const CreateEmployeePage: React.FC = () => {
     };
 
     return (
-        <div style={{ backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
+        <div>
             <Card
                 bordered={false}
                 style={{ maxWidth: 800, margin: '0 auto', padding: '30px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
