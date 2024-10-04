@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Table, Button, Spin, Pagination, Alert } from 'antd';
+import { Table, Button, Spin, Pagination, Alert, Card } from 'antd';
 import { getEmployeesByRole } from '../services/employee_service';
 import { EmployeeListItem } from '../types/employee_list_item';
 import { Role } from '../../../types/employee';
@@ -106,28 +106,34 @@ const EmployeePage: React.FC = () => {
     }
 
     return (
-        <div style={{ padding: '20px', marginLeft: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <h1 style={{ textAlign: 'center' }}>Trang nhân viên</h1>
-            <div style={{ marginBottom: '20px', textAlign: 'right' }}>
-                <Link to="/employees/create">
-                    <Button type="primary">Tạo nhân viên mới</Button>
-                </Link>
-            </div>
-            <Table
-                dataSource={showEmployees}
-                columns={columns}
-                rowKey="employeeId"
-                pagination={false}
-                style={{ margin: '10px' }}
-            />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', marginRight: '20px' }}>
-                <Pagination
-                    current={currentPage}
-                    pageSize={itemsPerPage}
-                    total={employees.length}
-                    onChange={handlePageChange}
+        <div style={{ padding: '24px' }}>
+
+            <Card
+                style={{ margin: '0 auto', padding: '10px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                title={'Quản lý nhân viên'}
+                extra={
+                    <Link to="/employees/create">
+                        <Button type="primary">Tạo nhân viên mới</Button>
+                    </Link>
+                }
+            >
+
+                <Table
+                    dataSource={showEmployees}
+                    columns={columns}
+                    rowKey="employeeId"
+                    pagination={false}
+                    style={{ margin: '10px' }}
                 />
-            </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', marginRight: '20px' }}>
+                    <Pagination
+                        current={currentPage}
+                        pageSize={itemsPerPage}
+                        total={employees.length}
+                        onChange={handlePageChange}
+                    />
+                </div>
+            </Card>
         </div>
     );
 };

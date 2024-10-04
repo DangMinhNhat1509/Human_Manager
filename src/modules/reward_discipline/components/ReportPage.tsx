@@ -11,7 +11,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 
 const { RangePicker } = DatePicker;
 
-const StatisticsPage: React.FC = () => {
+const ReportPage: React.FC = () => {
     const [counts, setCounts] = useState({ rewardCount: 0, disciplineCount: 0 });
     const [departmentCounts, setDepartmentCounts] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(true);
@@ -117,7 +117,7 @@ const StatisticsPage: React.FC = () => {
         labels: ["Khen thưởng", "Kỷ luật"],
         datasets: [
             {
-                label: "Thống kê",
+                label: "Báo cáo",
                 data: [counts.rewardCount, counts.disciplineCount],
                 backgroundColor: ["#4caf50", "#f44336"],
                 hoverBackgroundColor: ["#45a049", "#f55a4e"],
@@ -176,7 +176,7 @@ const StatisticsPage: React.FC = () => {
 
     return (
         <div style={{ marginLeft: '2%' }}>
-            <h1>Thống kê khen thưởng và kỷ luật</h1>
+            <h1>Báo cáo khen thưởng và kỷ luật</h1>
             <div style={{ marginBottom: 20 }}>
                 <Radio.Group
                     value={filterType}
@@ -225,7 +225,7 @@ const StatisticsPage: React.FC = () => {
 
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Card
-                            title="Thống kê Khen thưởng và Kỷ luật (Theo ngày thực hiện)"
+                            title="Báo cáo Khen thưởng và Kỷ luật (Theo ngày thực hiện)"
                             style={{ width: '48%', marginRight: '2%' }}
                         >
                             <div style={{ position: 'relative', height: '300px' }}>
@@ -234,7 +234,7 @@ const StatisticsPage: React.FC = () => {
                         </Card>
 
                         <Card
-                            title={`Thống kê theo phòng ban (${selectedActionType === ActionType.Reward ? 'Khen thưởng' : 'Kỷ luật'})`}
+                            title={`Báo cáo theo phòng ban (${selectedActionType === ActionType.Reward ? 'Khen thưởng' : 'Kỷ luật'})`}
                             style={{ width: '48%' }}
                         >
                             <div style={{ position: 'relative', height: '300px' }}>
@@ -248,4 +248,4 @@ const StatisticsPage: React.FC = () => {
     );
 };
 
-export default StatisticsPage;
+export default ReportPage;

@@ -42,14 +42,14 @@ export const initializeLocalStorage = () => {
                 { employeeId: 32, name: "Noah Taylor", email: "noah.taylor@example.com", gender: "Male", phoneNumber: "901-234-5678", dateOfBirth: "1987-05-20", address: "606 Willow Lane", avatar: "https://randomuser.me/api/portraits/men/25.jpg", status: true, departmentId: 5, role: "Employee" },
 
                 //Thêm Director không thuộc phòng ban
-                { employeeId: 36, name: "Henry Clark", email: "henry.clark@example.com", gender: "Male", phoneNumber: "789-456-1234", dateOfBirth: "1982-08-15", address: "202 Maple Avenue", avatar: "https://i.imgur.com/VVPQbU1.jpg", status: true, role: "Director" },
-                { employeeId: 37, name: "Ella Martin", email: "ella.martin@example.com", gender: "Female", phoneNumber: "890-234-5678", dateOfBirth: "1985-09-22", address: "303 Willow Lane", avatar: "https://i.imgur.com/7RS6p2A.jpg", status: true, role: "Director" },
-                { employeeId: 38, name: "James Anderson", email: "james.anderson@example.com", gender: "Male", phoneNumber: "901-345-6789", dateOfBirth: "1980-10-30", address: "404 Oak Avenue", avatar: "https://i.imgur.com/VDM2PqK.jpg", status: true, role: "Director" },
+                { employeeId: 36, name: "Henry Clark", email: "henry.clark@example.com", gender: "Male", phoneNumber: "789-456-1234", dateOfBirth: "1982-08-15", address: "202 Maple Avenue", avatar: "https://randomuser.me/api/portraits/men/26.jpg", status: true, role: "Director" },
+                { employeeId: 37, name: "Ella Martin", email: "ella.martin@example.com", gender: "Female", phoneNumber: "890-234-5678", dateOfBirth: "1985-09-22", address: "303 Willow Lane", avatar: "https://randomuser.me/api/portraits/men/27.jpg", status: true, role: "Director" },
+                { employeeId: 38, name: "James Anderson", email: "james.anderson@example.com", gender: "Male", phoneNumber: "901-345-6789", dateOfBirth: "1980-10-30", address: "404 Oak Avenue", avatar: "https://randomuser.me/api/portraits/women/35.jpg", status: true, role: "Director" },
 
                 // Thêm HR không thuộc phòng ban
-                { employeeId: 39, name: "Sarah Wilson", email: "sarah.wilson@example.com", gender: "Female", phoneNumber: "321-456-7890", dateOfBirth: "1987-12-25", address: "505 Pine Lane", avatar: "https://i.imgur.com/8eh3ZNd.jpg", status: true, role: "HR" },
-                { employeeId: 40, name: "Michael Brown", email: "michael.brown@example.com", gender: "Male", phoneNumber: "432-567-8901", dateOfBirth: "1990-01-14", address: "606 Birch Avenue", avatar: "https://i.imgur.com/LO5GfEZ.jpg", status: true, role: "HR" },
-                { employeeId: 41, name: "Jessica Green", email: "jessica.green@example.com", gender: "Female", phoneNumber: "543-678-9012", dateOfBirth: "1988-07-19", address: "707 Cedar Lane", avatar: "https://i.imgur.com/TLe0F97.jpg", status: true, role: "HR" }
+                { employeeId: 39, name: "Sarah Wilson", email: "sarah.wilson@example.com", gender: "Female", phoneNumber: "321-456-7890", dateOfBirth: "1987-12-25", address: "505 Pine Lane", avatar: "https://randomuser.me/api/portraits/women/34.jpg", status: true, role: "HR" },
+                { employeeId: 40, name: "Michael Brown", email: "michael.brown@example.com", gender: "Male", phoneNumber: "432-567-8901", dateOfBirth: "1990-01-14", address: "606 Birch Avenue", avatar: "https://randomuser.me/api/portraits/men/30.jpg", status: true, role: "HR" },
+                { employeeId: 41, name: "Jessica Green", email: "jessica.green@example.com", gender: "Female", phoneNumber: "543-678-9012", dateOfBirth: "1988-07-19", address: "707 Cedar Lane", avatar: "https://randomuser.me/api/portraits/men/31.jpg", status: true, role: "HR" }
             ],
 
             departments: [

@@ -137,7 +137,7 @@ const EmployeeDetailPage: React.FC = () => {
 
             <Row style={{ marginBottom: '20px' }} gutter={24}>
                 <Col span={7}>
-                    <Card title="Ảnh đại diện" style={{ borderRadius: '8px', textAlign: 'center' }}>
+                    <Card title="Ảnh đại diện" style={{ borderRadius: '8px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
                         <img
                             src={employeeDetail.avatar}
                             alt="Avatar"
@@ -176,7 +176,7 @@ const EmployeeDetailPage: React.FC = () => {
                 </Col>
 
                 <Col span={16}>
-                    <Card title="Chi tiết nhân viên" style={{ borderRadius: '8px' }}>
+                    <Card title="Chi tiết nhân viên" style={{ borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
                         {[
                             { label: 'Tên', value: employeeDetail.name },
                             { label: 'Giới tính', value: employeeDetail.gender },

@@ -73,7 +73,7 @@ const EmployeeNotificationPage: React.FC = () => {
         <>
             <Card
                 title="Danh sách thông báo của bạn"
-                style={{ margin: '0 20px' }}
+                style={{ margin: '0 20px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
             >
                 <Table
                     columns={[

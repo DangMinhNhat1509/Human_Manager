@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Layout, Menu, Select, Button, Modal, message, Switch } from 'antd';
-import { UserOutlined, TrophyOutlined, FileTextOutlined, BellOutlined, SettingOutlined, SyncOutlined, BgColorsOutlined } from '@ant-design/icons';
+import { Layout, Menu, Select, Button, Modal, message } from 'antd';
+import { UserOutlined, TrophyOutlined, FileTextOutlined, BellOutlined, SyncOutlined, SolutionOutlined } from '@ant-design/icons';
 import { getAllEmployees, getAllDepartments } from '../modules/employee/services/employee_service';
 import { Role } from '../types/employee';
 import { EmployeeListItem } from '../modules/employee/types/employee_list_item';
@@ -11,11 +11,8 @@ import { getCurrentUserRole, getCurrentUserId, setUserRole, setUserId } from '..
 const { Sider } = Layout;
 const { Option } = Select;
 
-interface SidebarProps {
-    onThemeChange: (theme: 'light' | 'dark') => void;
-}
 
-const Sidebar: React.FC<SidebarProps> = ({ onThemeChange }) => {
+const Sidebar: React.FC = () => {
     const [employeeList, setEmployeeList] = useState<EmployeeListItem[]>([]);
     const [departmentList, setDepartmentList] = useState<Department[]>([]);
     const [selectedEmployee, setSelectedEmployee] = useState<number | undefined>(undefined);
@@ -23,8 +20,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onThemeChange }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<Role | undefined>(undefined);
     const [filteredEmployees, setFilteredEmployees] = useState<EmployeeListItem[]>([]);
-    const [menuTheme, setMenuTheme] = useState<'light' | 'dark'>('light');
-
     const location = useLocation();
     const currentPath = location.pathname;
     const navigate = useNavigate();
@@ -68,12 +63,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onThemeChange }) => {
             setFilteredEmployees(roleFilteredEmployees);
         }
     }, [employeeList, selectedDepartment, selectedRole]);
-
-    const handleThemeChange = (checked: boolean) => {
-        const newTheme = checked ? 'dark' : 'light';
-        setMenuTheme(newTheme);
-        onThemeChange(newTheme);
-    };
 
     const handleRoleChange = (role: Role) => {
         setSelectedRole(role);
@@ -139,13 +128,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onThemeChange }) => {
         if (role === Role.Director || role === Role.HR) {
             menuItems.push({
                 key: "/employees",
-                icon: <UserOutlined />,
+                icon: <SolutionOutlined />,
                 label: <Link to="/employees">Quản lý nhân viên</Link>
             },
                 {
-                    key: "/Statistics",
+                    key: "/reports",
                     icon: <FileTextOutlined />,
-                    label: <Link to="/statistics">Báo cáo và thống kê</Link>,
+                    label: <Link to="/reports">Báo cáo khen thưởng và kỷ luật</Link>,
                 });
         }
 
@@ -166,32 +155,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onThemeChange }) => {
             })
         }
 
-        menuItems.push(
-            {
-                key: "/settings",
-                icon: <SettingOutlined />,
-                label: 'Cài đặt',
-                children: [
-                    {
-                        key: "theme",
-                        icon: <BgColorsOutlined />,
-                        label: (
-                            <span style={{ display: 'flex', alignItems: 'center' }}>
-                                Chủ đề
-                                <Switch
-                                    style={{ marginLeft: '8px' }}
-                                    checkedChildren='Tối'
-                                    unCheckedChildren='Sáng'
-                                    checked={menuTheme === 'dark'}
-                                    onChange={handleThemeChange}
-                                />
-                            </span>
-                        )
-                    }
-                ]
-            }
-
-        );
 
         return menuItems;
     };
@@ -201,13 +164,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onThemeChange }) => {
             <Sider
                 trigger={null}
                 width={'300px'}
-                theme={menuTheme}
                 style={{
                     overflow: 'auto',
+                    backgroundColor: 'white',
+                    padding: '24px 0',
                     height: '100vh',
                     position: 'fixed',
-                    insetInlineStart: 0,
-                    top: 0,
+                    left: 0,
                     bottom: 0,
                     scrollbarWidth: 'thin',
                     scrollbarColor: 'unset',
@@ -216,7 +179,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onThemeChange }) => {
 
             >
                 <Menu
-                    theme={menuTheme}
                     selectedKeys={[currentPath]}
                     mode="inline"
                     items={getMenuItems()}

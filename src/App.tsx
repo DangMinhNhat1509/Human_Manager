@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from 'antd';
 import Employee from './pages/Employee';
@@ -9,7 +9,7 @@ import RewardDisciplineDetailPage from './modules/reward_discipline/components/R
 import CreateRewardDisciplinePage from './modules/reward_discipline/components/CreateRewardDisciplinePage';
 import UpdateRewardDisciplinePage from './modules/reward_discipline/components/UpdateRewardDisciplinePage';
 import NotificationPage from './modules/reward_discipline/components/EmployeeNotificationPage';
-import StatisticsPage from './modules/reward_discipline/components/StatisticsPage';
+import ReportPage from './modules/reward_discipline/components/ReportPage';
 import { getCurrentUserRole } from './utils/auth';
 import { Role } from './types/employee';
 import Sidebar from './components/SideBar';
@@ -26,16 +26,11 @@ const PrivateRoute: React.FC<{ roles: Role[], element: JSX.Element }> = ({ roles
 const { Content } = Layout;
 
 const App: React.FC = () => {
-  const [menuTheme, setMenuTheme] = useState<'light' | 'dark'>('light'); 
-
-  const handleThemeChange = (theme: 'light' | 'dark') => {
-    setMenuTheme(theme); 
-  };
   return (
     <BrowserRouter>
       <Layout style={{ minHeight: '100vh' }}>
-        <Sidebar onThemeChange={handleThemeChange} />
-        <Layout style={{ padding: '0 24px', minHeight: 280, marginLeft: 250, background: menuTheme === 'dark' ? '#001529' : '#fff' }}>
+        <Sidebar/>
+        <Layout style={{ padding: '0 24px', minHeight: 280, marginLeft: 250 }}>
           <Content style={{ padding: 24, margin: 0, minHeight: 280 }}>
             <Routes>
 
@@ -54,10 +49,10 @@ const App: React.FC = () => {
               <Route path="/notifications" element={<PrivateRoute roles={[Role.Employee]} element={<NotificationPage />} />} />
 
               {/* Routes cho Statics */}
-              <Route path="/statistics" element={<PrivateRoute roles={[Role.Director, Role.Manager, Role.HR]} element={<StatisticsPage />} />} />
+              <Route path="/reports" element={<PrivateRoute roles={[Role.Director, Role.Manager, Role.HR]} element={<ReportPage />} />} />
 
               {/* Trang 401 - Unauthorized */}
-              <Route path="/unauthorized" element={<h1>Unauthorized - You do not have permission to view this page.</h1>} />
+              <Route path="/unauthorized" element={<h1>Chưa được cấp phép - Bạn không có quyền truy cập vào trang này.</h1>} />
             </Routes>
           </Content>
         </Layout>
