@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Form, Input, DatePicker, Select, notification, Spin, message, InputNumber, Card } from 'antd';
 import { updateAction, getActionDetailById } from '../services/reward_discipline_service';
+import { CreateRewardDiscipline } from '../types/create_reward_discipline';
 import { ActionType, ActionSubtype, ActionStatus } from '../../../types/action';
 import { getEmployeesByRole } from '../../employee/services/employee_service';
 import { getCurrentUserDepartmentId } from '../../../utils/auth';
@@ -48,11 +49,13 @@ const UpdateRewardDisciplinePage: React.FC = () => {
                     return;
                 }
 
+                // Set fields values including actionSubtype
                 form.setFieldsValue({
                     ...actionData,
                     actionDate: dayjs(actionData.actionDate),
                 });
 
+                // Load employees
                 const departmentId = await getCurrentUserDepartmentId();
                 const role = Role.Employee;
                 const employeesList = await getEmployeesByRole(role);
@@ -93,47 +96,44 @@ const UpdateRewardDisciplinePage: React.FC = () => {
         fetchActionAndEmployees();
     }, [actionId, form, navigate]);
 
-    const onFinish = async (values: any, status: ActionStatus) => {
+    const onFinish = async (values: CreateRewardDiscipline, status: ActionStatus) => {
         setLoading(true);
         try {
-            const actionData = {
+            const actionData: CreateRewardDiscipline = {
                 ...values,
-                actionType: values.actionType,
-                actionSubtype: values.actionSubtype,
                 status: status
             };
             await updateAction(Number(actionId), actionData);
 
-            notification.success({
-                message: 'Thành công',
-                description: 'Hành động đã được cập nhật thành công.',
-            });
-
-            navigate('/actions');
+            message.success('Đề xuất hành động đã được cập nhật thành công.');
+            form.resetFields();
         } catch (error) {
-            notification.error({
-                message: 'Lỗi',
-                description: 'Đã xảy ra lỗi khi cập nhật hành động.',
-            });
+            message.error('Đã xảy ra lỗi khi cập nhật đề xuất hành động.');
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        form.setFieldsValue({ actionSubtype: undefined });
-    }, [actionType, form]);
-
     const handleDraft = () => {
         form.validateFields().then(value => {
             onFinish(value, ActionStatus.Draft);
+            navigate('/actions');
+        }).catch(() => {
+            message.error("Hãy sửa lại biểu mẫu.");
         });
     };
 
     const handleSubmit = () => {
         form.validateFields().then(value => {
             onFinish(value, ActionStatus.Pending);
+            navigate('/actions');
+        }).catch(() => {
+            message.error("Hãy sửa lại biểu mẫu.");
         });
+    };
+
+    const handleBack = () => {
+        navigate(`/actions/${actionId}`);
     };
 
     if (loadingData) {
@@ -141,7 +141,10 @@ const UpdateRewardDisciplinePage: React.FC = () => {
     }
 
     return (
-        <Card title="Cập nhật hành động" style={{ margin: '20px' }}>
+        <Card
+            title="Cập nhật hành động"
+            extra={<Button onClick={handleBack}>Quay lại</Button>}
+            style={{ margin: '20px' }}>
             <Form layout="vertical" form={form}>
                 <Form.Item
                     name="employeeId"
@@ -158,7 +161,13 @@ const UpdateRewardDisciplinePage: React.FC = () => {
                     label="Loại hành động"
                     rules={[{ required: true, message: 'Vui lòng chọn loại hành động' }]}
                 >
-                    <Select placeholder="Chọn loại hành động">
+                    <Select
+                        placeholder="Chọn loại hành động"
+                        onChange={() => {
+                            // Khi thay đổi actionType, reset actionSubtype về undefined
+                            form.setFieldsValue({ actionSubtype: undefined });
+                        }}
+                    >
                         {createOptionsFromEnum(ActionType)}
                     </Select>
                 </Form.Item>
@@ -249,9 +258,9 @@ const UpdateRewardDisciplinePage: React.FC = () => {
                             type="primary"
                             onClick={handleSubmit}
                             loading={loading}
-                            style={{ marginLeft: '10px' }}
+                            style={{ marginLeft: '8px' }}
                         >
-                            Cập nhật
+                            Gửi
                         </Button>
                     </div>
                 </Form.Item>
