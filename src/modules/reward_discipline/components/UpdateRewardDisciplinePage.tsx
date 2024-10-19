@@ -30,6 +30,7 @@ const UpdateRewardDisciplinePage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [employeeOptions, setEmployeeOptions] = useState<JSX.Element[]>([]);
     const [loadingData, setLoadingData] = useState(true);
+    const [approver, setApprover] = useState<string>("Phòng nhân sự");
     const actionType = Form.useWatch('actionType', form);
     const navigate = useNavigate();
 
@@ -136,6 +137,26 @@ const UpdateRewardDisciplinePage: React.FC = () => {
         navigate(`/actions/${actionId}`);
     };
 
+    const requiresDirectorApproval = (amount?: number, duration?: number, actionSubtype?: ActionSubtype) => {
+        const highAmount = amount && amount > 10000000;
+        const longDuration = duration && duration > 30;
+        const criticalSubtypes = actionSubtype ? [ActionSubtype.Audit, ActionSubtype.Termination].includes(actionSubtype) : false;
+        return highAmount || longDuration || criticalSubtypes;
+    };
+
+
+    const handleFieldChange = () => {
+        const amount = form.getFieldValue('amount');
+        const duration = form.getFieldValue('duration');
+        const actionSubtype = form.getFieldValue('actionSubtype');
+
+        if (requiresDirectorApproval(amount, duration, actionSubtype)) {
+            setApprover("Ban giám đốc");
+        } else {
+            setApprover("Phòng nhân sự");
+        }
+    };
+
     if (loadingData) {
         return <div style={{ textAlign: 'center', marginTop: 50 }}><Spin size="large" /></div>;
     }
@@ -149,8 +170,7 @@ const UpdateRewardDisciplinePage: React.FC = () => {
                 <Form.Item
                     name="employeeId"
                     label="Nhân viên"
-                    rules={[{ required: true, message: 'Vui lòng chọn nhân viên' }]}
-                >
+                    rules={[{ required: true, message: 'Vui lòng chọn nhân viên' }]} >
                     <Select placeholder="Chọn nhân viên">
                         {employeeOptions}
                     </Select>
@@ -159,15 +179,12 @@ const UpdateRewardDisciplinePage: React.FC = () => {
                 <Form.Item
                     name="actionType"
                     label="Loại hành động"
-                    rules={[{ required: true, message: 'Vui lòng chọn loại hành động' }]}
-                >
+                    rules={[{ required: true, message: 'Vui lòng chọn loại hành động' }]}>
                     <Select
                         placeholder="Chọn loại hành động"
                         onChange={() => {
-                            // Khi thay đổi actionType, reset actionSubtype về undefined
                             form.setFieldsValue({ actionSubtype: undefined });
-                        }}
-                    >
+                        }} >
                         {createOptionsFromEnum(ActionType)}
                     </Select>
                 </Form.Item>
@@ -177,7 +194,7 @@ const UpdateRewardDisciplinePage: React.FC = () => {
                     label="Phân loại hành động"
                     rules={[{ required: true, message: 'Vui lòng chọn phân loại hành động' }]}
                 >
-                    <Select placeholder="Chọn phân loại hành động">
+                    <Select placeholder="Chọn phân loại hành động" onChange={handleFieldChange}>
                         {actionType === ActionType.Reward ? (
                             createOptionsFromEnum({
                                 Bonus: ActionSubtype.Bonus,
@@ -201,21 +218,20 @@ const UpdateRewardDisciplinePage: React.FC = () => {
                 <Form.Item
                     name="actionDate"
                     label="Ngày thực hiện"
-                    rules={[{ required: true, message: 'Vui lòng chọn ngày thực hiện' }]}
-                >
+                    rules={[{ required: true, message: 'Vui lòng chọn ngày thực hiện' }]}>
                     <DatePicker format="DD/MM/YYYY" />
                 </Form.Item>
 
                 <Form.Item
                     name="amount"
                     label="Số tiền"
-                    rules={[{ type: 'number', min: 100000, max: 100000000, message: 'Số tiền phải nằm trong khoảng từ 100,000 đến 100,000,000' }]}
-                >
+                    rules={[{ type: 'number', min: 100000, max: 100000000, message: 'Số tiền phải nằm trong khoảng từ 100,000 đến 100,000,000' }]}>
                     <InputNumber
                         placeholder="Nhập số tiền"
                         addonAfter="VND"
                         formatter={(value) => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                         parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
+                        onChange={handleFieldChange}
                     />
                 </Form.Item>
 
@@ -232,6 +248,7 @@ const UpdateRewardDisciplinePage: React.FC = () => {
                             if (value && value > 90) {
                                 message.error('Thời gian không được quá 90 ngày.');
                             }
+                            handleFieldChange();
                         }}
                     />
                 </Form.Item>
@@ -243,6 +260,11 @@ const UpdateRewardDisciplinePage: React.FC = () => {
                 >
                     <TextArea placeholder="Nhập lý do thực hiện" rows={4} />
                 </Form.Item>
+
+                {/* Hiển thị người phê duyệt */}
+                <div style={{ marginBottom: '20px', fontWeight: 'bold', color: '#000' }}>
+                    Đơn sẽ được duyệt bởi: {approver}
+                </div>
 
                 <Form.Item>
                     <div style={{ textAlign: 'right' }}>

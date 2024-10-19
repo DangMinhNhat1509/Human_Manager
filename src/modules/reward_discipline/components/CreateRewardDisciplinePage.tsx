@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button, Form, Input, DatePicker, Select, InputNumber, message, Card } from 'antd';
 import { createAction } from '../services/reward_discipline_service';
 import { ActionType, ActionSubtype, ActionStatus } from '../../../types/action';
@@ -23,35 +23,57 @@ const createOptionsFromEnum = (enumObj: EnumType) => {
     ));
 };
 
+const requiresDirectorApproval = (amount?: number, duration?: number, actionSubtype?: ActionSubtype) => {
+    const highAmount = amount && amount > 10000000;
+    const longDuration = duration && duration > 30;
+    const criticalSubtypes = actionSubtype ? [ActionSubtype.Audit, ActionSubtype.Termination].includes(actionSubtype) : false;
+    return highAmount || longDuration || criticalSubtypes;
+};
+
 const CreateRewardDisciplinePage: React.FC = () => {
     const [form] = Form.useForm<CreateRewardDiscipline>();
     const [loading, setLoading] = useState(false);
     const [employeeOptions, setEmployeeOptions] = useState<JSX.Element[]>([]);
-    const actionType = Form.useWatch('actionType', form);
+    const [approver, setApprover] = useState<string>("Phòng nhân sự");
+
     const navigate = useNavigate();
 
     // Lấy danh sách nhân viên theo phòng ban
-    useEffect(() => {
-        const fetchEmployees = async () => {
-            try {
-                const departmentId = await getCurrentUserDepartmentId();
-                const role = Role.Employee;
-                const employeesList = await getEmployeesByRole(role);
+    const fetchEmployees = async () => {
+        try {
+            const departmentId = await getCurrentUserDepartmentId();
+            const role = Role.Employee;
+            const employeesList = await getEmployeesByRole(role);
 
-                const filteredEmployees = employeesList.filter(emp => emp.departmentId === departmentId);
+            const filteredEmployees = employeesList.filter(emp => emp.departmentId === departmentId);
 
-                setEmployeeOptions(
-                    filteredEmployees.map(emp => (
-                        <Option key={emp.employeeId} value={emp.employeeId}>{emp.name}</Option>
-                    ))
-                );
-            } catch (error) {
-                message.error('Không thể lấy danh sách nhân viên.');
-            }
-        };
+            setEmployeeOptions(
+                filteredEmployees.map(emp => (
+                    <Option key={emp.employeeId} value={emp.employeeId}>{emp.name}</Option>
+                ))
+            );
+        } catch (error) {
+            message.error('Không thể lấy danh sách nhân viên.');
+        }
+    };
 
+    // Gọi hàm lấy danh sách nhân viên ngay khi component mount
+    React.useEffect(() => {
         fetchEmployees();
     }, []);
+
+    // Cập nhật người phê duyệt khi giá trị của amount, duration hoặc actionSubtype thay đổi
+    const handleFieldChange = () => {
+        const amount = form.getFieldValue('amount');
+        const duration = form.getFieldValue('duration');
+        const actionSubtype = form.getFieldValue('actionSubtype');
+
+        if (requiresDirectorApproval(amount, duration, actionSubtype)) {
+            setApprover("Ban giám đốc");
+        } else {
+            setApprover("Phòng nhân sự");
+        }
+    };
 
     const onFinish = async (values: CreateRewardDiscipline, status: ActionStatus) => {
         setLoading(true);
@@ -60,6 +82,7 @@ const CreateRewardDisciplinePage: React.FC = () => {
                 ...values,
                 status: status
             };
+
             await createAction(actionData);
 
             message.success('Đề xuất hành động đã được tạo thành công.');
@@ -70,11 +93,6 @@ const CreateRewardDisciplinePage: React.FC = () => {
             setLoading(false);
         }
     };
-
-    // Reset actionSubtype khi actionType thay đổi
-    useEffect(() => {
-        form.setFieldsValue({ actionSubtype: undefined });
-    }, [actionType, form]);
 
     const handleDraft = () => {
         form.validateFields().then(value => {
@@ -119,7 +137,7 @@ const CreateRewardDisciplinePage: React.FC = () => {
                     label="Loại hành động"
                     rules={[{ required: true, message: 'Vui lòng chọn loại hành động' }]}
                 >
-                    <Select placeholder="Chọn loại hành động">
+                    <Select placeholder="Chọn loại hành động" onChange={handleFieldChange}>
                         {createOptionsFromEnum(ActionType)}
                     </Select>
                 </Form.Item>
@@ -129,8 +147,8 @@ const CreateRewardDisciplinePage: React.FC = () => {
                     label="Phân loại hành động"
                     rules={[{ required: true, message: 'Vui lòng chọn phân loại hành động' }]}
                 >
-                    <Select placeholder="Chọn phân loại hành động">
-                        {actionType === ActionType.Reward ? (
+                    <Select placeholder="Chọn phân loại hành động" onChange={handleFieldChange}>
+                        {form.getFieldValue('actionType') === ActionType.Reward ? (
                             createOptionsFromEnum({
                                 Bonus: ActionSubtype.Bonus,
                                 Promotion: ActionSubtype.Promotion,
@@ -168,6 +186,7 @@ const CreateRewardDisciplinePage: React.FC = () => {
                         addonAfter="VND"
                         formatter={(value) => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                         parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
+                        onChange={handleFieldChange} 
                     />
                 </Form.Item>
 
@@ -184,6 +203,7 @@ const CreateRewardDisciplinePage: React.FC = () => {
                             if (value && value > 90) {
                                 message.error('Thời gian không được quá 90 ngày.');
                             }
+                            handleFieldChange(); 
                         }}
                     />
                 </Form.Item>
@@ -195,6 +215,11 @@ const CreateRewardDisciplinePage: React.FC = () => {
                 >
                     <TextArea placeholder="Nhập lý do thực hiện" rows={4} />
                 </Form.Item>
+
+                {/* Hiển thị người phê duyệt */}
+                <div style={{ marginBottom: '20px', fontWeight: 'bold', color: '#000' }}>
+                    Đơn sẽ được duyệt bởi: {approver}
+                </div>
 
                 <Form.Item>
                     <Button
@@ -214,7 +239,7 @@ const CreateRewardDisciplinePage: React.FC = () => {
                     </Button>
                 </Form.Item>
             </Form>
-        </Card >
+        </Card>
     );
 };
 

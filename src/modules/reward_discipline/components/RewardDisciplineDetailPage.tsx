@@ -18,6 +18,7 @@ const RewardDisciplineDetailPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [note, setNote] = useState<string>('');
+
     const navigate = useNavigate();
     const role = getCurrentUserRole();
     const userId = Number(getCurrentUserId());
@@ -169,6 +170,15 @@ const RewardDisciplineDetailPage: React.FC = () => {
                     <Descriptions.Item label="Trạng thái">{action.status}</Descriptions.Item>
                 </Descriptions>
 
+                {/* Hiển thị người phê duyệt */}
+                {action.status === ActionStatus.Pending && (
+                    <div style={{ marginTop: '20px', marginBottom: '20px', fontWeight: 'bold', color: '#000' }}>
+                        Đơn đang chờ duyệt bởi: {requiresDirectorApproval(action) ? 'Ban giám đốc' : 'Phòng nhân sự'}
+                    </div>
+                )}
+
+
+
                 {/* Duyệt đơn nhẹ Role là HR */}
                 {role === Role.HR && !requiresDirectorApproval(action) && action.status === ActionStatus.Pending && (
                     <>
@@ -261,7 +271,7 @@ const RewardDisciplineDetailPage: React.FC = () => {
                         </Collapse>
                     </>
                 )}
-            </Card>
+            </Card >
         </>
     );
 };
