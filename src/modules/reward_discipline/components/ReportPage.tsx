@@ -19,7 +19,7 @@ const ReportPage: React.FC = () => {
         dayjs().startOf("day"),
         dayjs().endOf("day"),
     ]);
-    const [filterType, setFilterType] = useState<string>("today");
+    const [filterType, setFilterType] = useState<string | null>("today");
     const [departments, setDepartments] = useState<{ id: number, name: string }[]>([]);
     const [selectedActionType, setSelectedActionType] = useState<ActionType>(ActionType.Reward);
     const [pendingCount, setPendingCount] = useState(0);
@@ -48,8 +48,8 @@ const ReportPage: React.FC = () => {
             const departmentData: Record<string, number> = {};
             for (const deptId of departmentIds) {
                 const data = await getChartStatistics(deptId, startDate, endDate);
-                departmentData[deptId] = selectedActionType === ActionType.Reward 
-                    ? data[ActionType.Reward] || 0 
+                departmentData[deptId] = selectedActionType === ActionType.Reward
+                    ? data[ActionType.Reward] || 0
                     : data[ActionType.Disciplinary] || 0;
             }
 
@@ -61,35 +61,40 @@ const ReportPage: React.FC = () => {
         }
     }, [selectedActionType]);
 
-    useEffect(() => {
-        if (dateRange[0] && dateRange[1]) {
-            fetchCounts(dateRange[0].format("YYYY-MM-DD"), dateRange[1].format("YYYY-MM-DD"));
-        }
-    }, [dateRange, fetchCounts]);
-
     const handleDateRangeChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
         if (dates && dates[0] && dates[1]) {
             setDateRange(dates as [Dayjs, Dayjs]);
+
+            const todayStart = dayjs().startOf("day");
+            const todayEnd = dayjs().endOf("day");
+            const weekStart = dayjs().startOf("week");
+            const weekEnd = dayjs().endOf("week");
+            const monthStart = dayjs().startOf("month");
+            const monthEnd = dayjs().endOf("month");
+            const yearStart = dayjs().startOf("year");
+            const yearEnd = dayjs().endOf("year");
+
+            if (dates[0].isSame(todayStart, 'day') && dates[1].isSame(todayEnd, 'day')) {
+                setFilterType('today');
+            } else if (dates[0].isSame(weekStart, 'day') && dates[1].isSame(weekEnd, 'day')) {
+                setFilterType('week');
+            } else if (dates[0].isSame(monthStart, 'day') && dates[1].isSame(monthEnd, 'day')) {
+                setFilterType('month');
+            } else if (dates[0].isSame(yearStart, 'day') && dates[1].isSame(yearEnd, 'day')) {
+                setFilterType('year');
+            } else {
+                setFilterType(null); 
+            }
         } else {
             setDateRange([dayjs().startOf("day"), dayjs().endOf("day")]);
+            setFilterType('today'); 
         }
     };
-
-    useEffect(() => {
-        const loadDepartments = async () => {
-            try {
-                const departments = await getAllDepartments();
-                setDepartments(departments.map(dep => ({ id: dep.departmentId, name: dep.departmentName })));
-            } catch (error) {
-                message.error("Lỗi khi lấy danh sách phòng ban");
-            }
-        };
-        loadDepartments();
-    }, []);
 
     const handleFilterChange = (e: RadioChangeEvent) => {
         const value = e.target.value;
         setFilterType(value);
+
         switch (value) {
             case "today":
                 setDateRange([dayjs().startOf("day"), dayjs().endOf("day")]);
@@ -107,6 +112,13 @@ const ReportPage: React.FC = () => {
                 break;
         }
     };
+
+    // useEffect để gọi fetchCounts khi dateRange thay đổi
+    useEffect(() => {
+        if (dateRange[0] && dateRange[1]) {
+            fetchCounts(dateRange[0].format("YYYY-MM-DD"), dateRange[1].format("YYYY-MM-DD"));
+        }
+    }, [dateRange, fetchCounts]);
 
     const handleActionTypeChange = (e: RadioChangeEvent) => {
         const value = e.target.value as ActionType;
