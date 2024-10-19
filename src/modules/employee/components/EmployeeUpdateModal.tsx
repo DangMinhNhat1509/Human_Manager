@@ -129,7 +129,7 @@ const EmployeeUpdateModal: React.FC<EmployeeUpdateModalProps> = ({ show, onHide,
                                     }
                                 ]}
                             >
-                                <DatePicker style={{ width: '100%' }} format="YYYY-MM-DD" />
+                                <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
                             </Form.Item>
                         </Col>
 
